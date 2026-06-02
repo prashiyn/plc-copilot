@@ -1,0 +1,24 @@
+# PLCAutoPilot
+
+> AI-powered PLC programming assistant that transforms specifications into production-ready ladder logic in minutes. Built for Schneider Electric Modicon (M221, M241, M251, M258, M340, M580) and EcoStruxure platforms, with support for Machine Expert, Control Expert, and Vijeo Designer. Reduces development time by up to 80% while maintaining IEC 61508 safety standards.
+
+PLCAutoPilot helps automation engineers generate, optimize, and validate industrial control logic. Core capabilities include AI ladder logic generation, an AI copilot, code optimization, HMI generation, and PLC selection guidance.
+
+## Main Pages
+
+- [Home](https://plcautopilot.com): Product overview, features, supported platforms, and pricing
+- [Blog](https://plcautopilot.com/blog): Tutorials and guides on PLC programming and industrial automation
+
+## Guides and Tutorials
+
+- [Complete PLC Programming Tutorial](https://plcautopilot.com/blog/plc-programming-tutorial): Step-by-step introduction to PLC programming
+- [Ladder Logic Complete Guide](https://plcautopilot.com/blog/ladder-logic-complete-guide): In-depth reference for ladder logic
+- [Universal PLC Programming Guide](https://plcautopilot.com/blog/universal-plc-programming-guide): Cross-platform PLC programming concepts
+- [AI in PLC Programming](https://plcautopilot.com/blog/ai-plc-programming): How AI accelerates control system development
+- [IEC 61508 Safety](https://plcautopilot.com/blog/iec-61508-safety): Functional safety standards for industrial automation
+- [HMI and SCADA Integration](https://plcautopilot.com/blog/hmi-scada-integration): Connecting PLCs to HMI and SCADA systems
+
+## Contact
+
+- Publisher: Dr.M Hope Softwares
+- Repository: https://github.com/chatgptnotes/plcautopilot.com

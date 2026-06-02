@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./context/ThemeContext";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,10 +11,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL('https://plcautopilot.com'),
   title: {
-    default: "PLCAutoPilot - AI-Powered PLC Programming Assistant | Ladder Logic Automation",
+    default: "PLCAutoPilot: AI PLC Programming & Ladder Logic Generator",
     template: "%s | PLCAutoPilot"
   },
-  description: "Transform PLC specifications into production-ready ladder logic code in minutes. AI-powered automation for Schneider Electric Modicon M221, M241, M251, M258, M340, M580. Support for Machine Expert, Control Expert, and Vijeo Designer. Reduce development time by 80%.",
+  description: "Transform PLC specs into production-ready ladder logic in minutes with AI. Automation for Schneider Electric Modicon M221-M580. Cut development time by 80%.",
   keywords: [
     "PLC programming",
     "ladder logic",
@@ -57,8 +58,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://plcautopilot.com",
-    title: "PLCAutoPilot - AI-Powered PLC Programming Assistant",
-    description: "Transform specifications into production-ready PLC code in minutes. AI-powered automation for Schneider Electric EcoStruxure platforms. Reduce project time by 80%.",
+    title: "PLCAutoPilot: AI PLC Programming & Ladder Logic Generator",
+    description: "Transform PLC specs into production-ready ladder logic in minutes with AI. Automation for Schneider Electric Modicon M221-M580. Cut development time by 80%.",
     siteName: "PLCAutoPilot",
     images: [
       {
@@ -71,8 +72,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PLCAutoPilot - AI-Powered PLC Programming Assistant",
-    description: "Transform PLC specs into production-ready code in minutes. AI automation for Schneider Electric platforms.",
+    title: "PLCAutoPilot: AI PLC Programming & Ladder Logic Generator",
+    description: "Transform PLC specs into production-ready ladder logic in minutes with AI. Automation for Schneider Electric Modicon M221-M580. Cut development time by 80%.",
     images: ["/og-image.png"],
     creator: "@plcautopilot",
   },
@@ -103,7 +104,9 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" rel="stylesheet" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -157,6 +160,7 @@ export default function RootLayout({
                 "name": "Dr. Murali BK"
               },
               "sameAs": [
+                "https://x.com/plcautopilot",
                 "https://github.com/chatgptnotes/plcautopilot.com"
               ]
             })
@@ -168,6 +172,7 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
       </body>
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-XXXXXXXXXX"} />
     </html>
   );
 }
