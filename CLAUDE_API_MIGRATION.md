@@ -204,7 +204,7 @@ python3 plc_file_handler/cli.py --help
 ## Support
 
 For issues or questions:
-- GitHub Issues: https://github.com/chatgptnotes/plcautopilot.com/issues
+- GitHub Issues: https://github.com/prashiyn/plc-copilot/issues
 - Documentation: README.md
 - API Reference: https://docs.anthropic.com/
 

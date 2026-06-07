@@ -335,7 +335,7 @@ Your setup will be 100% complete when:
 - **Supabase Docs**: https://supabase.com/docs
 - **SQL Help**: https://www.postgresql.org/docs/
 - **Discord**: https://discord.supabase.com
-- **GitHub**: https://github.com/chatgptnotes/plcautopilot.com
+- **GitHub**: https://github.com/prashiyn/plc-copilot
 
 ---
 

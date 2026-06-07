@@ -221,7 +221,7 @@ CLAUDE_MODEL=claude-3-5-sonnet-20241022 (configured ✅)
 - Status: Working (verified via API test)
 
 ### Repository
-- **GitHub**: https://github.com/chatgptnotes/plcautopilot.com
+- **GitHub**: https://github.com/prashiyn/plc-copilot
 - **Branch**: main
 - **Last Commit**: e9c5126 "Document root cause of API errors"
 
@@ -261,7 +261,7 @@ CLAUDE_MODEL=claude-3-5-sonnet-20241022 (configured ✅)
 
 ### PLCAutoPilot
 - **Production**: https://www.plcautopilot.com
-- **Repository**: https://github.com/chatgptnotes/plcautopilot.com
+- **Repository**: https://github.com/prashiyn/plc-copilot
 - **Documentation**: See all .md files in repository
 
 ### Key Documents

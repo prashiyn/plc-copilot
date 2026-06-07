@@ -429,5 +429,5 @@ This Claude skill provides a complete solution for multi-platform PLC file handl
 
 **Version:** 1.0.0
 **Date:** 2025-12-24
-**Repository:** https://github.com/chatgptnotes/plcautopilot.com
+**Repository:** https://github.com/prashiyn/plc-copilot
 **Status:** Production Ready

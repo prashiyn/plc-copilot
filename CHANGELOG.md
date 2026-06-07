@@ -172,4 +172,4 @@ All notable changes to PLCAutoPilot will be documented in this file.
 - PATCH: Bug fixes and minor improvements
 
 **Update Frequency**: Every Git push increments version
-**Footer Format**: PLCAutoPilot vX.X | Last Updated: Month DD, YYYY | github.com/chatgptnotes/plcautopilot.com
+**Footer Format**: PLCAutoPilot vX.X | Last Updated: Month DD, YYYY | github.com/prashiyn/plc-copilot

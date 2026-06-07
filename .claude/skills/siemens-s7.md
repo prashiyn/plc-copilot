@@ -364,4 +364,4 @@ PlcBlockGroup.Blocks.CreateDB()
 
 ---
 
-**PLCAutoPilot Siemens S7 Skill v1.0 | 2025-12-24 | github.com/chatgptnotes/plcautopilot.com**
+**PLCAutoPilot Siemens S7 Skill v1.0 | 2025-12-24 | github.com/prashiyn/plc-copilot**

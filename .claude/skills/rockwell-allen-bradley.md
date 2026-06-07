@@ -389,4 +389,4 @@ Logic:
 
 ---
 
-**PLCAutoPilot Rockwell Skill v1.0 | 2025-12-24 | github.com/chatgptnotes/plcautopilot.com**
+**PLCAutoPilot Rockwell Skill v1.0 | 2025-12-24 | github.com/prashiyn/plc-copilot**

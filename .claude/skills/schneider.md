@@ -1111,4 +1111,4 @@ Before generating any M221 .smbp file:
 
 ---
 
-**PLCAutoPilot Schneider Skill v1.2 | Last Updated: 2025-12-24 | github.com/chatgptnotes/plcautopilot.com**
+**PLCAutoPilot Schneider Skill v1.2 | Last Updated: 2025-12-24 | github.com/prashiyn/plc-copilot**

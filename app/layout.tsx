@@ -161,7 +161,7 @@ export default function RootLayout({
               },
               "sameAs": [
                 "https://x.com/plcautopilot",
-                "https://github.com/chatgptnotes/plcautopilot.com"
+                "https://github.com/prashiyn/plc-copilot"
               ]
             })
           }}

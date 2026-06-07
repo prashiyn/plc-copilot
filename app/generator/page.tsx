@@ -360,7 +360,7 @@ export default function GeneratorPage() {
 
         {/* Footer */}
         <footer className="text-xs text-gray-400 text-center py-4 mt-8">
-          PLCAutoPilot v1.4 | Last Updated: 2025-12-24 | github.com/chatgptnotes/plcautopilot.com
+          PLCAutoPilot v1.4 | Last Updated: 2025-12-24 | github.com/prashiyn/plc-copilot
         </footer>
       </div>
     </div>

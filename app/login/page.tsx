@@ -15,11 +15,11 @@ export default function LoginPage() {
     setIsLoading(true);
 
     // Development mode - bypass authentication
-    if (process.env.NODE_ENV === 'development' || email === 'demo@plcautopilot.com') {
+    if (process.env.NODE_ENV === 'development' || email === 'demo@plcai.com') {
       // Store demo user in localStorage
       localStorage.setItem('user', JSON.stringify({
         id: 'demo-user',
-        email: email || 'demo@plcautopilot.com',
+        email: email || 'demo@plcai.com',
         name: 'Demo User',
         role: 'user',
         authenticated: true
@@ -58,7 +58,7 @@ export default function LoginPage() {
   const handleDemoLogin = () => {
     localStorage.setItem('user', JSON.stringify({
       id: 'demo-user',
-      email: 'demo@plcautopilot.com',
+      email: 'demo@plcai.com',
       name: 'Demo User',
       role: 'user',
       authenticated: true

@@ -305,4 +305,4 @@ After generating M221 program, verify:
 
 ---
 
-**PLCAutoPilot M221 Agent Activation v1.0 | 2025-12-24 | github.com/chatgptnotes/plcautopilot.com**
+**PLCAutoPilot M221 Agent Activation v1.0 | 2025-12-24 | github.com/prashiyn/plc-copilot**

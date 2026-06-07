@@ -305,7 +305,7 @@ LIMIT 10;
 - **Supabase Discord**: https://discord.supabase.com
 - **Supabase Docs**: https://supabase.com/docs
 - **PostgreSQL Docs**: https://www.postgresql.org/docs/
-- **PLCAutoPilot Issues**: github.com/chatgptnotes/plcautopilot.com/issues
+- **PLCAutoPilot Issues**: github.com/prashiyn/plc-copilot/issues
 
 ---
 

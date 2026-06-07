@@ -509,7 +509,7 @@ MIT License - See LICENSE file
 ## Support
 
 For issues, questions, or contributions:
-- GitHub: https://github.com/chatgptnotes/plcautopilot.com
+- GitHub: https://github.com/prashiyn/plc-copilot
 - Documentation: See `.claude/skills/plc-file-handler.md`
 
 ---

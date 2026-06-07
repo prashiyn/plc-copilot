@@ -11,7 +11,7 @@
 ## 📊 Deployment Details
 
 ### Git Push
-- **Repository:** https://github.com/chatgptnotes/plcautopilot.com
+- **Repository:** https://github.com/prashiyn/plc-copilot
 - **Branch:** main
 - **Commits Pushed:** 3 commits
   - `e1a8f44` - PLC File Handler Skill (24 files, 5824+ lines)
@@ -235,7 +235,7 @@ curl -X POST https://plcautopilot-gjkdqmuml-chatgptnotes-6366s-projects.vercel.a
 
 ### Support
 - Documentation: See `plc_file_handler/` directory
-- Issues: https://github.com/chatgptnotes/plcautopilot.com/issues
+- Issues: https://github.com/prashiyn/plc-copilot/issues
 - Quick Start: `plc_file_handler/QUICK_START.md`
 
 ---

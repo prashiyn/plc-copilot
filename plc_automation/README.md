@@ -492,7 +492,7 @@ Part of PLCAutoPilot project.
 ## Support
 
 For issues and questions:
-- GitHub: https://github.com/chatgptnotes/plcautopilot.com
+- GitHub: https://github.com/prashiyn/plc-copilot
 - Documentation: https://www.plcautopilot.com
 
 ---

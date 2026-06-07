@@ -427,4 +427,4 @@ Simply describe what you want, and Claude Code will build, test, commit, and dep
 
 ---
 
-**PLCAutoPilot Autonomy Configuration v1.1 | Last Updated: 2025-12-24 | github.com/chatgptnotes/plcautopilot.com**
+**PLCAutoPilot Autonomy Configuration v1.1 | Last Updated: 2025-12-24 | github.com/prashiyn/plc-copilot**

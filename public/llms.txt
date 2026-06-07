@@ -21,4 +21,4 @@ PLCAutoPilot helps automation engineers generate, optimize, and validate industr
 ## Contact
 
 - Publisher: Dr.M Hope Softwares
-- Repository: https://github.com/chatgptnotes/plcautopilot.com
+- Repository: https://github.com/prashiyn/plc-copilot

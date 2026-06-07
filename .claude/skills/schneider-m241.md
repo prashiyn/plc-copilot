@@ -243,4 +243,4 @@ Destination: %MW100
 
 ---
 
-**PLCAutoPilot Schneider M241 Skill v1.0 | 2025-12-24 | github.com/chatgptnotes/plcautopilot.com**
+**PLCAutoPilot Schneider M241 Skill v1.0 | 2025-12-24 | github.com/prashiyn/plc-copilot**

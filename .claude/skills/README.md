@@ -243,4 +243,4 @@ To add a new skill:
 
 ---
 
-**PLCAutoPilot Skills Library v1.1 | 2025-12-24 | github.com/chatgptnotes/plcautopilot.com**
+**PLCAutoPilot Skills Library v1.1 | 2025-12-24 | github.com/prashiyn/plc-copilot**

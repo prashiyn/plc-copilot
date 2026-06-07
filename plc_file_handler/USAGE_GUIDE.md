@@ -671,7 +671,7 @@ cp original.smbp original.smbp.backup
 - **Skill Documentation:** `.claude/skills/plc-file-handler.md`
 - **API Reference:** `README.md`
 - **Examples:** `examples/` directory
-- **Issues:** https://github.com/chatgptnotes/plcautopilot.com/issues
+- **Issues:** https://github.com/prashiyn/plc-copilot/issues
 
 ---
 

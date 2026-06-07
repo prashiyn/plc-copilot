@@ -9,7 +9,7 @@
 
 **Login Credentials (Development Mode)**:
 - Click "Continue as Demo User" for instant access
-- Or use: `demo@plcautopilot.com` with any password
+- Or use: `demo@plcai.com` with any password
 - Authentication bypassed for testing
 
 ---
@@ -537,7 +537,7 @@ Expandable section for assistance:
 ## 📦 Deployment
 
 ### GitHub
-**Repository**: https://github.com/chatgptnotes/plcautopilot.com
+**Repository**: https://github.com/prashiyn/plc-copilot
 **Branch**: main
 
 ### Vercel
@@ -596,7 +596,7 @@ OPENAI_API_KEY=
 ## 🤝 Support
 
 ### Contact
-- **Email**: support@plcautopilot.com
+- **Email**: support@plcai.com
 - **Chat**: /engineer-chat (Live)
 - **GitHub**: Issues and PRs welcome
 

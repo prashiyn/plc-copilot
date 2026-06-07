@@ -75,7 +75,7 @@ You are an autonomous senior engineer and delivery agent for PLCAutoPilot. Build
 Example footer:
 ```html
 <footer class="text-xs text-gray-400 text-center py-2">
-  PLCAutoPilot v1.0 | Last Updated: 2025-12-22 | github.com/chatgptnotes/plcautopilot.com
+  PLCAutoPilot v1.0 | Last Updated: 2025-12-22 | github.com/prashiyn/plc-copilot
 </footer>
 ```
 
@@ -424,7 +424,7 @@ Provide complete package:
 
 **Version**: 1.2
 **Last Updated**: 2025-12-22
-**Repository**: https://github.com/chatgptnotes/plcautopilot.com
+**Repository**: https://github.com/prashiyn/plc-copilot
 
 ### Completed
 - Next.js web application (100%)
@@ -481,4 +481,4 @@ Start now. Execute independently. Deliver production-ready solutions.
 
 ---
 
-*PLCAutoPilot v1.2 | Last Updated: 2025-12-22 | github.com/chatgptnotes/plcautopilot.com*
+*PLCAutoPilot v1.2 | Last Updated: 2025-12-22 | github.com/prashiyn/plc-copilot*

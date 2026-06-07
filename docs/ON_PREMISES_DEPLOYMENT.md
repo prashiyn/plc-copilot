@@ -443,7 +443,7 @@ model: "codellama:13b"
 ## Support
 
 ### Enterprise Support Contact
-- **Email**: enterprise@plcautopilot.com
+- **Email**: enterprise@plcai.com
 - **Phone**: +1-800-PLC-AUTO (24/7 for Enterprise customers)
 - **Secure Portal**: https://support.plcautopilot.com
 

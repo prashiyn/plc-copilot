@@ -477,4 +477,4 @@ This session delivered transformative features that establish PLCAutoPilot as th
 
 *Document Created: December 22, 2025*
 *Project: PLCAutoPilot v1.3*
-*Repository: github.com/chatgptnotes/plcautopilot.com*
+*Repository: github.com/prashiyn/plc-copilot*

@@ -8,7 +8,7 @@ PLCAutoPilot now includes comprehensive AI-powered features based on Schneider E
 
 - **Version**: 1.3
 - **Last Updated**: 2025-12-23
-- **Repository**: https://github.com/chatgptnotes/plcautopilot.com
+- **Repository**: https://github.com/prashiyn/plc-copilot
 
 ## AI Features Implemented
 
@@ -377,8 +377,8 @@ Each request builds upon the previous code.
 - **Community Forum**: Coming soon
 
 ### Contact
-- **Email**: support@plcautopilot.com
-- **GitHub**: https://github.com/chatgptnotes/plcautopilot.com
+- **Email**: support@plcai.com
+- **GitHub**: https://github.com/prashiyn/plc-copilot
 - **Issues**: Use GitHub Issues
 
 ## Standards and Compliance
@@ -428,4 +428,4 @@ Copyright © 2025 PLCAutoPilot. All rights reserved.
 
 ---
 
-**PLCAutoPilot v1.3** | Last Updated: 2025-12-23 | github.com/chatgptnotes/plcautopilot.com
+**PLCAutoPilot v1.3** | Last Updated: 2025-12-23 | github.com/prashiyn/plc-copilot

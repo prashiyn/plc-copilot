@@ -36,7 +36,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000)
 
 ### Deployment
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/chatgptnotes/plcautopilot.com)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/prashiyn/plc-copilot)
 
 ---
 

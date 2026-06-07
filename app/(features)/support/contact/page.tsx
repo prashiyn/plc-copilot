@@ -165,8 +165,8 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Email</p>
-                  <a href="mailto:support@plcautopilot.com" className="text-sm text-blue-600 hover:text-blue-700">
-                    support@plcautopilot.com
+                  <a href="mailto:support@plcai.com" className="text-sm text-blue-600 hover:text-blue-700">
+                    support@plcai.com
                   </a>
                 </div>
               </div>

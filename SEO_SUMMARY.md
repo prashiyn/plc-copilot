@@ -316,7 +316,7 @@
 - Blog: https://plcautopilot-nextjs-b1x6t2o5b-chatgptnotes-6366s-projects.vercel.app/blog
 
 **Git Repository:**
-- https://github.com/chatgptnotes/plcautopilot.com
+- https://github.com/prashiyn/plc-copilot
 
 **Build Status:**
 - ✅ All pages building successfully

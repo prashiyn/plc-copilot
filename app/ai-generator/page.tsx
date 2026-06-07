@@ -468,7 +468,7 @@ export default function AIGeneratorPage() {
 
         {/* Footer */}
         <footer className="text-xs text-gray-500 text-center py-8 mt-8 border-t border-white/10">
-          PLCAutoPilot v1.5 | AI-Powered PLC Programming | Last Updated: 2025-12-25 | github.com/chatgptnotes/plcautopilot.com
+          PLCAutoPilot v1.5 | AI-Powered PLC Programming | Last Updated: 2025-12-25 | github.com/prashiyn/plc-copilot
         </footer>
       </main>
     </div>

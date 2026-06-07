@@ -574,7 +574,7 @@ curl -X POST https://api.anthropic.com/v1/messages \
 ## Support
 
 For issues:
-- GitHub: https://github.com/chatgptnotes/plcautopilot.com/issues
+- GitHub: https://github.com/prashiyn/plc-copilot/issues
 - API Docs: https://docs.anthropic.com/
 - Migration Guide: CLAUDE_API_MIGRATION.md
 

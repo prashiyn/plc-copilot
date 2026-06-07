@@ -491,7 +491,7 @@ The application is ready for:
 
 **Version**: 1.3
 **Last Updated**: 2025-12-23
-**Repository**: https://github.com/chatgptnotes/plcautopilot.com
+**Repository**: https://github.com/prashiyn/plc-copilot
 **Live Demo**: http://localhost:3001 (development)
 **Production**: https://plcautopilot.com (when deployed)
 

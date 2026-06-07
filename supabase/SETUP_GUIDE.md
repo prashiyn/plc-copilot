@@ -263,7 +263,7 @@ ORDER BY name;
 
 1. Authentication > **Users**
 2. Click **Invite User**
-3. Enter email: test@plcautopilot.com
+3. Enter email: test@plcai.com
 4. Click **Invite User**
 
 #### Verify Profile Created
@@ -271,7 +271,7 @@ ORDER BY name;
 ```sql
 SELECT id, email, full_name, subscription_tier
 FROM public.profiles
-WHERE email = 'test@plcautopilot.com';
+WHERE email = 'test@plcai.com';
 ```
 
 **Expected:** Profile automatically created via trigger.
@@ -300,7 +300,7 @@ INSERT INTO users (
   auth_id
 )
 VALUES (
-  'test@plcautopilot.com',
+  'test@plcai.com',
   'Test User',
   'admin',
   '<organization_id_from_above>',
