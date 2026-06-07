@@ -134,7 +134,7 @@ Generates pulse of PT duration on rising edge
 ## MANDATORY Templates
 
 ### Primary Template (To Be Created)
-**Location**: `/Users/murali/1backup/plcautopilot.com/plc_automation/create_sequential_s7_1200.py`
+**Location**: `/media/prashanth/extmnt1/plc/plc-copilot/plc_automation/create_sequential_s7_1200.py`
 
 **Approach**: Use Siemens TIA Portal Openness API
 

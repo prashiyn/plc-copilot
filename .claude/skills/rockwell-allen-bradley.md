@@ -81,7 +81,7 @@ Start_PB, Stop_PB, Motor_Contactor (much cleaner!)
 ## MANDATORY Templates
 
 ### Primary Template (To Be Created)
-**Location**: `/Users/murali/1backup/plcautopilot.com/plc_automation/create_sequential_compactlogix.py`
+**Location**: `/media/prashanth/extmnt1/plc/plc-copilot/plc_automation/create_sequential_compactlogix.py`
 
 **Approach**: Use Rockwell FactoryTalk SDK (requires .NET)
 

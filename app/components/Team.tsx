@@ -3,7 +3,7 @@ import Icon from './Icon';
 export default function Team() {
   const team = [
     {
-      name: 'Dr. Murali BK',
+      name: 'Prashanth YN',
       role: 'Founder & Owner',
       credentials: 'AI & Industrial Automation Expert',
       education: 'Advanced Studies in AI & Machine Learning',

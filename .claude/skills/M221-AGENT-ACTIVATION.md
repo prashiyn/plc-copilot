@@ -62,21 +62,21 @@ This document defines when and how to automatically activate M221 Python script 
 ### PRIMARY TEMPLATES (Choose one based on task):
 
 **1. create_sequential_4lights_IL.py**
-- **Path**: `/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_IL.py`
+- **Path**: `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_IL.py`
 - **Use When**: User wants Instruction List (IL) programming
 - **Use When**: User wants pure text-based logic
 - **Use When**: User mentions "IL" or "instruction list"
 - **Features**: 4 lights, 5 rungs, 3 timers, template modification
 
 **2. create_sequential_4lights_LD.py**
-- **Path**: `/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_LD.py`
+- **Path**: `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_LD.py`
 - **Use When**: User wants Ladder Diagram (LD)
 - **Use When**: User wants visual representation
 - **Use When**: User mentions "ladder" or "LD"
 - **Features**: Dual representation (Ladder + IL), 10-column grid, 4 lights
 
 **3. create_sequential_lights_IL.py**
-- **Path**: `/Users/murali/1backup/plcautopilot.com/create_sequential_lights_IL.py`
+- **Path**: `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_lights_IL.py`
 - **Use When**: User wants simpler version
 - **Use When**: User has 3 or fewer outputs
 - **Use When**: Learning or basic examples needed
@@ -273,9 +273,9 @@ After generating M221 program, verify:
 ### Script Locations (Memorize These):
 
 ```
-/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_IL.py
-/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_LD.py
-/Users/murali/1backup/plcautopilot.com/create_sequential_lights_IL.py
+/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_IL.py
+/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_LD.py
+/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_lights_IL.py
 ```
 
 ---

@@ -20,9 +20,9 @@ This directory contains expert AI skills for programming all major PLC platforms
 - **Version**: 1.2
 - **File Format**: .smbp (single XML)
 - **Mandatory Templates**:
-  - `/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_IL.py`
-  - `/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_LD.py`
-  - `/Users/murali/1backup/plcautopilot.com/create_sequential_lights_IL.py`
+  - `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_IL.py`
+  - `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_LD.py`
+  - `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_lights_IL.py`
 - **Use For**: Simple sequential control, timers, basic I/O
 - **Activation**: M221, TM221, sequential lights, ladder logic
 

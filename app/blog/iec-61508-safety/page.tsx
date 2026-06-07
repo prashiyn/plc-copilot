@@ -56,7 +56,7 @@ export default function IEC61508Safety() {
     "description": "Master functional safety in PLC programming with complete IEC 61508 implementation guide",
     "author": {
       "@type": "Person",
-      "name": "Dr. Murali BK"
+      "name": "Prashanth YN"
     },
     "publisher": {
       "@type": "Organization",

@@ -5,7 +5,7 @@
 ### Step 1: Start the Development Server
 
 ```bash
-cd /Users/murali/1backup/plcautopilot.com/plcautopilot-nextjs
+cd /media/prashanth/extmnt1/plc/plc-copilot/plcautopilot-nextjs
 npm run dev
 ```
 

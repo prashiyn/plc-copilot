@@ -58,7 +58,7 @@ M241_Project.smbp (ZIP archive)
 3. ZIP into .smbp archive
 
 ### Primary Template (To Be Created)
-**Location**: `/Users/murali/1backup/plcautopilot.com/plc_automation/create_sequential_m241.py`
+**Location**: `/media/prashanth/extmnt1/plc/plc-copilot/plc_automation/create_sequential_m241.py`
 
 **Pattern**:
 ```python

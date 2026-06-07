@@ -45,9 +45,9 @@ export const metadata: Metadata = {
     "PLC development tool",
   ],
   authors: [
-    { name: "Dr. Murali BK", url: "https://plcautopilot.com" }
+    { name: "Prashanth YN", url: "https://plcautopilot.com" }
   ],
-  creator: "Dr. Murali BK",
+  creator: "Prashanth YN",
   publisher: "Dr.M Hope Softwares",
   formatDetection: {
     email: false,
@@ -132,7 +132,7 @@ export default function RootLayout({
               "softwareVersion": "1.4",
               "author": {
                 "@type": "Person",
-                "name": "Dr. Murali BK"
+                "name": "Prashanth YN"
               },
               "publisher": {
                 "@type": "Organization",
@@ -157,7 +157,7 @@ export default function RootLayout({
               "description": "AI-powered PLC programming assistant for industrial automation",
               "founder": {
                 "@type": "Person",
-                "name": "Dr. Murali BK"
+                "name": "Prashanth YN"
               },
               "sameAs": [
                 "https://x.com/plcautopilot",

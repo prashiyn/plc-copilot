@@ -1065,17 +1065,17 @@ For latest information, consult:
 **CRITICAL**: For ANY M221 Schneider task, you MUST use these three Python scripts as primary templates:
 
 ### 1. create_sequential_4lights_IL.py ⭐ PRIMARY TEMPLATE
-**Location**: `/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_IL.py`
+**Location**: `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_IL.py`
 **Use**: Instruction List (IL) programming, template modification approach
 **Outputs**: 4 sequential lights (0s, 3s, 6s, 9s delays), 5 rungs, 3 timers
 
 ### 2. create_sequential_4lights_LD.py ⭐ PRIMARY TEMPLATE
-**Location**: `/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_LD.py`
+**Location**: `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_LD.py`
 **Use**: Ladder Diagram with dual representation (Ladder + IL)
 **Outputs**: Same as IL but with visual ladder elements, 10-column grid
 
 ### 3. create_sequential_lights_IL.py ⭐ PRIMARY TEMPLATE
-**Location**: `/Users/murali/1backup/plcautopilot.com/create_sequential_lights_IL.py`
+**Location**: `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_lights_IL.py`
 **Use**: Simpler 3-light version, easier to understand
 **Outputs**: 3 sequential lights (0s, 3s, 6s delays), 4 rungs, 2 timers
 

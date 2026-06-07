@@ -453,7 +453,7 @@ if __name__ == "__main__":
     main_program.finalize()
 
     # Save XML
-    output_file = "/Users/murali/1backup/plcautopilot.com/MotorControl_Universal.xml"
+    output_file = "/media/prashanth/extmnt1/plc/plc-copilot/MotorControl_Universal.xml"
     project.save(output_file)
 
     print(f"\nPLCopen XML saved to: {output_file}")

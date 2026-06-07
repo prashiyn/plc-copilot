@@ -56,7 +56,7 @@ export default function PLCProgrammingTutorial() {
     "description": "Master PLC programming from scratch. Learn ladder logic, function blocks, structured text, and real-world applications with step-by-step examples and best practices.",
     "author": {
       "@type": "Person",
-      "name": "Dr. Murali BK"
+      "name": "Prashanth YN"
     },
     "publisher": {
       "@type": "Organization",

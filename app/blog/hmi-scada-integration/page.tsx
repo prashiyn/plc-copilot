@@ -56,7 +56,7 @@ export default function HMIScadaIntegration() {
     "description": "Master HMI and SCADA integration with PLCs across all major platforms",
     "author": {
       "@type": "Person",
-      "name": "Dr. Murali BK"
+      "name": "Prashanth YN"
     },
     "publisher": {
       "@type": "Organization",

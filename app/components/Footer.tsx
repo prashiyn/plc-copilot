@@ -60,7 +60,7 @@ export default function Footer() {
 
         <div className="pt-8 border-t border-gray-800 text-center text-gray-400 text-sm space-y-2">
           <p>&copy; 2025 PLCAutoPilot. All rights reserved.</p>
-          <p>Founded by Dr. Murali BK | Powered by Dr.M Hope Softwares | A Bettroi Product</p>
+          <p>Founded by Prashanth YN | Powered by Dr.M Hope Softwares | A Bettroi Product</p>
           <p>Universal Multi-Platform Support: Siemens, Rockwell, Mitsubishi, Schneider, ABB, and 500+ PLC Brands</p>
           <p className="text-xs text-gray-500 mt-4">
             PLCAutoPilot v1.3 | Last Updated: 2025-12-23 | Multi-Platform AI Support Now Available |

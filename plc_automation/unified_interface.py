@@ -369,7 +369,7 @@ if __name__ == "__main__":
     siemens = quick_siemens("MotorControl_Siemens", "S7-1200")
     siemens.add_motor_startstop()
     siemens.compile()
-    siemens.export_xml("/Users/murali/1backup/plcautopilot.com/MotorControl_Siemens.xml")
+    siemens.export_xml("/media/prashanth/extmnt1/plc/plc-copilot/MotorControl_Siemens.xml")
 
     elapsed = time.time() - start_time
     print(f"Time: {elapsed:.2f}s")
@@ -382,7 +382,7 @@ if __name__ == "__main__":
     rockwell = quick_rockwell("MotorControl_Rockwell", "CompactLogix")
     rockwell.add_motor_startstop()
     rockwell.compile()
-    rockwell.export_xml("/Users/murali/1backup/plcautopilot.com/MotorControl_Rockwell.xml")
+    rockwell.export_xml("/media/prashanth/extmnt1/plc/plc-copilot/MotorControl_Rockwell.xml")
     print(f"Stats: {rockwell.get_stats()}")
 
     print("\n" + "=" * 70)

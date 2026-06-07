@@ -367,7 +367,7 @@ The application is structured to easily integrate with:
 
 ```bash
 # Navigate to project
-cd /Users/murali/1backup/plcautopilot.com/plcautopilot-nextjs
+cd /media/prashanth/extmnt1/plc/plc-copilot/plcautopilot-nextjs
 
 # Install dependencies (if needed)
 npm install

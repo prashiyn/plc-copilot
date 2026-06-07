@@ -171,16 +171,16 @@ When Claude Code encounters a choice:
 ### Always Allowed (Read/Write)
 
 ```
-/Users/murali/1backup/**
-/Users/murali/Desktop/**
-/Users/murali/Downloads/**
-/Users/murali/OneDrive/**
+/media/prashanth/extmnt1/plc/plc-copilot1backup/**
+/media/prashanth/extmnt1/plc/plc-copilotDesktop/**
+/media/prashanth/extmnt1/plc/plc-copilotDownloads/**
+/media/prashanth/extmnt1/plc/plc-copilotOneDrive/**
 ```
 
 ### Repository Paths
 
 ```
-/Users/murali/1backup/plcautopilot.com/**
+/media/prashanth/extmnt1/plc/plc-copilot/**
 ```
 
 All subdirectories and files within these paths are pre-approved.

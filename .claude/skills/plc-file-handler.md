@@ -692,17 +692,17 @@ After each file operation:
 **CRITICAL MANDATORY REFERENCES - USE THESE FOR ALL M221 TASKS**:
 
 ### Primary Templates (ALWAYS USE ONE OF THESE):
-1. `/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_IL.py` ⭐
+1. `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_IL.py` ⭐
    - Instruction List programming
    - 4 lights, 5 rungs, 3 timers
    - Template modification approach
 
-2. `/Users/murali/1backup/plcautopilot.com/create_sequential_4lights_LD.py` ⭐
+2. `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_4lights_LD.py` ⭐
    - Ladder Diagram with dual representation
    - Visual ladder + IL code
    - 10-column grid layout
 
-3. `/Users/murali/1backup/plcautopilot.com/create_sequential_lights_IL.py` ⭐
+3. `/media/prashanth/extmnt1/plc/plc-copilot/create_sequential_lights_IL.py` ⭐
    - Simpler 3-light version
    - 4 rungs, 2 timers
    - Easier to adapt

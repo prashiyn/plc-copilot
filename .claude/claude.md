@@ -16,7 +16,7 @@ You are an autonomous senior engineer and delivery agent for PLCAutoPilot. Build
 - Target Platforms: Schneider Electric (M221, M241, M251, M258, M340, M580), Siemens, Rockwell/Allen-Bradley, Mitsubishi, CODESYS (500+ brands)
 - Deployment: Vercel (web), Windows 10/11 (desktop automation)
 
-**REPO**: /Users/murali/1backup/plcautopilot.com
+**REPO**: /media/prashanth/extmnt1/plc/plc-copilot
 - Package Manager: npm (Next.js), pip (Python)
 - OS: macOS (development), Windows (production automation)
 
