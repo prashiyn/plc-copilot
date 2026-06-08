@@ -2,48 +2,62 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+
+interface Stats {
+  totalProjects: number;
+  activeProjects: number;
+  completedProjects: number;
+  programsGenerated: number;
+  usageEvents: number;
+}
+
+interface RecentProject {
+  id: string;
+  name: string;
+  plcModel: string | null;
+  plcManufacturer: string | null;
+  status: string;
+  updatedAt: string | null;
+}
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
+  const { data: session } = useSession();
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
+    fetch('/api/dashboard/stats')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setStats(d.stats))
+      .catch(() => {});
+    fetch('/api/projects')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setRecentProjects((d.projects as RecentProject[]).slice(0, 5)))
+      .catch(() => {});
   }, []);
 
-  const stats = [
+  const statCards = [
     {
-      label: 'Programs Generated',
-      value: '24',
-      change: '+12%',
+      label: 'Total Projects',
+      value: stats?.totalProjects ?? 0,
       iconPath: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
     },
     {
-      label: 'PLCs Recommended',
-      value: '8',
-      change: '+5%',
-      iconPath: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'
+      label: 'Active Projects',
+      value: stats?.activeProjects ?? 0,
+      iconPath: 'M13 10V3L4 14h7v7l9-11h-7z'
     },
     {
-      label: 'Errors Fixed',
-      value: '16',
-      change: '+8%',
-      iconPath: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+      label: 'Completed',
+      value: stats?.completedProjects ?? 0,
+      iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
     },
     {
-      label: 'Downloads',
-      value: '32',
-      change: '+20%',
+      label: 'Programs Generated',
+      value: stats?.programsGenerated ?? 0,
       iconPath: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'
     },
-  ];
-
-  const recentProjects = [
-    { name: 'Motor Start/Stop Control', plc: 'Schneider TM221', date: '2025-12-20', status: 'Completed' },
-    { name: 'Conveyor System', plc: 'Siemens S7-1200', date: '2025-12-19', status: 'In Progress' },
-    { name: 'Tank Level Control', plc: 'Rockwell CompactLogix', date: '2025-12-18', status: 'Completed' },
   ];
 
   const quickActions = [
@@ -79,7 +93,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.name || 'User'}!
+            Welcome back, {session?.user?.name || 'User'}!
           </h1>
           <p className="text-gray-600 mt-2">
             Here's what's happening with your automation projects today.
@@ -88,13 +102,12 @@ export default function DashboardPage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
+          {statCards.map((stat, index) => (
             <div key={index} className="bg-white rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
                 <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={stat.iconPath} />
                 </svg>
-                <span className="text-sm font-semibold text-green-600">{stat.change}</span>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
               <p className="text-sm text-gray-600">{stat.label}</p>
@@ -131,24 +144,38 @@ export default function DashboardPage() {
               </Link>
             </div>
             <div className="space-y-4">
-              {recentProjects.map((project, index) => (
-                <div key={index} className="border-b border-gray-100 pb-4 last:border-0">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{project.name}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{project.plc}</p>
-                      <p className="text-xs text-gray-500 mt-1">{project.date}</p>
+              {recentProjects.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  No projects yet.{' '}
+                  <Link href="/projects/active" className="text-blue-600 hover:text-blue-700">
+                    Create one
+                  </Link>
+                  .
+                </p>
+              ) : (
+                recentProjects.map((project) => (
+                  <div key={project.id} className="border-b border-gray-100 pb-4 last:border-0">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{project.name}</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {[project.plcManufacturer, project.plcModel].filter(Boolean).join(' ') || '—'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {project.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : ''}
+                        </p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        project.status === 'completed'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {project.status === 'completed' ? 'Completed' : 'In Progress'}
+                      </span>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      project.status === 'Completed'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {project.status}
-                    </span>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -164,10 +191,13 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Programs Generated</span>
-                  <span className="text-sm font-semibold text-gray-900">24 / 50</span>
+                  <span className="text-sm font-semibold text-gray-900">{stats?.programsGenerated ?? 0} / 50</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: '48%' }}></div>
+                  <div
+                    className="bg-blue-600 h-2 rounded-full"
+                    style={{ width: `${Math.min(((stats?.programsGenerated ?? 0) / 50) * 100, 100)}%` }}
+                  ></div>
                 </div>
               </div>
               <div>
