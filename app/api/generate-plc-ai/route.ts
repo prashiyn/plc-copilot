@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateM221Program } from '@/lib/claude';
+import { persistGeneratedProgramIfAuthed } from '@/lib/db/queries';
 
 interface M221ProgramData {
   projectName: string;
@@ -76,6 +77,13 @@ export async function POST(request: NextRequest) {
 
     // Generate the .smbp XML content
     const smbpContent = generateSmbpXml(programData, plcModel || 'TM221CE16T');
+
+    await persistGeneratedProgramIfAuthed({
+      programCode: smbpContent,
+      programFormat: '.smbp',
+      fileName: `${programData.projectName}.smbp`,
+      generationParameters: { model: plcModel || 'TM221CE16T', manufacturer: manufacturer || 'Schneider Electric' },
+    });
 
     return NextResponse.json({
       success: true,

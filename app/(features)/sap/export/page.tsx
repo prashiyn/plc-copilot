@@ -131,6 +131,12 @@ export default function SAPExportPage() {
           <p className="text-gray-600">
             Export PLC projects to SAP ERP, S/4HANA, Plant Maintenance, or PLM systems
           </p>
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Simulated integration — generates representative SAP documents. Live SAP RFC/OData connectivity is planned after v1.5.
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

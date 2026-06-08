@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { askClaudeJson } from '@/lib/ai-recommend';
 
 interface ErrorRectificationRequest {
   programCode: string;
@@ -30,13 +31,14 @@ export async function POST(req: NextRequest) {
     const body: ErrorRectificationRequest = await req.json();
     const { programCode, platform, errorScreenshot, errorMessage, plcModel } = body;
 
-    // Analyze the error
+    // Prefer Claude; fall back to the deterministic pattern matcher.
+    const aiResponse = await rectifyWithAI(body);
+    if (aiResponse) {
+      return NextResponse.json(aiResponse);
+    }
+
     const analysis = analyzeError(errorMessage, platform, errorScreenshot);
-
-    // Generate solutions
     const solutions = generateSolutions(programCode, analysis, platform, plcModel);
-
-    // Provide recommendations
     const recommendations = generateRecommendations(analysis, platform);
 
     const response: RectificationResponse = {
@@ -53,6 +55,49 @@ export async function POST(req: NextRequest) {
       { error: 'Failed to process error rectification request' },
       { status: 500 }
     );
+  }
+}
+
+async function rectifyWithAI(
+  body: ErrorRectificationRequest,
+): Promise<RectificationResponse | null> {
+  try {
+    const system =
+      'You are an expert PLC programmer debugging IEC 61131-3 code. Analyze the ' +
+      'error and propose corrected code. Respond with JSON only — no prose, no markdown.';
+    const prompt = `PLATFORM: ${body.platform}
+PLC MODEL: ${body.plcModel}
+ERROR MESSAGE: ${body.errorMessage}
+
+PROGRAM CODE:
+${body.programCode}
+
+Respond with a JSON object EXACTLY in this shape (severity is one of
+low|medium|high|critical; confidence is 0-100):
+{
+  "analysis": {
+    "errorType": "", "severity": "medium",
+    "affectedComponents": [""], "rootCause": ""
+  },
+  "solutions": [
+    { "description": "", "correctedCode": "", "explanation": "", "confidence": 0 }
+  ],
+  "recommendations": [""]
+}`;
+
+    const parsed = (await askClaudeJson(system, prompt, 4096)) as RectificationResponse | null;
+    if (
+      !parsed ||
+      !parsed.analysis ||
+      !Array.isArray(parsed.solutions) ||
+      parsed.solutions.length === 0
+    ) {
+      return null;
+    }
+    return { ...parsed, success: true };
+  } catch (err) {
+    console.warn('AI rectification unavailable, using pattern fallback:', err);
+    return null;
   }
 }
 

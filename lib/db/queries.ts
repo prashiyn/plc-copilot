@@ -165,6 +165,17 @@ export async function createProgram(user: SessionUser, input: ProgramInput) {
   return row;
 }
 
+/** Persist a generated program for the current user if signed in. Never throws. */
+export async function persistGeneratedProgramIfAuthed(input: ProgramInput): Promise<void> {
+  try {
+    const user = await requireUser();
+    if (!user) return;
+    await createProgram(user, input);
+  } catch (err) {
+    console.warn('Could not persist generated program:', err);
+  }
+}
+
 export async function logUsage(
   user: SessionUser,
   eventType: string,

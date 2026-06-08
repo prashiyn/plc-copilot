@@ -65,11 +65,23 @@ npm run dev                   # http://localhost:3000
 - `AUTH_SECRET` is required (`openssl rand -base64 33`); already set in local `.env`.
 - **Verified (curl):** middleware redirects unauthenticated `/dashboard` → `/login` (307); CSRF + credentials sign-in sets a session; `/api/auth/session` returns `role`/`organizationId`; protected route then returns 200; wrong password yields no session; `/api/register` creates an `admin` user.
 
-### Phase 2 — Persistence for core features ⏳
-- CRUD for `projects`, `generated_programs`, `usage_analytics`; real dashboard counts.
+### Phase 2 — Persistence for core features ✅
+- `lib/db/queries.ts`: auth-scoped data access (by organization, falls back to user).
+- API: `/api/projects` (GET/POST), `/api/projects/[id]` (PATCH/DELETE), `/api/dashboard/stats` (GET), `/api/programs` (GET/POST). All 401 without a session.
+- Pages on real data: `projects/active` (create/complete/delete), `projects/completed` (reopen/delete), `dashboard` (real counts + recent projects).
+- `usage_analytics` logged on `project_created` / `program_generated`.
+- **Verify:** sign in (demo) → add a project on `/projects/active` → it shows on the dashboard and counts increment → "Mark Complete" moves it to `/projects/completed`.
+- **Remaining (folds into Phase 3):** wire the generator UI to POST to `/api/programs` so generated code persists automatically.
 
-### Phase 3 — Make mock routes real ⏳
-- `recommend-plc` / `recommend-solution` (model DB + Claude), `rectify-error` (Claude), decide `sap/*`.
+### Phase 3 — Make mock routes real ✅
+- `lib/ai-recommend.ts`: flattens the PLC model DB into a catalog + a Claude JSON helper (`askClaudeJson`). Throws without `ANTHROPIC_API_KEY` so callers fall back.
+- `recommend-plc`: Claude grounded by the catalog → existing `RecommendedPLC` shape; deterministic scorer as fallback (`source: 'ai' | 'fallback'`).
+- `recommend-solution`: Claude generates the rich `Solution[]`, fed into the existing ranking/comparison; deterministic generator as fallback.
+- `rectify-error`: Claude analysis + corrected code; pattern matcher as fallback.
+- Generator output auto-persists: `generate-plc` and `generate-plc-ai` save to `generated_programs` for signed-in users (never blocks generation).
+- `sap/*`: kept **simulated** for v1.5 — response carries `simulated: true` and an amber banner on the export page. Live SAP RFC/OData is post-v1.5.
+- **AI path needs `ANTHROPIC_API_KEY` in `.env`.** Without it, all routes use their fallbacks (verified). Model: `CLAUDE_MODEL` (default `claude-3-haiku-20240307`).
+- **Verify:** with a key set, `POST /api/recommend-plc` returns `source: 'ai'`; without it, `source: 'fallback'`. Generator persistence verified (programsGenerated increments for signed-in users).
 
 ### Phase 4 — Platform integrations ⏳
 - Real Siemens / Rockwell / Mitsubishi / CODESYS export.

@@ -20,6 +20,7 @@ interface SAPExportRequest {
 
 interface SAPExportResponse {
   success: boolean;
+  simulated: boolean;
   sapDocumentNumber?: string;
   materialDocument?: string;
   equipmentDocument?: string;
@@ -62,10 +63,11 @@ export async function POST(request: NextRequest) {
 
     const response: SAPExportResponse = {
       success: true,
+      simulated: true,
       sapDocumentNumber,
       materialDocument,
       equipmentDocument,
-      message: `Successfully exported project "${body.projectName}" to SAP ${body.sapSystem}`,
+      message: `[Simulated] Exported project "${body.projectName}" to SAP ${body.sapSystem}. Real SAP RFC/OData integration is planned post-v1.5.`,
       exportedFiles: {
         programFile: `${body.projectName}_PLC_Program.xml`,
         documentation: `${body.projectName}_Documentation.pdf`,

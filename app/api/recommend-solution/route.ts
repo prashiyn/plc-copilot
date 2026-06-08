@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { askClaudeJson, buildCatalogText } from '@/lib/ai-recommend';
 
 interface RecommendationRequest {
   projectDescription: string;
@@ -63,8 +64,10 @@ export async function POST(req: NextRequest) {
     const body: RecommendationRequest = await req.json();
     const { projectDescription, criteria, constraints } = body;
 
-    // Generate solutions based on criteria
-    const solutions = generateSolutions(projectDescription, constraints);
+    // Prefer Claude grounded by the catalog; fall back to deterministic solutions.
+    const solutions =
+      (await generateSolutionsWithAI(projectDescription, constraints)) ??
+      generateSolutions(projectDescription, constraints);
 
     // Rank solutions based on criteria
     const ranked = rankSolutions(solutions, criteria);
@@ -87,6 +90,48 @@ export async function POST(req: NextRequest) {
       { error: 'Failed to generate recommendation' },
       { status: 500 }
     );
+  }
+}
+
+async function generateSolutionsWithAI(
+  projectDescription: string,
+  constraints?: RecommendationRequest['constraints'],
+): Promise<Solution[] | null> {
+  try {
+    const system =
+      'You are a senior controls engineer. Propose PLC solutions strictly from ' +
+      'the provided catalog. Respond with JSON only — no prose, no markdown.';
+    const prompt = `CATALOG (manufacturer | series | model | specs):
+${buildCatalogText()}
+
+PROJECT: ${projectDescription}
+CONSTRAINTS (JSON): ${JSON.stringify(constraints ?? {}, null, 2)}
+
+Propose 4 distinct solutions FROM THE CATALOG. Respond with a JSON array of 4
+objects EXACTLY in this shape (numbers are numeric, scores 1-10, costs in USD):
+[{
+  "name": "", "platform": "", "model": "", "description": "",
+  "cost": { "hardware": 0, "software": 0, "installation": 0, "maintenance": 0, "total": 0 },
+  "complexity": { "score": 0, "setupTime": "", "programmingDifficulty": "", "maintenanceLevel": "" },
+  "robustness": { "score": 0, "reliability": "", "safetyRating": "", "environmentalRating": "", "mtbf": "" },
+  "pros": [""], "cons": [""], "bestFor": [""],
+  "specifications": { "ioPoints": 0, "memoryKb": 0, "scanTime": "", "communicationProtocols": [""], "expandability": "" }
+}]`;
+
+    const parsed = await askClaudeJson(system, prompt, 4096);
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    // Light validation of the fields the ranker depends on.
+    const valid = parsed.filter(
+      (s): s is Solution =>
+        !!s &&
+        typeof s.cost?.total === 'number' &&
+        typeof s.complexity?.score === 'number' &&
+        typeof s.robustness?.score === 'number',
+    );
+    return valid.length >= 2 ? valid : null;
+  } catch (err) {
+    console.warn('AI solution generation unavailable, using fallback:', err);
+    return null;
   }
 }
 

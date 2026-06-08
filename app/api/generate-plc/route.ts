@@ -4,6 +4,7 @@ import { generateSchneiderProgram } from './generators/schneider';
 import { generateSiemensProgram } from './generators/siemens';
 import { generateRockwellProgram } from './generators/rockwell';
 import { generateGenericProgram } from './generators/generic';
+import { persistGeneratedProgramIfAuthed } from '@/lib/db/queries';
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,6 +59,13 @@ export async function POST(request: NextRequest) {
     } else {
       generatedProgram = await generateGenericProgram(logic, plcModel);
     }
+
+    await persistGeneratedProgramIfAuthed({
+      programCode: generatedProgram.content,
+      programFormat: plcModel.fileExtension,
+      fileName: generatedProgram.filename,
+      generationParameters: { model: plcModel.model, manufacturer: plcModel.manufacturer },
+    });
 
     return NextResponse.json({
       content: generatedProgram.content,

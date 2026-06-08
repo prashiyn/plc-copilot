@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { recommendPLCsWithAI } from '@/lib/ai-recommend';
 
 interface ProjectRequirements {
   applicationName: string;
@@ -50,10 +51,19 @@ export async function POST(req: NextRequest) {
     // Add 20% buffer if expansion needed
     const requiredIO = requirements.expansionNeeded ? Math.ceil(totalIO * 1.2) : totalIO;
 
-    // Generate recommendations based on requirements
-    const recommendations = generateRecommendations(requirements, requiredIO);
-
-    return NextResponse.json({ recommendations });
+    // Prefer Claude grounded by the model catalog; fall back to the
+    // deterministic scorer if the AI is unavailable or errors.
+    try {
+      const recommendations = await recommendPLCsWithAI(
+        requirements as unknown as Record<string, unknown>,
+        requiredIO,
+      );
+      return NextResponse.json({ recommendations, source: 'ai' });
+    } catch (aiError) {
+      console.warn('AI recommendation unavailable, using deterministic fallback:', aiError);
+      const recommendations = generateRecommendations(requirements, requiredIO);
+      return NextResponse.json({ recommendations, source: 'fallback' });
+    }
   } catch (error) {
     console.error('Error generating PLC recommendations:', error);
     return NextResponse.json(
