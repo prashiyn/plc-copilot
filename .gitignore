@@ -10,8 +10,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -85,3 +83,21 @@ tmp/
 *.pkg
 *.deb
 *.rpm
+
+# Vendored 3rd-party software install (download separately, see INSTALLATION_NOTES.md)
+/Schneider Electric/
+
+# Claude Code / agent runtime artifacts (anchored to repo root so app/ routes are unaffected)
+/projects/
+/file-history/
+/todos/
+/shell-snapshots/
+/statsig/
+/debug/
+/ide/
+/history.jsonl
+
+# Reference PDFs and archives (large; keep locally, not in git)
+*.pdf
+*.zip
+/ilovepdf_split-range/

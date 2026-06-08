@@ -27,13 +27,15 @@ Modern Next.js application for PLCAutoPilot marketing and future AI assistant.
 - Framer Motion 11.15.0
 
 ### Quick Start
+The Next.js app lives at the repository root (`app/`, `lib/`):
 ```bash
-cd plcautopilot-nextjs
 npm install
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
+
+> Requires `ANTHROPIC_API_KEY` (see `.env.example`). Claude is the AI provider that powers the live `app/api/ai-*` routes.
 
 ### Deployment
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/prashiyn/plc-copilot)
@@ -117,17 +119,18 @@ See `plc_automation/README.md` for full API reference
 
 ## 📚 Documentation
 
-| File | Description |
+All documentation is organized under [`docs/`](docs/) (see [`docs/README.md`](docs/README.md) for the full index):
+
+| Path | Description |
 |------|-------------|
-| `README.md` | This file - Project overview |
-| **`plc_automation/README.md`** | **Fast automation API reference (NEW)** |
-| `AUTOMATION_APPROACHES.md` | Analysis of automation methods |
-| `COMPLETE_WORKFLOW_SUMMARY.md` | Complete automation workflow (546 lines) |
-| `MOTOR_STARTSTOP_README.md` | Motor start/stop program details |
-| `WIRING_AND_TESTING_GUIDE.md` | Hardware installation guide |
-| `VISION_AGENT_COMPLETE.md` | Vision agent summary (legacy) |
-| `VISION_AGENT_SETUP.md` | Vision setup instructions (legacy) |
-| `VISION_CAPABILITIES.md` | Vision features documentation (legacy) |
+| `README.md` / `CHANGELOG.md` / `CLAUDE.md` | Project overview, version history, agent guidelines (root) |
+| [`docs/ai/`](docs/ai/) | AI feature docs, Claude API migration, vision agent (legacy) |
+| [`docs/automation/`](docs/automation/) | Python automation, workflows, wiring & testing guides |
+| [`docs/architecture/`](docs/architecture/) | Digital-twin, simulation, on-prem, competitive analysis |
+| [`docs/deployment/`](docs/deployment/) | Install notes, deployment & Supabase setup |
+| [`docs/marketing/`](docs/marketing/) | SEO and LinkedIn strategy |
+| [`docs/product/`](docs/product/) | Feature navigation guide, quick reference |
+| `plc_automation/README.md` | Fast automation API reference |
 
 ---
 
@@ -211,36 +214,26 @@ agent.type_text("Hello World!")
 ## 📁 Project Structure
 
 ```
-plcautopilot.com/
-├── Fast PLC Automation (NEW)
-│   ├── plc_automation/
-│   │   ├── __init__.py              # Package exports
-│   │   ├── ecostruxure_api.py       # Schneider API wrapper
-│   │   ├── plcopen_xml.py           # Universal PLCopen XML
-│   │   ├── unified_interface.py     # Platform dispatcher
-│   │   ├── tests.py                 # Test suite (17 tests)
-│   │   └── README.md                # Full API documentation
-│   ├── program_motor_startstop_fast.py  # Fast demo (2-3s)
-│   └── AUTOMATION_APPROACHES.md     # Technical analysis
+plc-copilot/                         # repo root = the Next.js web app
+├── app/                             # Next.js routes, pages, and API handlers
+│   ├── api/ai-*/                    #   live Claude-powered endpoints
+│   ├── (features)/                  #   dashboard, generator, copilot, chat, ...
+│   ├── (platforms)/                 #   schneider, siemens
+│   └── components/ context/ data/
+├── lib/                             # claude.ts, plc model DB, simulation/ (digital twin)
+├── public/                          # static assets
+├── supabase/                        # SQL schema (configured, not yet wired in code)
 │
-├── Legacy Python Scripts (PyAutoGUI)
-│   ├── desktop_ai_agent.py         # Core automation agent
-│   ├── vision_agent.py             # Vision-enabled agent
-│   ├── program_motor_startstop.py  # Motor control (60s)
-│   └── auto_download_plc.py        # PLC download
+├── plc_automation/                  # Fast Python automation (Schneider API + PLCopen XML)
+├── plc_file_handler/                # PLC file parsers / converters / generators
+├── *.py                             # Legacy PyAutoGUI scripts (vision_agent, program_*, create_*)
 │
-├── Documentation
-│   ├── COMPLETE_WORKFLOW_SUMMARY.md
-│   ├── MOTOR_STARTSTOP_README.md
-│   └── WIRING_AND_TESTING_GUIDE.md
-│
-├── Next.js Web App
-│   └── plcautopilot-nextjs/        # Web application
-│
-└── Configuration
-    ├── config.json                  # Software configuration
-    └── requirements.txt             # Legacy dependencies
+├── docs/                            # all project documentation (categorized)
+├── README.md / CHANGELOG.md / CLAUDE.md
+└── config.json / requirements.txt   # Python automation config & deps
 ```
+
+> Note: large reference material (the vendored `Schneider Electric/` install, manuals, and conversation logs) is kept locally but excluded from git — see `.gitignore` and `docs/deployment/INSTALLATION_NOTES.md`.
 
 ---
 
