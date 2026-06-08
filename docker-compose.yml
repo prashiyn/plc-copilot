@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: plc-copilot-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: plc
+      POSTGRES_PASSWORD: plc
+      POSTGRES_DB: plc_copilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - plc_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plc -d plc_copilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  plc_pgdata:
