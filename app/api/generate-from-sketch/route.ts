@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Call Python skill's generator
     const pythonProcess = spawn('python3', [
-      join(process.cwd(), 'plc_file_handler', 'cli.py'),
+      join(process.cwd(), 'automation', 'plc_file_handler', 'cli.py'),
       'generate',
       '--platform',
       platform,

@@ -102,18 +102,21 @@ automation.export_xml("MotorControl_Siemens.xml")
 # Time: <1 second, then import XML into TIA Portal
 ```
 
+> All Python automation lives in `automation/` — run these from there: `cd automation`
+
 **3. Run Fast Motor Start/Stop:**
 ```bash
+cd automation
 python program_motor_startstop_fast.py
 ```
 
 **4. Run Tests:**
 ```bash
-python plc_automation/tests.py
+python automation/plc_automation/tests.py
 ```
 
 **5. Complete Documentation:**
-See `plc_automation/README.md` for full API reference
+See `automation/plc_automation/README.md` for full API reference
 
 ---
 
@@ -130,7 +133,7 @@ All documentation is organized under [`docs/`](docs/) (see [`docs/README.md`](do
 | [`docs/deployment/`](docs/deployment/) | Install notes, deployment & Supabase setup |
 | [`docs/marketing/`](docs/marketing/) | SEO and LinkedIn strategy |
 | [`docs/product/`](docs/product/) | Feature navigation guide, quick reference |
-| `plc_automation/README.md` | Fast automation API reference |
+| `automation/plc_automation/README.md` | Fast automation API reference |
 
 ---
 
@@ -224,13 +227,16 @@ plc-copilot/                         # repo root = the Next.js web app
 ├── public/                          # static assets
 ├── supabase/                        # SQL schema (configured, not yet wired in code)
 │
-├── plc_automation/                  # Fast Python automation (Schneider API + PLCopen XML)
-├── plc_file_handler/                # PLC file parsers / converters / generators
-├── *.py                             # Legacy PyAutoGUI scripts (vision_agent, program_*, create_*)
+├── automation/                      # all Python automation (run from here)
+│   ├── plc_automation/              #   Fast automation (Schneider API + PLCopen XML)
+│   ├── plc_file_handler/            #   PLC file parsers / converters / generators (cli.py)
+│   ├── samples/                     #   sample .smbp / .xml project files
+│   ├── *.py                         #   PyAutoGUI / vision scripts (vision_agent, program_*, create_*)
+│   └── config.json / requirements.txt
 │
 ├── docs/                            # all project documentation (categorized)
-├── README.md / CHANGELOG.md / CLAUDE.md
-└── config.json / requirements.txt   # Python automation config & deps
+├── archive/legacy-site/             # retired pre-Next.js static site (index.html, styles.css, script.js)
+└── README.md / CHANGELOG.md / CLAUDE.md
 ```
 
 > Note: large reference material (the vendored `Schneider Electric/` install, manuals, and conversation logs) is kept locally but excluded from git — see `.gitignore` and `docs/deployment/INSTALLATION_NOTES.md`.
