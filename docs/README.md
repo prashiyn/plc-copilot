@@ -2,6 +2,8 @@
 
 Project docs, grouped by topic. (Moved out of the repo root during the v1.4→v1.5 cleanup.)
 
+**Start here:** [RUNBOOK.md](RUNBOOK.md) — how to set up, run, and verify the app; updated as each v1.5 phase lands.
+
 ## ai/ — AI features & Claude integration
 - [AI_FEATURES_README.md](ai/AI_FEATURES_README.md) — AI feature overview
 - [AI_FEATURES_SUMMARY.md](ai/AI_FEATURES_SUMMARY.md) — summary of AI capabilities
