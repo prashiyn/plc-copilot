@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -9,62 +10,27 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const signInWith = async (creds: { email: string; password: string }) => {
+    setError('');
     setIsLoading(true);
-
-    // Development mode - bypass authentication
-    if (process.env.NODE_ENV === 'development' || email === 'demo@plcai.com') {
-      // Store demo user in localStorage
-      localStorage.setItem('user', JSON.stringify({
-        id: 'demo-user',
-        email: email || 'demo@plcai.com',
-        name: 'Demo User',
-        role: 'user',
-        authenticated: true
-      }));
-
-      setTimeout(() => {
-        router.push('/generator');
-      }, 500);
+    const res = await signIn('credentials', { ...creds, redirect: false });
+    setIsLoading(false);
+    if (res?.error) {
+      setError('Invalid email or password.');
       return;
     }
-
-    // In production, this would connect to Supabase
-    try {
-      // TODO: Implement actual Supabase authentication
-      // const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-      // For now, simulate login
-      setTimeout(() => {
-        localStorage.setItem('user', JSON.stringify({
-          id: 'user-' + Date.now(),
-          email,
-          name: email.split('@')[0],
-          role: 'user',
-          authenticated: true
-        }));
-        router.push('/generator');
-      }, 1000);
-    } catch (error) {
-      console.error('Login error:', error);
-      alert('Login failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    router.push('/dashboard');
+    router.refresh();
   };
 
-  const handleDemoLogin = () => {
-    localStorage.setItem('user', JSON.stringify({
-      id: 'demo-user',
-      email: 'demo@plcai.com',
-      name: 'Demo User',
-      role: 'user',
-      authenticated: true
-    }));
-    router.push('/generator');
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    signInWith({ email, password });
   };
+
+  const handleDemoLogin = () => signInWith({ email: 'demo@plcai.com', password: 'demo1234' });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center px-4">
@@ -123,6 +89,12 @@ export default function LoginPage() {
                 Forgot password?
               </Link>
             </div>
+
+            {error && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+                {error}
+              </p>
+            )}
 
             <button
               type="submit"

@@ -50,17 +50,20 @@ npm run dev                   # http://localhost:3000
 - Removed dead deps (Supabase, Gemini); archived `supabase/` → `archive/supabase/`.
 - **Verify:** `docker compose up -d && npm run db:migrate` → 14 tables; `npm run build` passes.
 
-### Phase 1 — Auth & users (Auth.js v5) 🚧
-Planned steps (check off as implemented):
-- [ ] Install `next-auth@5` (Auth.js v5) + `bcryptjs`.
-- [ ] `auth.ts` config with Credentials provider (email + bcrypt-verified password) backed by the `users` table.
-- [ ] JWT session strategy carrying `userId`, `role`, `organizationId`.
-- [ ] `app/api/auth/[...nextauth]/route.ts` handler + `AUTH_SECRET` in `.env`/`.env.example`.
-- [ ] Sign-up route/action: create org + user (bcrypt hash), seed first user as `superadmin`.
-- [ ] Replace the localStorage demo-login in `app/login` with real Auth.js sign-in; keep a dev "Continue as Demo User" seed path.
-- [ ] `middleware.ts` protecting `(features)/*`; redirect unauthenticated → `/login`.
-- [ ] Surface session (name/role) in the app shell; wire sign-out.
-- **Verify:** sign up → row in `users`; protected route redirects when logged out; session persists across reload; role available server-side.
+### Phase 1 — Auth & users (Auth.js v5) ✅
+- [x] `next-auth@5` (Auth.js v5) + `bcryptjs` installed.
+- [x] Split config: `auth.config.ts` (edge-safe, used by middleware) + `auth.ts` (Node, Credentials provider with bcrypt against `users`).
+- [x] JWT session strategy carrying `id`, `role`, `organizationId` (types in `next-auth.d.ts`).
+- [x] `app/api/auth/[...nextauth]/route.ts` handler + `AUTH_SECRET` in `.env`/`.env.example`.
+- [x] `app/api/register` (creates org + user, bcrypt hash, first user = `superadmin` else `admin`) + `app/signup` page.
+- [x] Real Auth.js sign-in in `app/login`; "Continue as Demo User" signs in the seeded demo account.
+- [x] `middleware.ts` protects the `(features)` route group; unauthenticated → `/login?callbackUrl=...`.
+- [x] Session + sign-out surfaced in `Sidebar`; `(features)/layout` wraps children in `SessionProvider`.
+
+**Auth runbook:**
+- Seed the dev demo user: `npm run db:seed` → **demo@plcai.com / demo1234** (superadmin).
+- `AUTH_SECRET` is required (`openssl rand -base64 33`); already set in local `.env`.
+- **Verified (curl):** middleware redirects unauthenticated `/dashboard` → `/login` (307); CSRF + credentials sign-in sets a session; `/api/auth/session` returns `role`/`organizationId`; protected route then returns 200; wrong password yields no session; `/api/register` creates an `admin` user.
 
 ### Phase 2 — Persistence for core features ⏳
 - CRUD for `projects`, `generated_programs`, `usage_analytics`; real dashboard counts.

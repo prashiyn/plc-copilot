@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -20,7 +21,12 @@ interface MenuSection {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+
+  const user = session?.user;
+  const displayName = user?.name || user?.email || 'Account';
+  const initial = displayName.charAt(0).toUpperCase();
 
   const menuSections = [
     {
@@ -427,12 +433,26 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="p-4 border-t border-gray-200">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold">U</span>
+                <span className="text-white font-semibold">{initial}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">User Account</p>
-                <p className="text-xs text-gray-500 truncate">Free Plan</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
+                <p className="text-xs text-gray-500 truncate capitalize">
+                  {user?.role ? `${user.role}` : 'Not signed in'}
+                </p>
               </div>
+              {user && (
+                <button
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+                  title="Sign out"
+                  aria-label="Sign out"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>
