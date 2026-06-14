@@ -76,6 +76,33 @@ This directory contains expert AI skills for programming all major PLC platforms
 
 ---
 
+### Mitsubishi Skills
+
+**9. mitsubishi.md** - MELSEC FX/Q/L/iQ-R Controller Skill
+- **Controllers**: FX5U, Q/L series, iQ-R
+- **Version**: 1.0
+- **File Format**: .gxw, .gx2, .gx3 (OLE2 compound)
+- **Software**: GX Works2, GX Works3
+- **Features**: Device addressing (X/Y/M/T/C/D), CC-Link, MC Protocol
+- **Use For**: Asia-Pacific plants, MELSEC automation
+- **Activation**: Mitsubishi, MELSEC, FX5U, iQ-R, GX Works, .gx3
+- **Market**: 15% global, 40%+ Asia
+
+---
+
+### CODESYS Skills
+
+**10. codesys.md** - Universal CODESYS V3 Skill
+- **Controllers**: 500+ brands (WAGO, ABB AC500, Festo, Eaton, etc.)
+- **Version**: 1.0
+- **File Format**: .project, .export (XML)
+- **Software**: CODESYS Development System V3
+- **Features**: All IEC 61131-3 languages, PLCopen XML import, multi-brand deployment
+- **Use For**: Vendor-agnostic IEC 61131-3, multi-OEM deployments
+- **Activation**: CODESYS, .project, .export, PLCopen, WAGO, ABB AC500
+
+---
+
 ### PLC File Handler
 
 **7. plc-file-handler.md** - Universal File Format Handler
@@ -137,6 +164,8 @@ Determine which PLC the user is working with:
 - Schneider M241 → `schneider-m241.md`
 - Siemens S7 → `siemens-s7.md`
 - Rockwell → `rockwell-allen-bradley.md`
+- Mitsubishi → `mitsubishi.md`
+- CODESYS / multi-brand → `codesys.md`
 
 ### Step 2: Load Appropriate Skill
 Read the skill file for that platform to understand:
@@ -182,6 +211,16 @@ Check against platform-specific validation checklist.
 - Studio 5000, RSLogix 5000
 - .ACD, EtherNet/IP, tag-based
 
+### Mitsubishi
+- FX5U, iQ-R, Q series, MELSEC
+- GX Works2, GX Works3
+- .gxw, .gx2, .gx3, X/Y/M addressing
+
+### CODESYS
+- CODESYS V3, .project, .export
+- WAGO, ABB AC500, Festo, Eaton
+- PLCopen XML, multi-brand IEC 61131-3
+
 ---
 
 ## Development Roadmap
@@ -191,15 +230,17 @@ Check against platform-specific validation checklist.
 - ✅ Schneider M241/M251/M258 skill
 - ✅ Siemens S7-1200/S7-1500 skill
 - ✅ Rockwell ControlLogix/CompactLogix skill
+- ✅ Mitsubishi MELSEC skill (PLCopen path)
+- ✅ CODESYS universal skill (PLCopen path)
 - ✅ M221 knowledge base
 - ✅ Agent activation rules
 
 ### In Progress
-- 🔄 Mitsubishi skill (iQ-R, FX, Q series)
-- 🔄 CODESYS universal skill (500+ brands)
 - 🔄 Python template creation for M241
 - 🔄 Python template creation for Siemens
 - 🔄 Python template creation for Rockwell
+- 🔄 Native .gx3 OLE2 parser (Mitsubishi)
+- 🔄 Native CODESYS .project generator
 
 ### Planned (v2.0)
 - ⏳ Omron skill (NJ/NX series)
@@ -221,7 +262,8 @@ Check against platform-specific validation checklist.
 | "M241 Modbus TCP" | schneider-m241.md | (to be created) |
 | "S7-1200 program" | siemens-s7.md | (to be created) |
 | "CompactLogix ladder" | rockwell-allen-bradley.md | (to be created) |
-| "CODESYS project" | (to be created) | (to be created) |
+| "FX5U program" | mitsubishi.md | PLCopen XML via unified_interface |
+| "CODESYS project" | codesys.md | PLCopen XML via unified_interface |
 
 ---
 

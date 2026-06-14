@@ -10,8 +10,8 @@ Cursor agent workflows for this repo. Each skill is a concise entry point; full 
 | [siemens-s7](siemens-s7/SKILL.md) | S7-1200/1500, TIA Portal |
 | [rockwell-allen-bradley](rockwell-allen-bradley/SKILL.md) | ControlLogix/CompactLogix, Studio 5000 |
 | [plc-file-handler](plc-file-handler/SKILL.md) | Parse/convert/generate any vendor PLC file |
-| [mitsubishi](mitsubishi/SKILL.md) | FX5U, iQ-R, Q series, GX Works (stub) |
-| [codesys](codesys/SKILL.md) | CODESYS V3, 500+ brands, IEC 61131-3 (stub) |
+| [mitsubishi](mitsubishi/SKILL.md) | FX5U, iQ-R, Q series, GX Works |
+| [codesys](codesys/SKILL.md) | CODESYS V3, 500+ brands, IEC 61131-3 |
 
 ## Full reference library (`.claude/skills/`)
 
@@ -25,8 +25,8 @@ Cursor agent workflows for this repo. Each skill is a concise entry point; full 
 | `siemens-s7.md` | Siemens addressing and patterns |
 | `rockwell-allen-bradley.md` | Tag-based Rockwell patterns |
 | `schneider-m241.md` | M241+ ZIP archive structure |
-| `mitsubishi.md` | *Planned* — MELSEC addressing and GX Works patterns |
-| `codesys.md` | *Planned* — CODESYS XML schema and multi-brand deployment |
+| `mitsubishi.md` | MELSEC addressing, GX Works, PLCopen import |
+| `codesys.md` | CODESYS project structure, multi-brand deployment |
 
 See also `.claude/skills/README.md` for the complete index.
 

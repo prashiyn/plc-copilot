@@ -3,44 +3,43 @@ name: mitsubishi
 description: Expert Mitsubishi MELSEC PLC programming via GX Works2/GX Works3. Use for Mitsubishi, MELSEC, FX5U, iQ-R, Q series, GX Works, .gx3, .gxw, or Asia-Pacific Mitsubishi automation tasks.
 ---
 
-# Mitsubishi PLC Programming (stub)
-
-> Full skill reference not yet written in `.claude/skills/`. Use this workflow plus `plc-file-handler` and PLCopen XML until a dedicated `.claude/skills/mitsubishi.md` lands.
+# Mitsubishi PLC Programming
 
 ## Before generating Mitsubishi programs
 
-1. Read `.claude/skills/plc-file-handler.md` — Mitsubishi section (`.gxw`, `.gx2`, `.gx3`, OLE2 compound format)
-2. Confirm controller family: FX (compact), Q/L (modular), iQ-R (high-performance)
+1. Read `.claude/skills/mitsubishi.md` (full skill reference)
+2. Confirm controller family: FX5U (compact), Q/L (modular), iQ-R (high-performance)
 3. Confirm software: GX Works2 vs GX Works3
 
 ## Critical facts
 
-- Project files use **Microsoft Compound File Binary Format (OLE2/CFBF)** — not plain XML
-- Primary languages: Ladder Diagram (LD), Structured Text (ST), SFC
-- Parser stub: `automation/plc_file_handler/parsers/mitsubishi_parser.py`
+- Native `.gxw`/`.gx2`/`.gx3` = **OLE2 compound files** — not plain XML
+- Device addressing: **X** (inputs), **Y** (outputs), **M** (internal), **T** (timers), **C** (counters), **D** (data)
+- **Preferred path**: PLCopen XML → import in GX Works
 
-## Preferred generation paths (current)
+## Template / API path
 
-1. **PLCopen XML** (recommended): `automation/plc_automation/` with `Platform.MITSUBISHI` → export XML → import in GX Works
-2. **Web API generator**: check `app/api/generate-plc/generators/` for Mitsubishi support
-3. **Direct `.gx3` manipulation**: via `plc_file_handler` when parser/generator is extended
+```python
+from plc_automation import PLCAutomation, Platform
+
+automation = PLCAutomation(Platform.MITSUBISHI)
+automation.create_project("MotorControl", "FX5U")
+automation.add_motor_startstop()
+automation.export_xml("MotorControl_Mitsubishi.xml")
+```
+
+Sample: `automation/samples/MotorControl_Universal.xml`
 
 ## Workflow
 
-1. Define I/O list, device assignments, and safety interlocks (E-stop)
+1. Define I/O device map (X/Y/M) and safety interlocks (E-stop, overload)
 2. Generate LD/ST logic per IEC 61131-3
-3. Export via PLCopen XML or platform converter
-4. Document GX Works import steps for target controller
-5. Flag safety-critical logic for certified engineer review
-
-## Planned (v2.0)
-
-- `.claude/skills/mitsubishi.md` — addressing, device memory, timer/counter conventions
-- Python templates analogous to M221 `create_sequential_*.py`
-- Full `.gx3` read/write via OLE2 parser
+3. Export PLCopen XML via `automation/plc_automation/`
+4. Import in GX Works → rebind `%I/%Q` to X/Y if needed
+5. Simulate (GX Simulator) before download; engineer review required
 
 ## Additional reference
 
-- `docs/architecture/PHASE_4_PLATFORM_INTEGRATIONS.md` — per-vendor export pipeline
-- `automation/plc_automation/plcopen_xml.py` — universal interchange format
-- Market context: ~15% global share, strong in Asia — see `.claude/skills/README.md`
+- `.claude/skills/plc-file-handler.md` — OLE2 format details
+- `automation/plc_file_handler/parsers/mitsubishi_parser.py` — parser stub
+- `docs/architecture/PHASE_4_PLATFORM_INTEGRATIONS.md`
