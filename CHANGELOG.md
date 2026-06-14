@@ -133,6 +133,10 @@ All notable changes to PLCAutoPilot will be documented in this file.
 
 ## Next Steps
 
+> v1.5 is in progress (Postgres + Auth.js + persistence + AI routes done; platform
+> integrations next). Deferred items live in
+> [docs/architecture/NEXT_VERSION_BACKLOG.md](docs/architecture/NEXT_VERSION_BACKLOG.md).
+
 ### Planned Features (v1.5+)
 - [ ] Siemens TIA Portal integration
 - [ ] Rockwell Studio 5000 support

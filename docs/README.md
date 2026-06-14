@@ -24,6 +24,8 @@ Project docs, grouped by topic. (Moved out of the repo root during the v1.4→v1
 - [Dual_Tank_IO_Assignment.md](automation/Dual_Tank_IO_Assignment.md) — sample I/O assignment
 
 ## architecture/ — system design
+- [PHASE_4_PLATFORM_INTEGRATIONS.md](architecture/PHASE_4_PLATFORM_INTEGRATIONS.md) — plan for real per-vendor export + the logic/IR pipeline (decisions resolved)
+- [NEXT_VERSION_BACKLOG.md](architecture/NEXT_VERSION_BACKLOG.md) — items deferred past v1.5 (keep current)
 - [DIGITAL_TWIN_ARCHITECTURE.md](architecture/DIGITAL_TWIN_ARCHITECTURE.md), [SIMULATION_AND_TESTING.md](architecture/SIMULATION_AND_TESTING.md) — simulation / digital twin (see `lib/simulation/`)
 - [ON_PREMISES_DEPLOYMENT.md](architecture/ON_PREMISES_DEPLOYMENT.md) — on-prem deployment
 - [COMPETITIVE_ANALYSIS.md](architecture/COMPETITIVE_ANALYSIS.md) — market positioning

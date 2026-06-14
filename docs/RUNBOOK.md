@@ -83,8 +83,9 @@ npm run dev                   # http://localhost:3000
 - **AI path needs `ANTHROPIC_API_KEY` in `.env`.** Without it, all routes use their fallbacks (verified). Model: `CLAUDE_MODEL` (default `claude-3-haiku-20240307`).
 - **Verify:** with a key set, `POST /api/recommend-plc` returns `source: 'ai'`; without it, `source: 'fallback'`. Generator persistence verified (programsGenerated increments for signed-in users).
 
-### Phase 4 — Platform integrations ⏳
-- Real Siemens / Rockwell / Mitsubishi / CODESYS export.
+### Phase 4 — Platform integrations 📝 (planning)
+- Real per-vendor export (Rockwell .L5X, Schneider .smbp, CODESYS/PLCopen, Siemens SCL, Mitsubishi IL) via a platform-neutral IR + TS serializers.
+- **Plan under review:** [architecture/PHASE_4_PLATFORM_INTEGRATIONS.md](architecture/PHASE_4_PLATFORM_INTEGRATIONS.md). No implementation until approved.
 
 ### Phase 5 — Billing/Stripe (deferred to v1.6) ⏳
 
