@@ -1,0 +1,30 @@
+---
+description: Next.js web app conventions for PLCAutoPilot
+globs: app/**/*.{ts,tsx},lib/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Next.js Web App
+
+Stack: Next.js 15, React 19, TypeScript 5, Tailwind CSS, Auth.js v5, Drizzle ORM, Anthropic SDK.
+
+## Patterns
+
+- AI routes live under `app/api/ai-*` and `app/api/generate-plc/`; shared logic in `lib/claude.ts`.
+- Protected routes: `(features)` group guarded by `middleware.ts`; auth in `auth.ts` / `auth.config.ts`.
+- DB schema: `lib/db/schema.ts` — change schema → `npm run db:generate` → review SQL → `npm run db:migrate`.
+- PLC model data: `lib/plc-models-database.ts`, `app/data/plc-models.ts`.
+
+## Quality
+
+- Prefer `npx tsc --noEmit` over relying on build (`ignoreBuildErrors: true` is set).
+- Use env vars for secrets; keep `.env.example` in sync.
+- No emojis in UI; use `app/components/Icon.tsx` (Material Icons).
+
+## Verify
+
+```bash
+npm run lint
+npx tsc --noEmit -p tsconfig.json
+npm run build
+```

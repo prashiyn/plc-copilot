@@ -1,0 +1,28 @@
+---
+description: M221 Schneider .smbp generation — mandatory skill and template workflow
+globs: automation/**/*.py,**/*.smbp
+alwaysApply: false
+---
+
+# M221 Program Generation
+
+When creating or editing M221 (TM221) Schneider programs:
+
+1. **Read the skill first** — invoke `schneider-m221` (`.cursor/skills/schneider-m221/SKILL.md`).
+2. **Load a template** before writing new `.smbp` XML:
+   - Ladder: `automation/create_sequential_4lights_LD.py`
+   - IL (4 lights): `automation/create_sequential_4lights_IL.py`
+   - IL (simple): `automation/create_sequential_lights_IL.py`
+3. **Consult knowledge base** — `.claude/skills/m221-knowledge-base.md` for XML schema, grid layout, timers.
+
+## M221 file facts
+
+- `.smbp` is a **single XML file** (not a ZIP archive — that is M241+).
+- Ladder uses a **10-column grid** (columns 0–9 logic, column 10 outputs only).
+- Each rung needs **both** `<LadderElements>` and `<InstructionLines>`.
+
+## Triggers
+
+M221, TM221, TM221CE24T, .smbp, Machine Expert Basic, SoMachine Basic, sequential lights, seal-in circuit.
+
+Never generate M221 programs from scratch without reading the template and skill reference.

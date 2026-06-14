@@ -1,0 +1,59 @@
+---
+description: PLCAutoPilot autonomous delivery workflow (from .claude/claude.md and AUTONOMY.md)
+alwaysApply: true
+---
+
+# Autonomous Delivery
+
+Adapted from `.claude/claude.md` and `.claude/AUTONOMY.md`. Execute implementation work end-to-end; do not stop for permission on routine file, build, or test operations.
+
+## Action loop
+
+1. **Plan** — concise steps (max 10 bullets), note blockers and workarounds
+2. **Execute** — implement the next increment only (surgical diffs per root `CLAUDE.md`)
+3. **Verify** — run lint/build/tests; fix before continuing
+4. **Log** — summarize what changed and the next step
+5. **Continue** — proceed until the task is done or a genuine user decision is required
+
+## When blocked
+
+1. Mock missing APIs/keys; isolate behind an interface
+2. Pick a stable alternative dependency if one fails
+3. Document workarounds in comments or commit message
+4. Do not stall on missing credentials, unavailable services, or minor ambiguity — state assumptions and proceed
+
+Ask the user only when a decision is theirs (product direction, breaking schema changes, deploy targets) or requirements are genuinely ambiguous after reading the codebase.
+
+## Quality bar
+
+- Production-grade by default; zero new lint/type errors in touched files
+- No secrets in code — use env vars; keep `.env.example` in sync
+- Validate API inputs; rate-limit risky endpoints
+- Python automation: `python automation/plc_automation/tests.py` when touching automation core
+
+## Design standards
+
+- No emojis in project code or UI — use Google Material Icons (`app/components/Icon.tsx`)
+- Prefer simplicity, security, maintainability over clever abstractions
+
+## Git and deploy
+
+- **Commit and push only when the user explicitly asks** (do not auto-commit or auto-push)
+- When asked to commit: meaningful message, no secrets, verify build/lint first
+- After completing a feature, suggest verification URLs (e.g. `http://localhost:3000`, `python automation/program_motor_startstop_fast.py`)
+
+## Platform skill activation
+
+Before generating PLC programs, load the matching `.cursor/skills/` skill:
+
+| Trigger | Skill |
+|---------|-------|
+| M221, TM221, `.smbp` | `schneider-m221` |
+| M241, Modbus TCP, PID | `schneider-m241` |
+| S7-1200/1500, TIA Portal | `siemens-s7` |
+| ControlLogix, Studio 5000 | `rockwell-allen-bradley` |
+| FX5U, iQ-R, GX Works | `mitsubishi` |
+| CODESYS, multi-brand IEC 61131-3 | `codesys` |
+| Any vendor file I/O | `plc-file-handler` |
+
+Full reference: `.claude/skills/`. Safety: all generated PLC code is draft-only — certified engineer review required before production (IEC 61508).

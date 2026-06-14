@@ -1,0 +1,40 @@
+---
+description: PLCAutoPilot project context, structure, and agent conventions
+alwaysApply: true
+---
+
+# PLCAutoPilot Core
+
+AI-powered PLC programming platform: Next.js web app + Python automation for Schneider, Siemens, Rockwell, Mitsubishi, and CODESYS.
+
+## Repo layout
+
+| Path | Purpose |
+|------|---------|
+| `app/` | Next.js 15 routes, API handlers (`app/api/ai-*`, `generate-plc`), feature pages |
+| `lib/` | Claude SDK (`claude.ts`), Drizzle DB, PLC model DB, simulation/digital twin |
+| `automation/` | Python PLC automation — run scripts from here (`cd automation`) |
+| `automation/plc_automation/` | Fast API + PLCopen XML (`PLCAutomation`, `Platform`) |
+| `automation/plc_file_handler/` | Parse/generate vendor project files (`cli.py`) |
+| `docs/` | Categorized documentation — index at `docs/README.md` |
+| `.claude/skills/` | Full platform reference docs (XML schemas, patterns, activation rules) |
+| `.cursor/skills/` | Cursor agent workflows that point to `.claude/skills/` |
+
+## Commands
+
+- Web: `npm install && npm run dev` (needs `ANTHROPIC_API_KEY`, Postgres via Docker)
+- DB: `docker compose up -d && npm run db:migrate`
+- Python tests: `python automation/plc_automation/tests.py`
+- Runbook: `docs/RUNBOOK.md`
+
+## Agent conventions
+
+- Follow root `CLAUDE.md` (Karpathy guidelines): think first, minimal scope, surgical diffs.
+- Keep new docs under `docs/`; use the `organize-docs` skill when stray `.md` files appear.
+- Load platform skills before generating PLC programs (see `.cursor/skills/`).
+- No emojis in project code or UI; use Google Material Icons.
+- Do not commit unless the user asks. Do not push unless the user asks.
+
+## Safety (mandatory)
+
+PLCAutoPilot drafts code only. All generated ladder logic must be reviewed, tested, and validated by certified engineers before production deployment (IEC 61131-3 / IEC 61508).
