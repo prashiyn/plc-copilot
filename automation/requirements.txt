@@ -1,5 +1,9 @@
-pyautogui==0.9.54
-pillow==12.0.0
-pygetwindow==0.0.9
-pynput==1.8.1
-anthropic>=0.40.0
+# Python dependencies are managed with uv — see pyproject.toml and uv.lock.
+#
+#   cd automation
+#   uv sync                  # API service + worker (default deps)
+#   uv sync --extra desktop  # + PyAutoGUI for local desktop scripts
+#
+# Run API locally:
+#   uv run uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+#   uv run python -m api.worker

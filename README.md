@@ -232,7 +232,7 @@ plc-copilot/                         # repo root = the Next.js web app
 │   ├── plc_file_handler/            #   PLC file parsers / converters / generators (cli.py)
 │   ├── samples/                     #   sample .smbp / .xml project files
 │   ├── *.py                         #   PyAutoGUI / vision scripts (vision_agent, program_*, create_*)
-│   └── config.json / requirements.txt
+│   └── config.json / pyproject.toml (uv)
 │
 ├── docs/                            # all project documentation (categorized)
 ├── archive/legacy-site/             # retired pre-Next.js static site (index.html, styles.css, script.js)

@@ -1,14 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-
-/**
- * API Route: AI Co-Pilot Chat
- * Real-time PLC programming assistance using Claude AI
- */
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
-});
+import { aiChat, AutomationError, isAutomationConfigured } from '@/lib/automation-client';
 
 const SYSTEM_PROMPT = `You are an expert PLC (Programmable Logic Controller) programming assistant specializing in industrial automation. You have deep expertise in:
 
@@ -25,12 +16,6 @@ Your role:
 3. TEST & DEBUG: Generate comprehensive test cases and identify potential issues
 4. OPTIMIZE: Suggest improvements for performance, safety, and maintainability
 
-Output Format Guidelines:
-- For code generation: Return complete, syntactically correct programs with comments
-- For explanations: Use clear structure with diagrams, variable lists, and logic flow
-- For testing: Provide numbered test cases with expected results
-- Always include I/O assignments, variable declarations, and safety considerations
-
 Be precise, professional, and safety-conscious in all responses.`;
 
 export async function POST(request: NextRequest) {
@@ -39,25 +24,17 @@ export async function POST(request: NextRequest) {
     const { messages, mode = 'generate', uploadedImages = [] } = body;
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json(
-        { error: 'Messages array required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Messages array required' }, { status: 400 });
     }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json(
-        { error: 'ANTHROPIC_API_KEY not configured' },
-        { status: 500 }
-      );
+    if (!isAutomationConfigured()) {
+      return NextResponse.json({ error: 'Automation service not configured' }, { status: 500 });
     }
 
-    // Build message content with images if provided
     const lastMessage = messages[messages.length - 1];
-    const messageContent: any[] = [];
+    const messageContent: unknown[] = [];
 
-    // Add images if present
-    if (uploadedImages && uploadedImages.length > 0) {
+    if (uploadedImages?.length > 0) {
       for (const img of uploadedImages) {
         messageContent.push({
           type: 'image',
@@ -70,55 +47,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Add text prompt
-    messageContent.push({
-      type: 'text',
-      text: lastMessage.content,
-    });
+    messageContent.push({ type: 'text', text: lastMessage.content });
 
-    // Customize system prompt based on mode
     let modeSpecificPrompt = SYSTEM_PROMPT;
-
     if (mode === 'explain') {
-      modeSpecificPrompt += '\n\nFOCUS: Provide detailed explanations of PLC code. Include flow diagrams, variable descriptions, and logic analysis.';
+      modeSpecificPrompt += '\n\nFOCUS: Provide detailed explanations of PLC code.';
     } else if (mode === 'test') {
-      modeSpecificPrompt += '\n\nFOCUS: Generate comprehensive test cases. Include normal operation, edge cases, error conditions, and safety scenarios.';
+      modeSpecificPrompt += '\n\nFOCUS: Generate comprehensive test cases.';
     } else {
-      modeSpecificPrompt += '\n\nFOCUS: Generate production-ready PLC code. Include complete programs with proper structure, comments, and documentation.';
+      modeSpecificPrompt += '\n\nFOCUS: Generate production-ready PLC code.';
     }
 
-    // Call Claude API
-    const response = await anthropic.messages.create({
-      model: process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022',
-      max_tokens: 4096,
+    const response = await aiChat({
       system: modeSpecificPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: messageContent,
-        },
-      ],
+      messages: [{ role: 'user', content: messageContent }],
+      maxTokens: 4096,
     });
-
-    const assistantMessage = response.content[0].text;
 
     return NextResponse.json({
       success: true,
-      message: assistantMessage,
-      usage: {
-        input_tokens: response.usage.input_tokens,
-        output_tokens: response.usage.output_tokens,
-      },
+      message: response.text,
+      usage: response.usage,
     });
-
-  } catch (error: any) {
+  } catch (error) {
     console.error('AI Chat error:', error);
-    return NextResponse.json(
-      {
-        error: error.message || 'AI chat failed',
-        details: error.toString(),
-      },
-      { status: 500 }
-    );
+    if (error instanceof AutomationError) {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+    }
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'AI chat failed' }, { status: 500 });
   }
 }

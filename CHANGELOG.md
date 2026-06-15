@@ -135,7 +135,7 @@ All notable changes to PLCAutoPilot will be documented in this file.
 
 > v1.5 is in progress (Postgres + Auth.js + persistence + AI routes done; platform
 > integrations next). Deferred items live in
-> [docs/architecture/NEXT_VERSION_BACKLOG.md](docs/architecture/NEXT_VERSION_BACKLOG.md).
+> [docs/architecture/PHASE_5_IMPLEMENTATION.md](docs/architecture/PHASE_5_IMPLEMENTATION.md).
 
 ### Planned Features (v1.5+)
 - [ ] Siemens TIA Portal integration

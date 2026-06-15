@@ -65,13 +65,21 @@ class RockwellParser:
     def _parse_tags(self, root: ET.Element):
         """Parse tag definitions."""
 
+        parent_map = {child: parent for parent in root.iter() for child in parent}
+
         # Controller-scoped tags
         for tag in root.findall('.//Controller/Tags/Tag'):
             self._extract_tag(tag, scope='Controller')
 
         # Program-scoped tags
         for tag in root.findall('.//Program/Tags/Tag'):
-            program_name = tag.getparent().getparent().attrib.get('Name', 'Unknown')
+            program_name = 'Unknown'
+            node = tag
+            while node in parent_map:
+                node = parent_map[node]
+                if node.tag == 'Program':
+                    program_name = node.attrib.get('Name', 'Unknown')
+                    break
             self._extract_tag(tag, scope=f'Program:{program_name}')
 
     def _extract_tag(self, tag_elem: ET.Element, scope: str):

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import PLCCascadingSelector from '@/app/components/PLCCascadingSelector';
 import type { PLCManufacturer, PLCSeries, PLCModel } from '@/lib/plc-models-database';
 
+import type { PlcDownloadParams } from '@/lib/plc-generation';
+
 export default function GeneratorPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
@@ -22,6 +24,10 @@ export default function GeneratorPage() {
     content: string;
     filename: string;
     extension: string;
+    downloadParams: PlcDownloadParams;
+    generationPath?: string;
+    tier2Disclaimer?: string;
+    limitations?: string[];
   } | null>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,36 +67,34 @@ export default function GeneratorPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Generation failed');
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Generation failed');
       }
 
       const data = await response.json();
       setGeneratedFile(data);
     } catch (error) {
       console.error('Error generating PLC program:', error);
-      alert('Failed to generate PLC program');
+      alert(error instanceof Error ? error.message : 'Failed to generate PLC program');
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleDownload = async () => {
-    if (!generatedFile || !selectedPLC.model || !selectedPLC.manufacturer) return;
+    if (!generatedFile) return;
 
     try {
       const response = await fetch('/api/download-program', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          programCode: generatedFile.content,
-          platform: selectedPLC.manufacturer.name,
-          plcModel: selectedPLC.model.name,
-          language: 'LD',
-          projectName: 'PLCAutoProgram',
-        }),
+        body: JSON.stringify(generatedFile.downloadParams),
       });
 
-      if (!response.ok) throw new Error('Download failed');
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Download failed');
+      }
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -108,7 +112,7 @@ export default function GeneratorPage() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download error:', error);
-      alert('Failed to download file');
+      alert(error instanceof Error ? error.message : 'Failed to download file');
     }
   };
 
@@ -267,6 +271,20 @@ export default function GeneratorPage() {
                       <strong>Format:</strong> {generatedFile.extension}
                     </p>
                   </div>
+
+                  {generatedFile.tier2Disclaimer ? (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-amber-900 mb-2">Tier-2 source import</h3>
+                      <p className="text-sm text-amber-800">{generatedFile.tier2Disclaimer}</p>
+                      {generatedFile.limitations && generatedFile.limitations.length > 0 ? (
+                        <ul className="mt-3 text-sm text-amber-800 list-disc pl-5 space-y-1">
+                          {generatedFile.limitations.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                  ) : null}
 
                   {/* Preview */}
                   <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">

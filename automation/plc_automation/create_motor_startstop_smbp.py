@@ -1,25 +1,21 @@
 """
-Create Motor Start/Stop .smbp File for TM221CE40T
-Generates a complete EcoStruxure Machine Expert Basic project file
+DEPRECATED — Legacy offline script using <ProjectDescriptor> XML.
 
-TM221CE40T Specifications:
-- 24 digital inputs (%I0.0 to %I0.23)
-- 16 digital outputs (%Q0.0 to %Q0.15) - Transistor
-- 2 analog inputs (%IW0.0, %IW0.1)
-- Ethernet port
-- HardwareId: 1933 (TM221CE40T)
-
-I/O Assignment for Motor Start/Stop:
-- %I0.0: START_BTN (Start Push Button - NO)
-- %I0.1: STOP_BTN (Stop Push Button - NC)
-- %I0.2: OVERLOAD (Thermal Overload - NC)
-- %M0: MOTOR_RUN (Internal memory bit for seal-in)
-- %Q0.0: MOTOR (Motor Contactor Output)
-- %Q0.1: RUN_LIGHT (Running Indicator)
+Do not use for production exports. Use the IR pipeline instead:
+  - Pattern: `ProgramService` / `POST /v1/programs/generate`
+  - Sketch: CLI `--from-sketch` or `POST /v1/sketches/generate`
+See `automation/plc_automation/README.md` and docs/architecture/PHASE_4_PLATFORM_INTEGRATIONS.md.
 """
 
 import os
+import warnings
 from datetime import datetime
+
+warnings.warn(
+    "create_motor_startstop_smbp.py is deprecated; use the IR pipeline (ProgramService / CLI --from-sketch).",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 def generate_motor_startstop_smbp():
     """Generate a complete .smbp file for motor start/stop control"""

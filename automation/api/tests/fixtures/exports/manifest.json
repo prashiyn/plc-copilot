@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "exports": {
+    "motor_startstop_schneider": {
+      "sha256": "b8895729ecd72947e51ddf12244d37a433e415f39f6af3a9b7c7529ba655e794",
+      "format": "machine_expert_basic_xml"
+    },
+    "motor_startstop_rockwell": {
+      "sha256": "3aaf1648df6ec983fdc99305c0e3af20cfa27db24f4271903f0d24f5a92cc818",
+      "format": "l5x"
+    },
+    "sequential_lights_schneider": {
+      "sha256": "fe2c25b717ef12fdd6a8565d36d3c61853def8c28379ca114cf2d8868338b0a3",
+      "format": "machine_expert_basic_xml"
+    },
+    "sequential_lights_rockwell": {
+      "sha256": "155b757f65a1ebff572d0e5d5b94e4e4bdca8afea2a317ae8f9c446e32ac40d3",
+      "format": "l5x"
+    },
+    "motor_startstop_siemens": {
+      "sha256": "995be073b397abc2c4d5bdb063780bbedffd67155d55b7cf0725ff435e39d470",
+      "format": "scl"
+    },
+    "motor_startstop_mitsubishi": {
+      "sha256": "2169fb892e820c822098ca7580dd42c683a5c3640692c782462a234a834bebc7",
+      "format": "mitsubishi_tier2_zip"
+    },
+    "plcopen_motor_codesys": {
+      "sha256": "3e2603d141b7238a693758625882dc1ca3236e47a439cda1a97b48e96cdc217f",
+      "format": "plcopen_xml"
+    }
+  }
+}

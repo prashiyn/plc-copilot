@@ -1,0 +1,221 @@
+{
+  "name": "Golden_Seq_Rockwell",
+  "target": {
+    "vendor": "rockwell",
+    "model": "1769-L33ER"
+  },
+  "vars": [
+    {
+      "symbol": "START_BTN",
+      "address": "%I0.0",
+      "dataType": "BOOL",
+      "kind": "input",
+      "initial": null,
+      "comment": "Start button"
+    },
+    {
+      "symbol": "STOP_BTN",
+      "address": "%I0.1",
+      "dataType": "BOOL",
+      "kind": "input",
+      "initial": null,
+      "comment": "Stop button"
+    },
+    {
+      "symbol": "SEQ_RUN",
+      "address": "%M0",
+      "dataType": "BOOL",
+      "kind": "memory",
+      "initial": null,
+      "comment": "Sequence running flag"
+    },
+    {
+      "symbol": "LIGHT1",
+      "address": "%Q0.0",
+      "dataType": "BOOL",
+      "kind": "output",
+      "initial": null,
+      "comment": "Light 1 output"
+    },
+    {
+      "symbol": "LIGHT2",
+      "address": "%Q0.1",
+      "dataType": "BOOL",
+      "kind": "output",
+      "initial": null,
+      "comment": "Light 2 output"
+    },
+    {
+      "symbol": "LIGHT3",
+      "address": "%Q0.2",
+      "dataType": "BOOL",
+      "kind": "output",
+      "initial": null,
+      "comment": "Light 3 output"
+    },
+    {
+      "symbol": "LIGHT4",
+      "address": "%Q0.3",
+      "dataType": "BOOL",
+      "kind": "output",
+      "initial": null,
+      "comment": "Light 4 output"
+    },
+    {
+      "symbol": "TIMER_1",
+      "address": "%TM0",
+      "dataType": "TON",
+      "kind": "timer",
+      "initial": null,
+      "comment": "3s delay before light 2"
+    },
+    {
+      "symbol": "TIMER_2",
+      "address": "%TM1",
+      "dataType": "TON",
+      "kind": "timer",
+      "initial": null,
+      "comment": "3s delay before light 3"
+    },
+    {
+      "symbol": "TIMER_3",
+      "address": "%TM2",
+      "dataType": "TON",
+      "kind": "timer",
+      "initial": null,
+      "comment": "3s delay before light 4"
+    }
+  ],
+  "pous": [
+    {
+      "name": "MainProgram",
+      "language": "LD",
+      "networks": [
+        {
+          "label": "Rung 1",
+          "comment": "Sequence start/stop latch",
+          "logic": {
+            "type": "and",
+            "inputs": [
+              {
+                "type": "or",
+                "inputs": [
+                  {
+                    "type": "contact",
+                    "symbol": "START_BTN",
+                    "negated": false
+                  },
+                  {
+                    "type": "contact",
+                    "symbol": "SEQ_RUN",
+                    "negated": false
+                  }
+                ]
+              },
+              {
+                "type": "not",
+                "input": {
+                  "type": "contact",
+                  "symbol": "STOP_BTN",
+                  "negated": false
+                }
+              },
+              {
+                "type": "coil",
+                "symbol": "SEQ_RUN",
+                "coilType": "normal"
+              }
+            ]
+          }
+        },
+        {
+          "label": "Rung 2",
+          "comment": "Light 1 immediate",
+          "logic": {
+            "type": "and",
+            "inputs": [
+              {
+                "type": "contact",
+                "symbol": "SEQ_RUN",
+                "negated": false
+              },
+              {
+                "type": "coil",
+                "symbol": "LIGHT1",
+                "coilType": "normal"
+              }
+            ]
+          }
+        },
+        {
+          "label": "Rung 3",
+          "comment": "Light 2 step",
+          "logic": {
+            "type": "and",
+            "inputs": [
+              {
+                "type": "contact",
+                "symbol": "SEQ_RUN",
+                "negated": false
+              },
+              {
+                "type": "coil",
+                "symbol": "LIGHT2",
+                "coilType": "normal"
+              }
+            ]
+          }
+        },
+        {
+          "label": "Rung 4",
+          "comment": "Light 3 step",
+          "logic": {
+            "type": "and",
+            "inputs": [
+              {
+                "type": "contact",
+                "symbol": "LIGHT2",
+                "negated": false
+              },
+              {
+                "type": "coil",
+                "symbol": "LIGHT3",
+                "coilType": "normal"
+              }
+            ]
+          }
+        },
+        {
+          "label": "Rung 5",
+          "comment": "Light 4 step",
+          "logic": {
+            "type": "and",
+            "inputs": [
+              {
+                "type": "contact",
+                "symbol": "LIGHT3",
+                "negated": false
+              },
+              {
+                "type": "coil",
+                "symbol": "LIGHT4",
+                "coilType": "normal"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "author": "PLCAutoPilot",
+    "description": "4-light sequential sequence",
+    "createdAt": "2000-01-01T00:00:00+00:00",
+    "pattern": "sequential_lights",
+    "patternParams": {
+      "numLights": 4,
+      "delaySeconds": 3
+    },
+    "requireEstop": false
+  }
+}

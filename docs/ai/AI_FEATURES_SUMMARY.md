@@ -22,16 +22,16 @@ PLCAutoPilot uses Anthropic Claude AI (formerly Google Gemini) to power several 
 
 ### 2. **PLC Generator - Sketch to Program** ⚡ ACTIVE
 - **Location**: `/generator` page
-- **File**: `app/generator/page.tsx`
-- **Backend**: `plc_file_handler/cli.py`
+- **Backend**: FastAPI `SketchService` → IR pipeline (`/v1/sketches/generate`)
 - **API Route**: `/api/generate-from-sketch`
 - **What it does**:
   - Uploads P&ID or ladder logic diagrams
-  - Uses SketchAnalyzer to understand the diagram
-  - Generates native PLC files (.smbp, .L5X, .zap16, .gxw)
-  - Supports Schneider, Rockwell, Siemens, Mitsubishi platforms
-- **Model**: `claude-3-5-sonnet-20241022`
-- **Status**: ✅ REAL AI - Uses Claude for image analysis
+  - SketchAnalyzer (Claude Vision) → `sketch_adapter` → `IrSerializer`
+  - Generates importable Schneider `.smbp` or Rockwell `.L5X`
+- **Response modes**:
+  - **Default:** binary file download
+  - **Metadata JSON:** form field `include_metadata=true` → `{ contentBase64, metadata, ir }`
+- **Status**: ✅ REAL AI — IR pipeline via `lib/automation-client.ts`
 
 ---
 

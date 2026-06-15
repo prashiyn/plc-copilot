@@ -91,44 +91,123 @@ def analyze_sketch(args):
         sys.exit(1)
 
 
+def _load_generation_source(json_path: str, platform: str) -> dict:
+    """Load JSON for ProgramService.generate() — IR, sketch analysis, or legacy tags+rungs."""
+    import json
+
+    with open(json_path, encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    if isinstance(data, dict) and "pous" in data and "vars" in data:
+        return {"type": "ir", "program": data}
+
+    if isinstance(data, dict) and "tags_detected" in data:
+        return {"type": "sketch_analysis", "analysis": data}
+
+    if isinstance(data, dict) and "tags" in data and "rungs" in data:
+        tags_detected = []
+        for tag in data["tags"]:
+            tag_type = tag.get("kind") or tag.get("tag_type")
+            if not tag_type or tag_type == "BOOL":
+                address = tag.get("address", "")
+                if "%I" in address:
+                    tag_type = "INPUT"
+                elif "%Q" in address:
+                    tag_type = "OUTPUT"
+                else:
+                    tag_type = "MEMORY"
+            tags_detected.append(
+                {
+                    "name": tag["name"],
+                    "address": tag["address"],
+                    "type": tag_type,
+                    "data_type": tag.get("data_type", tag.get("type", "BOOL")),
+                    "comment": tag.get("comment", ""),
+                }
+            )
+        analysis = {
+            "rungs": data["rungs"],
+            "tags_detected": tags_detected,
+            "target_platform": platform,
+        }
+        return {"type": "sketch_analysis", "analysis": analysis}
+
+    raise ValueError(
+        "JSON must be PlcProgram IR (vars+pous), sketch analysis (tags_detected+rungs), "
+        "or legacy generator format (tags+rungs)"
+    )
+
+
 def generate_file(args):
-    """Generate a PLC file from sketch or JSON."""
+    """Generate a PLC file from sketch or JSON via IR pipeline."""
 
     try:
-        if args.platform == 'schneider':
-            gen = SchneiderGenerator(
-                project_name=args.name,
-                controller=args.controller or "TM221CE24R"
-            )
+        if args.platform not in ("schneider", "rockwell"):
+            print(f"Error: sketch generation supports schneider and rockwell (got {args.platform})")
+            sys.exit(1)
 
-            if args.from_sketch:
-                # Analyze sketch first
-                analyzer = SketchAnalyzer()
-                analysis = analyzer.analyze_sketch(args.from_sketch, 'schneider')
-                gen.from_sketch_analysis(analysis)
+        default_controllers = {
+            "schneider": "TM221CE24R",
+            "rockwell": "1769-L33ER",
+        }
+        controller = args.controller or default_controllers[args.platform]
 
-            elif args.from_json:
-                gen.from_json(args.from_json)
-
-            else:
-                print("Error: Specify --from-sketch or --from-json")
+        if args.from_sketch:
+            if not os.getenv("ANTHROPIC_API_KEY"):
+                print("Error: ANTHROPIC_API_KEY environment variable not set")
                 sys.exit(1)
 
-            gen.generate(args.output)
+            analyzer = SketchAnalyzer()
+            analysis = analyzer.analyze_sketch(args.from_sketch, args.platform)
+            errors = analyzer.validate_analysis(analysis)
+            if errors:
+                print("\nValidation Errors:")
+                for error in errors:
+                    print(f"  - {error}")
+                sys.exit(1)
 
-        elif args.platform == 'rockwell':
-            gen = RockwellGenerator(
-                project_name=args.name,
-                processor_type=args.controller or "1769-L33ER"
+            from api.services.program_service import ProgramService
+
+            result = ProgramService().generate(
+                {
+                    "platform": args.platform,
+                    "projectName": args.name,
+                    "controller": controller,
+                    "source": {"type": "sketch_analysis", "analysis": analysis},
+                }
             )
+            import base64
 
-            # For Rockwell, would need similar logic
-            print("Rockwell generation from sketch/JSON not yet implemented")
-            print("Use Python API for now")
+            content = base64.standard_b64decode(result["contentBase64"])
+            Path(args.output).write_bytes(content)
+            print(f"Generated via IR pipeline: {args.output}")
+            if "ir" in result.get("metadata", {}):
+                print("IR metadata attached (use FastAPI job result for full JSON export).")
+            return
 
-        else:
-            print(f"Generator not implemented for platform: {args.platform}")
-            sys.exit(1)
+        if args.from_json:
+            from api.services.program_service import ProgramService
+
+            source = _load_generation_source(args.from_json, args.platform)
+            result = ProgramService().generate(
+                {
+                    "platform": args.platform,
+                    "projectName": args.name,
+                    "controller": controller,
+                    "source": source,
+                }
+            )
+            import base64
+
+            content = base64.standard_b64decode(result["contentBase64"])
+            Path(args.output).write_bytes(content)
+            print(f"Generated via IR pipeline: {args.output}")
+            if "ir" in result.get("metadata", {}):
+                print("IR metadata attached (use FastAPI job result for full JSON export).")
+            return
+
+        print("Error: Specify --from-sketch or --from-json")
+        sys.exit(1)
 
     except Exception as e:
         print(f"Error generating file: {e}")
@@ -255,7 +334,7 @@ Examples:
     generate_parser.add_argument('--name', required=True, help='Project name')
     generate_parser.add_argument('--controller', help='Controller model')
     generate_parser.add_argument('--from-sketch', help='Generate from sketch image')
-    generate_parser.add_argument('--from-json', help='Generate from JSON file')
+    generate_parser.add_argument('--from-json', help='Generate from JSON (IR, sketch analysis, or legacy tags+rungs)')
     generate_parser.add_argument('-o', '--output', required=True, help='Output file')
     generate_parser.set_defaults(func=generate_file)
 

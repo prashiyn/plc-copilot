@@ -1,0 +1,1 @@
+"""PLCAutoPilot FastAPI automation service."""

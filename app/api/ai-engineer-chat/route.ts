@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import { aiChat, AutomationError, isAutomationConfigured } from '@/lib/automation-client';
 
 /**
- * API Route: AI Engineer Chat
- * Expert PLC engineering consultation using Claude
+ * API Route: AI Engineer Chat — Claude via automation service
  */
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
-});
 
 const ENGINEER_PERSONAS = {
   'schneider-specialist': {
@@ -78,11 +73,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json(
-        { error: 'ANTHROPIC_API_KEY not configured' },
-        { status: 500 }
-      );
+    if (!isAutomationConfigured()) {
+      return NextResponse.json({ error: 'Automation service not configured' }, { status: 500 });
     }
 
     // Get engineer persona
@@ -116,38 +108,30 @@ export async function POST(request: NextRequest) {
 - Reference relevant documentation
 - Be concise but thorough`;
 
-    // Call Claude API
-    const response = await anthropic.messages.create({
-      model: process.env.CLAUDE_MODEL || 'claude-3-5-sonnet-20241022',
-      max_tokens: 4096,
+    const response = await aiChat({
       system: systemPrompt,
       messages: claudeMessages,
+      maxTokens: 4096,
     });
-
-    const assistantMessage = response.content[0].text;
 
     return NextResponse.json({
       success: true,
-      message: assistantMessage,
+      message: response.text,
       engineer: {
         name: engineer.name,
         role: engineer.role,
         specialty: engineer.specialty,
       },
-      usage: {
-        input_tokens: response.usage.input_tokens,
-        output_tokens: response.usage.output_tokens,
-      },
+      usage: response.usage,
     });
-
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Engineer chat error:', error);
+    if (error instanceof AutomationError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json(
-      {
-        error: error.message || 'Engineer chat failed',
-        details: error.toString(),
-      },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : 'Engineer chat failed' },
+      { status: 500 },
     );
   }
 }

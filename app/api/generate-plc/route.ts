@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getModelWithContext, convertToLegacyFormat } from '@/lib/plc-models-database';
-import { generateSchneiderProgram } from './generators/schneider';
-import { generateSiemensProgram } from './generators/siemens';
-import { generateRockwellProgram } from './generators/rockwell';
-import { generateGenericProgram } from './generators/generic';
 import { persistGeneratedProgramIfAuthed } from '@/lib/db/queries';
+import { generatePlcProgramFile } from '@/lib/plc-generation';
+import { AutomationError } from '@/lib/automation-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,71 +12,64 @@ export async function POST(request: NextRequest) {
     const modelId = formData.get('modelId') as string;
 
     if (!logic || !modelId) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const modelContext = getModelWithContext(modelId);
     if (!modelContext) {
-      return NextResponse.json(
-        { error: 'Invalid PLC model' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid PLC model' }, { status: 400 });
     }
 
-    // Convert to legacy format for generator compatibility
     const plcModel = convertToLegacyFormat(
       modelContext.manufacturer,
       modelContext.series,
-      modelContext.model
+      modelContext.model,
     );
 
-    // Process image if provided (for future vision integration)
-    let imageAnalysis = null;
-    if (image) {
-      // TODO: Implement image analysis with vision AI
-      // For now, we'll use the logic description
-      imageAnalysis = {
-        detected: 'Image uploaded but not yet processed',
-        filename: image.name,
-      };
-    }
-
-    // Generate program based on manufacturer
-    let generatedProgram;
-    const manufacturer = plcModel.manufacturer.toLowerCase();
-
-    if (manufacturer.includes('schneider')) {
-      generatedProgram = await generateSchneiderProgram(logic, plcModel);
-    } else if (manufacturer.includes('siemens')) {
-      generatedProgram = await generateSiemensProgram(logic, plcModel);
-    } else if (manufacturer.includes('rockwell') || manufacturer.includes('allen-bradley')) {
-      generatedProgram = await generateRockwellProgram(logic, plcModel);
-    } else {
-      generatedProgram = await generateGenericProgram(logic, plcModel);
-    }
+    const generated = await generatePlcProgramFile({
+      manufacturer: plcModel.manufacturer,
+      controller: plcModel.model,
+      logic,
+      image: image && image.size > 0 ? image : null,
+    });
 
     await persistGeneratedProgramIfAuthed({
-      programCode: generatedProgram.content,
-      programFormat: plcModel.fileExtension,
-      fileName: generatedProgram.filename,
-      generationParameters: { model: plcModel.model, manufacturer: plcModel.manufacturer },
+      programCode: generated.preview,
+      programFormat: generated.extension,
+      fileName: generated.fileName,
+      generationParameters: {
+        model: plcModel.model,
+        manufacturer: plcModel.manufacturer,
+        pattern: generated.pattern,
+        ir: generated.ir ?? generated.metadata.ir,
+        downloadParams: generated.downloadParams,
+        exportTier: generated.metadata.tier ?? generated.downloadParams.exportTier,
+        generationPath: generated.generationPath,
+        tier2Disclaimer: generated.tier2Disclaimer,
+        limitations: generated.limitations,
+      },
     });
 
     return NextResponse.json({
-      content: generatedProgram.content,
-      filename: generatedProgram.filename,
-      extension: plcModel.fileExtension,
+      content: generated.preview,
+      filename: generated.fileName,
+      extension: generated.extension,
       model: plcModel.model,
       manufacturer: plcModel.manufacturer,
+      pattern: generated.pattern,
+      downloadParams: generated.downloadParams,
+      generationPath: generated.generationPath,
+      tier2Disclaimer: generated.tier2Disclaimer,
+      limitations: generated.limitations,
     });
   } catch (error) {
     console.error('Error generating PLC program:', error);
+    if (error instanceof AutomationError) {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+    }
     return NextResponse.json(
-      { error: 'Failed to generate program' },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : 'Failed to generate program' },
+      { status: 500 },
     );
   }
 }

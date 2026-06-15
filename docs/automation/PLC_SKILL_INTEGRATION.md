@@ -94,21 +94,32 @@ FormData {
 **Request:**
 ```typescript
 FormData {
-  image: File;           // Uploaded sketch
-  platform: string;      // Target PLC platform
-  projectName: string;   // Project name
-  controller?: string;   // Optional controller model
+  image: File;              // Uploaded sketch
+  platform: string;       // schneider | rockwell (sketch export)
+  projectName: string;
+  controller?: string;
+  include_metadata?: 'true'; // Optional — return JSON with ir + metadata instead of binary
 }
 ```
 
-**Response:**
-- Binary file download (.smbp, .L5X, etc.)
-- Ready to open in vendor software
+**Response (default):**
+- Binary file download (`.smbp`, `.L5X`)
+
+**Response (`include_metadata=true`):**
+```json
+{
+  "success": true,
+  "fileName": "SketchProject.smbp",
+  "mimeType": "application/xml",
+  "contentBase64": "...",
+  "metadata": { "source": "sketch_analysis", "sketchConfidence": 0.9, "ir": { "..." : "..." } },
+  "ir": { "name": "SketchProject", "target": { "vendor": "schneider", "model": "TM221CE24R" }, "..." }
+}
+```
 
 **Backend Implementation:**
-- Analyzes sketch
-- Generates platform-specific file
-- Returns native format for download
+- FastAPI `/v1/sketches/generate` → `SketchService` → `sketch_adapter` → `IrSerializer`
+- BFF tests: `lib/sketch-generate-response.test.ts`
 
 ## Frontend Integration
 

@@ -112,6 +112,11 @@ def _detect_xml_format(ext: str, file_path: str) -> PLCFormatInfo:
     if ext == '.l5x':
         return PLCFormatInfo('rockwell', 'studio5000_xml', None)
 
+    elif ext == '.smbp':
+        if 'Calaos/Case' in content or 'schneider-electric.com' in content.lower():
+            return PLCFormatInfo('schneider', 'machine_expert_basic_xml', '2.0')
+        return PLCFormatInfo('schneider', 'machine_expert_basic', None)
+
     elif ext == '.project':
         if 'codesys' in content.lower():
             return PLCFormatInfo('codesys', 'project_xml', None)

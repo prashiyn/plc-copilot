@@ -36,19 +36,18 @@ class SchneiderParser:
         if not self.file_path.exists():
             raise FileNotFoundError(f"File not found: {self.file_path}")
 
-        # Extract ZIP archive
-        with zipfile.ZipFile(self.file_path, 'r') as zip_ref:
-            # List all files in archive
-            file_list = zip_ref.namelist()
-            print(f"Found {len(file_list)} files in archive")
+        if zipfile.is_zipfile(self.file_path):
+            with zipfile.ZipFile(self.file_path, 'r') as zip_ref:
+                file_list = zip_ref.namelist()
+                print(f"Found {len(file_list)} files in archive")
 
-            # Extract to temporary directory
-            temp_dir = Path(f"/tmp/smbp_{self.file_path.stem}")
-            temp_dir.mkdir(exist_ok=True)
-            zip_ref.extractall(temp_dir)
+                temp_dir = Path(f"/tmp/smbp_{self.file_path.stem}")
+                temp_dir.mkdir(exist_ok=True)
+                zip_ref.extractall(temp_dir)
 
-            # Parse project structure
-            self._parse_project_files(temp_dir)
+                self._parse_project_files(temp_dir)
+        else:
+            self._parse_xml_file(self.file_path)
 
         return self._build_project_dict()
 
@@ -106,15 +105,35 @@ class SchneiderParser:
     def _extract_variables(self, root: ET.Element):
         """Extract tag/variable definitions."""
 
+        seen: set[str] = set()
         for var_elem in root.iter():
-            if 'variable' in var_elem.tag.lower():
+            tag_name = var_elem.tag.split('}')[-1]
+            if tag_name.lower() == 'symbol' and var_elem.text and var_elem.text.strip():
+                name = var_elem.text.strip()
+                if name not in seen:
+                    seen.add(name)
+                    self.tags.append({
+                        'name': name,
+                        'address': '',
+                        'type': 'BOOL',
+                        'comment': '',
+                    })
+                continue
+
+            if 'variable' in tag_name.lower():
+                name = (
+                    var_elem.attrib.get('name')
+                    or var_elem.attrib.get('Name')
+                    or ''
+                )
                 tag = {
-                    'name': var_elem.attrib.get('name', ''),
-                    'address': var_elem.attrib.get('address', ''),
-                    'type': var_elem.attrib.get('type', 'BOOL'),
-                    'comment': var_elem.attrib.get('comment', '')
+                    'name': name,
+                    'address': var_elem.attrib.get('address') or var_elem.attrib.get('Address', ''),
+                    'type': var_elem.attrib.get('type') or var_elem.attrib.get('Type', 'BOOL'),
+                    'comment': var_elem.attrib.get('comment') or var_elem.attrib.get('Comment', ''),
                 }
-                if tag['name']:
+                if tag['name'] and tag['name'] not in seen:
+                    seen.add(tag['name'])
                     self.tags.append(tag)
 
     def _extract_io_config(self, root: ET.Element):

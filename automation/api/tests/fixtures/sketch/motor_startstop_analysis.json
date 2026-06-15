@@ -1,0 +1,64 @@
+{
+  "analysis_metadata": {
+    "total_rungs": 2,
+    "total_contacts": 4,
+    "total_coils": 2,
+    "sketch_quality": "good",
+    "ambiguities": []
+  },
+  "rungs": [
+    {
+      "rung_number": 0,
+      "comment": "Motor start/stop control with latching",
+      "logic_description": "Seal-in motor with start, stop, and motor output",
+      "elements": [
+        {"type": "contact_no", "label": "START_BTN", "address": "%I0.0", "branch": 0},
+        {"type": "contact_nc", "label": "STOP_BTN", "address": "%I0.1", "branch": 0},
+        {"type": "contact_no", "label": "MOTOR_RUN", "address": "%Q0.0", "branch": 1},
+        {"type": "contact_nc", "label": "STOP_BTN", "address": "%I0.1", "branch": 1},
+        {"type": "coil", "label": "MOTOR_RUN", "address": "%Q0.0", "branch": 0}
+      ]
+    },
+    {
+      "rung_number": 1,
+      "comment": "Motor running indicator",
+      "logic_description": "Green LED follows motor run output",
+      "elements": [
+        {"type": "contact_no", "label": "MOTOR_RUN", "address": "%Q0.0", "branch": 0},
+        {"type": "coil", "label": "GREEN_LED", "address": "%Q0.1", "branch": 0}
+      ]
+    }
+  ],
+  "tags_detected": [
+    {
+      "name": "START_BTN",
+      "address": "%I0.0",
+      "type": "INPUT",
+      "data_type": "BOOL",
+      "comment": "Start push button"
+    },
+    {
+      "name": "STOP_BTN",
+      "address": "%I0.1",
+      "type": "INPUT",
+      "data_type": "BOOL",
+      "comment": "Stop push button"
+    },
+    {
+      "name": "MOTOR_RUN",
+      "address": "%Q0.0",
+      "type": "OUTPUT",
+      "data_type": "BOOL",
+      "comment": "Motor contactor"
+    },
+    {
+      "name": "GREEN_LED",
+      "address": "%Q0.1",
+      "type": "OUTPUT",
+      "data_type": "BOOL",
+      "comment": "Motor running indicator"
+    }
+  ],
+  "target_platform": "schneider",
+  "confidence": 0.9
+}

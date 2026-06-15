@@ -17,5 +17,63 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: plc-copilot-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  automation-api:
+    build:
+      context: ./automation
+      dockerfile: Dockerfile
+    container_name: plc-copilot-automation-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-3-5-sonnet-20241022}
+      AUTOMATION_API_KEY: ${AUTOMATION_API_KEY:-dev-automation-key}
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_DIR: /tmp/automation-uploads
+    volumes:
+      - automation_uploads:/tmp/automation-uploads
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  automation-worker:
+    build:
+      context: ./automation
+      dockerfile: Dockerfile
+    container_name: plc-copilot-automation-worker
+    restart: unless-stopped
+    command: ["python", "-m", "api.worker"]
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-3-5-sonnet-20241022}
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_DIR: /tmp/automation-uploads
+    volumes:
+      - automation_uploads:/tmp/automation-uploads
+    depends_on:
+      redis:
+        condition: service_healthy
+      automation-api:
+        condition: service_healthy
+
 volumes:
   plc_pgdata:
+  automation_uploads:

@@ -154,7 +154,9 @@ Expandable section covering all supported platforms:
 
 ### 💳 Billing
 
-Expandable section for payment management:
+> **Engineering status:** UI pages only — **no Stripe or payment backend**. Not in current development focus; see [PHASE_5_IMPLEMENTATION.md](../architecture/PHASE_5_IMPLEMENTATION.md). Do not implement billing unless explicitly requested.
+
+Expandable section for payment management (placeholders):
 
 #### 1. **Current Plan** (`/billing/plan`)
 - Active subscription tier
@@ -170,7 +172,7 @@ Expandable section for payment management:
 - Saved credit cards
 - Add new payment method
 - Set default payment
-- Stripe integration (ready)
+- Stripe integration (**UI placeholder only — not wired**)
 
 #### 4. **Invoices** (`/billing/invoices`)
 - Past invoices
@@ -185,6 +187,8 @@ Expandable section for payment management:
 ---
 
 ### 💰 Subscription
+
+> **Engineering status:** marketing/plan **UI only** — tier limits and checkout are not enforced. Deferred with billing; see backlog.
 
 Expandable section for subscription management:
 
@@ -466,18 +470,16 @@ Expandable section for assistance:
 - [x] Error rectification system
 - [x] Multi-platform download
 - [x] Engineer chat (human-in-the-loop)
-- [x] Subscription plans (3 tiers)
-- [x] Payment methods integration
 - [x] Sidebar navigation
-- [x] Login system (dev mode)
+- [x] Login system (Auth.js + demo seed)
 - [x] Complete database schema
 - [x] Learning system
-- [x] Usage analytics
+- [x] Usage analytics (logging only; not tied to billing)
+- [x] Subscription plan **UI** (3 tiers — display only)
+- [x] Billing **UI** pages (no payment processing)
 
 ### 🔄 Pending Features
-- [ ] Email notifications with download links
-- [ ] Real Supabase integration
-- [ ] Actual Stripe payment processing
+- [ ] Actual Stripe payment processing (**deferred** — see backlog)
 - [ ] Dashboard implementation
 - [ ] Project management pages
 - [ ] Platform-specific pages

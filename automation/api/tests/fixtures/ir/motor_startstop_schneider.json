@@ -1,0 +1,113 @@
+{
+  "name": "Golden_Motor_Schneider",
+  "target": {
+    "vendor": "schneider",
+    "model": "TM221CE24R"
+  },
+  "vars": [
+    {
+      "symbol": "START_BTN",
+      "address": "%I0.0",
+      "dataType": "BOOL",
+      "kind": "input",
+      "initial": null,
+      "comment": "Start push button"
+    },
+    {
+      "symbol": "STOP_BTN",
+      "address": "%I0.1",
+      "dataType": "BOOL",
+      "kind": "input",
+      "initial": null,
+      "comment": "Stop push button"
+    },
+    {
+      "symbol": "MOTOR_RUN",
+      "address": "%Q0.0",
+      "dataType": "BOOL",
+      "kind": "output",
+      "initial": null,
+      "comment": "Motor contactor"
+    },
+    {
+      "symbol": "GREEN_LED",
+      "address": "%Q0.1",
+      "dataType": "BOOL",
+      "kind": "output",
+      "initial": null,
+      "comment": "Motor running indicator"
+    }
+  ],
+  "pous": [
+    {
+      "name": "MainProgram",
+      "language": "LD",
+      "networks": [
+        {
+          "label": "Rung 1",
+          "comment": "Motor start/stop control with latching",
+          "logic": {
+            "type": "and",
+            "inputs": [
+              {
+                "type": "or",
+                "inputs": [
+                  {
+                    "type": "contact",
+                    "symbol": "START_BTN",
+                    "negated": false
+                  },
+                  {
+                    "type": "contact",
+                    "symbol": "MOTOR_RUN",
+                    "negated": false
+                  }
+                ]
+              },
+              {
+                "type": "not",
+                "input": {
+                  "type": "contact",
+                  "symbol": "STOP_BTN",
+                  "negated": false
+                }
+              },
+              {
+                "type": "coil",
+                "symbol": "MOTOR_RUN",
+                "coilType": "normal"
+              }
+            ]
+          }
+        },
+        {
+          "label": "Rung 2",
+          "comment": "Motor running indicator",
+          "logic": {
+            "type": "and",
+            "inputs": [
+              {
+                "type": "contact",
+                "symbol": "MOTOR_RUN",
+                "negated": false
+              },
+              {
+                "type": "coil",
+                "symbol": "GREEN_LED",
+                "coilType": "normal"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "author": "PLCAutoPilot",
+    "description": "Motor start/stop with seal-in and run indicator",
+    "createdAt": "2000-01-01T00:00:00+00:00",
+    "pattern": "motor_startstop",
+    "patternParams": {},
+    "requireEstop": false
+  }
+}

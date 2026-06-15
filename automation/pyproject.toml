@@ -1,0 +1,36 @@
+[project]
+name = "plc-automation"
+version = "1.0.0"
+description = "PLCAutoPilot Python automation — FastAPI service, PLC file handlers, desktop scripts"
+readme = "plc_automation/README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",
+    "pydantic-settings>=2.6.0",
+    "redis>=5.2.0",
+    "anthropic>=0.40.0",
+    "pillow>=12.0.0",
+    "httpx>=0.28.0",
+]
+
+[project.optional-dependencies]
+desktop = [
+    "pyautogui==0.9.54",
+    "pygetwindow==0.0.9",
+    "pynput==1.8.1",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "fakeredis>=2.26.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["api/tests"]
+asyncio_mode = "auto"
+
+[tool.uv]
+package = false

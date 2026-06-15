@@ -1,26 +1,21 @@
 """
-Sequential Lights Program for TM221CE40T
-3 Lights that turn ON serially with 3 second gaps
+DEPRECATED — Legacy offline script using <ProjectDescriptor> XML.
 
-Sequence:
-1. Press START -> Light 1 ON
-2. After 3 sec -> Light 2 ON
-3. After 3 sec -> Light 3 ON
-4. STOP button resets everything
-
-I/O Assignment:
-- %I0.0: START_BTN (Start Button - NO)
-- %I0.1: STOP_BTN (Stop Button - NC)
-- %Q0.0: LIGHT_1 (First Light)
-- %Q0.1: LIGHT_2 (Second Light)
-- %Q0.2: LIGHT_3 (Third Light)
-- %TM0: Timer 1 (3 sec delay for Light 2)
-- %TM1: Timer 2 (3 sec delay for Light 3)
-- %M0: SEQUENCE_RUN (Sequence running flag)
+Do not use for production exports. Use the IR pipeline instead:
+  - Pattern: `ProgramService` / `POST /v1/programs/generate` with `sequential_lights`
+  - Sketch: CLI `--from-sketch` or `POST /v1/sketches/generate`
+See `automation/plc_automation/README.md` and docs/architecture/PHASE_4_PLATFORM_INTEGRATIONS.md.
 """
 
 import os
+import warnings
 from datetime import datetime
+
+warnings.warn(
+    "create_sequential_lights_smbp.py is deprecated; use the IR pipeline (ProgramService / patterns).",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 def generate_sequential_lights_smbp():
     """Generate a complete .smbp file for sequential lights control"""
