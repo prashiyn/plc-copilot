@@ -13,6 +13,7 @@ from ..schemas.ir import (
     PlcTarget,
     PlcVar,
     Pou,
+    TimerNode,
 )
 
 PATTERN_CATALOG: dict[PatternName, dict[str, str | list[str]]] = {
@@ -46,6 +47,21 @@ PATTERN_CATALOG: dict[PatternName, dict[str, str | list[str]]] = {
         "description": "Three-phase red/yellow/green sequence latched by start/stop.",
         "vendors": ["schneider", "rockwell"],
     },
+    "motor_interlock": {
+        "title": "Dual Motor Interlock",
+        "description": "Two motors with mutual exclusion — only one may run at a time.",
+        "vendors": ["schneider", "rockwell", "siemens", "mitsubishi", "codesys", "generic"],
+    },
+    "pump_staging": {
+        "title": "Lead/Lag Pump Staging",
+        "description": "Dual-pump tank fill with lead and lag pumps based on level sensors.",
+        "vendors": ["schneider", "rockwell", "siemens", "mitsubishi", "codesys", "generic"],
+    },
+    "timed_motor": {
+        "title": "Timed Motor Run",
+        "description": "Motor seal-in with on-delay timer before energizing the output.",
+        "vendors": ["schneider", "rockwell", "siemens", "mitsubishi", "codesys", "generic"],
+    },
 }
 
 
@@ -65,6 +81,7 @@ def build_pattern(
     num_lights: int = 4,
     delay_seconds: int = 3,
     cycle_seconds: int = 5,
+    run_seconds: int = 5,
 ) -> PlcProgram:
     if pattern == "motor_startstop":
         return _motor_startstop(project_name, vendor, model)
@@ -78,6 +95,12 @@ def build_pattern(
         return _conveyor_startstop(project_name, vendor, model)
     if pattern == "traffic_lights":
         return _traffic_lights(project_name, vendor, model, cycle_seconds)
+    if pattern == "motor_interlock":
+        return _motor_interlock(project_name, vendor, model)
+    if pattern == "pump_staging":
+        return _pump_staging(project_name, vendor, model)
+    if pattern == "timed_motor":
+        return _timed_motor(project_name, vendor, model, run_seconds)
     raise ValueError(f"Unknown pattern: {pattern}")
 
 
@@ -440,5 +463,209 @@ def _traffic_lights(project_name: str, vendor: str, model: str, cycle_seconds: i
             description="Red/yellow/green traffic light sequence",
             pattern="traffic_lights",
             patternParams={"cycleSeconds": cycle_seconds},
+        ),
+    )
+
+
+def _motor_interlock(project_name: str, vendor: str, model: str) -> PlcProgram:
+    vars_ = [
+        PlcVar(symbol="START_A", address="%I0.0", kind="input", comment="Start motor A"),
+        PlcVar(symbol="STOP_A", address="%I0.1", kind="input", comment="Stop motor A"),
+        PlcVar(symbol="START_B", address="%I0.2", kind="input", comment="Start motor B"),
+        PlcVar(symbol="STOP_B", address="%I0.3", kind="input", comment="Stop motor B"),
+        PlcVar(symbol="MOTOR_A_MEM", address="%M0", kind="memory", comment="Motor A seal-in"),
+        PlcVar(symbol="MOTOR_B_MEM", address="%M1", kind="memory", comment="Motor B seal-in"),
+        PlcVar(symbol="MOTOR_A_RUN", address="%Q0.0", kind="output", comment="Motor A contactor"),
+        PlcVar(symbol="MOTOR_B_RUN", address="%Q0.1", kind="output", comment="Motor B contactor"),
+    ]
+    networks = [
+        Network(
+            label="Rung 1",
+            comment="Motor A seal-in with motor B interlock",
+            logic=AndNode(
+                inputs=[
+                    OrNode(inputs=[
+                        ContactNode(symbol="START_A"),
+                        ContactNode(symbol="MOTOR_A_MEM"),
+                    ]),
+                    NotNode(input=ContactNode(symbol="STOP_A")),
+                    NotNode(input=ContactNode(symbol="MOTOR_B_MEM")),
+                    CoilNode(symbol="MOTOR_A_MEM"),
+                ]
+            ),
+        ),
+        Network(
+            label="Rung 2",
+            comment="Motor A output",
+            logic=AndNode(
+                inputs=[
+                    ContactNode(symbol="MOTOR_A_MEM"),
+                    CoilNode(symbol="MOTOR_A_RUN"),
+                ]
+            ),
+        ),
+        Network(
+            label="Rung 3",
+            comment="Motor B seal-in with motor A interlock",
+            logic=AndNode(
+                inputs=[
+                    OrNode(inputs=[
+                        ContactNode(symbol="START_B"),
+                        ContactNode(symbol="MOTOR_B_MEM"),
+                    ]),
+                    NotNode(input=ContactNode(symbol="STOP_B")),
+                    NotNode(input=ContactNode(symbol="MOTOR_A_MEM")),
+                    CoilNode(symbol="MOTOR_B_MEM"),
+                ]
+            ),
+        ),
+        Network(
+            label="Rung 4",
+            comment="Motor B output",
+            logic=AndNode(
+                inputs=[
+                    ContactNode(symbol="MOTOR_B_MEM"),
+                    CoilNode(symbol="MOTOR_B_RUN"),
+                ]
+            ),
+        ),
+    ]
+    return PlcProgram(
+        name=project_name,
+        target=PlcTarget(vendor=vendor, model=model),  # type: ignore[arg-type]
+        vars=vars_,
+        pous=[Pou(name="MainProgram", networks=networks)],
+        meta=PlcMeta(
+            description="Dual motor control with mutual exclusion interlock",
+            pattern="motor_interlock",
+        ),
+    )
+
+
+def _pump_staging(project_name: str, vendor: str, model: str) -> PlcProgram:
+    vars_ = [
+        PlcVar(symbol="AUTO_MODE", address="%I0.0", kind="input", comment="Auto mode enable"),
+        PlcVar(symbol="TANK_LOW", address="%I0.1", kind="input", comment="Low level sensor (NC)"),
+        PlcVar(symbol="TANK_HIGH", address="%I0.2", kind="input", comment="High level sensor (NC)"),
+        PlcVar(symbol="LEAD_RUN", address="%M0", kind="memory", comment="Lead pump seal-in"),
+        PlcVar(symbol="LAG_RUN", address="%M1", kind="memory", comment="Lag pump run flag"),
+        PlcVar(symbol="PUMP_LEAD", address="%Q0.0", kind="output", comment="Lead pump contactor"),
+        PlcVar(symbol="PUMP_LAG", address="%Q0.1", kind="output", comment="Lag pump contactor"),
+    ]
+    networks = [
+        Network(
+            label="Rung 1",
+            comment="Lead pump seal-in when auto and tank needs fill",
+            logic=AndNode(
+                inputs=[
+                    ContactNode(symbol="AUTO_MODE"),
+                    NotNode(input=ContactNode(symbol="TANK_HIGH")),
+                    OrNode(
+                        inputs=[
+                            NotNode(input=ContactNode(symbol="TANK_LOW")),
+                            ContactNode(symbol="LEAD_RUN"),
+                        ]
+                    ),
+                    CoilNode(symbol="LEAD_RUN"),
+                ]
+            ),
+        ),
+        Network(
+            label="Rung 2",
+            comment="Lead pump output",
+            logic=AndNode(
+                inputs=[
+                    ContactNode(symbol="LEAD_RUN"),
+                    CoilNode(symbol="PUMP_LEAD"),
+                ]
+            ),
+        ),
+        Network(
+            label="Rung 3",
+            comment="Lag pump when lead is on and tank still low",
+            logic=AndNode(
+                inputs=[
+                    ContactNode(symbol="LEAD_RUN"),
+                    NotNode(input=ContactNode(symbol="TANK_LOW")),
+                    NotNode(input=ContactNode(symbol="TANK_HIGH")),
+                    CoilNode(symbol="LAG_RUN"),
+                ]
+            ),
+        ),
+        Network(
+            label="Rung 4",
+            comment="Lag pump output",
+            logic=AndNode(
+                inputs=[
+                    ContactNode(symbol="LAG_RUN"),
+                    CoilNode(symbol="PUMP_LAG"),
+                ]
+            ),
+        ),
+    ]
+    return PlcProgram(
+        name=project_name,
+        target=PlcTarget(vendor=vendor, model=model),  # type: ignore[arg-type]
+        vars=vars_,
+        pous=[Pou(name="MainProgram", networks=networks)],
+        meta=PlcMeta(
+            description="Lead/lag pump staging for tank fill control",
+            pattern="pump_staging",
+        ),
+    )
+
+
+def _timed_motor(project_name: str, vendor: str, model: str, run_seconds: int) -> PlcProgram:
+    run_seconds = max(1, min(60, run_seconds))
+    preset_ms = run_seconds * 1000
+    vars_ = [
+        PlcVar(symbol="START_BTN", address="%I0.0", kind="input", comment="Start push button"),
+        PlcVar(symbol="STOP_BTN", address="%I0.1", kind="input", comment="Stop push button"),
+        PlcVar(
+            symbol="RUN_TIMER",
+            address="%TM0",
+            dataType="TON",
+            kind="timer",
+            comment=f"{run_seconds}s on-delay before motor output",
+        ),
+        PlcVar(symbol="MOTOR_RUN", address="%M0", kind="memory", comment="Motor run seal-in"),
+        PlcVar(symbol="MOTOR_OUTPUT", address="%Q0.0", kind="output", comment="Motor contactor"),
+    ]
+    networks = [
+        Network(
+            label="Rung 1",
+            comment="Motor run latch",
+            logic=AndNode(
+                inputs=[
+                    OrNode(inputs=[
+                        ContactNode(symbol="START_BTN"),
+                        ContactNode(symbol="MOTOR_RUN"),
+                    ]),
+                    NotNode(input=ContactNode(symbol="STOP_BTN")),
+                    CoilNode(symbol="MOTOR_RUN"),
+                ]
+            ),
+        ),
+        Network(
+            label="Rung 2",
+            comment="On-delay timer gates motor output",
+            logic=AndNode(
+                inputs=[
+                    ContactNode(symbol="MOTOR_RUN"),
+                    TimerNode(symbol="RUN_TIMER", timerType="TON", presetMs=preset_ms),
+                    CoilNode(symbol="MOTOR_OUTPUT"),
+                ]
+            ),
+        ),
+    ]
+    return PlcProgram(
+        name=project_name,
+        target=PlcTarget(vendor=vendor, model=model),  # type: ignore[arg-type]
+        vars=vars_,
+        pous=[Pou(name="MainProgram", networks=networks)],
+        meta=PlcMeta(
+            description=f"Motor start/stop with {run_seconds}s on-delay timer before output",
+            pattern="timed_motor",
+            patternParams={"runSeconds": run_seconds},
         ),
     )

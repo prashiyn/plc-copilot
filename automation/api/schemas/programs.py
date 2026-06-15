@@ -2,6 +2,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
+SynthesisMode = Literal["constrained", "arbitrary"]
+
 
 PatternName = Literal[
     "motor_startstop",
@@ -10,6 +12,9 @@ PatternName = Literal[
     "tank_level",
     "conveyor_startstop",
     "traffic_lights",
+    "motor_interlock",
+    "pump_staging",
+    "timed_motor",
 ]
 PlatformName = Literal["schneider", "rockwell", "siemens", "mitsubishi"]
 PlcopenPlatform = Literal["schneider", "rockwell", "siemens", "mitsubishi", "codesys", "universal"]
@@ -21,6 +26,7 @@ class PatternSource(BaseModel):
     numLights: int = Field(default=4, ge=2, le=8)
     delaySeconds: int = Field(default=3, ge=1, le=60)
     cycleSeconds: int = Field(default=5, ge=1, le=60)
+    runSeconds: int = Field(default=5, ge=1, le=60)
 
 
 class SketchAnalysisSource(BaseModel):
@@ -36,6 +42,7 @@ class IrSource(BaseModel):
 class ClaudeIrSource(BaseModel):
     type: Literal["claude_ir"] = "claude_ir"
     description: str = Field(min_length=1)
+    synthesisMode: SynthesisMode = "constrained"
 
 
 class ProgramGenerateRequest(BaseModel):

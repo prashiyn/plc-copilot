@@ -101,7 +101,7 @@ class TestSchneiderCalaosIntegration:
     def test_m221_ai_path_matches_ir_path(self, service, motor_program, monkeypatch):
         captured = {}
 
-        def fake_generate_ir(self, description, vendor="schneider", model="TM221CE16T", project_name=None):
+        def fake_generate_ir(self, description, vendor="schneider", model="TM221CE16T", project_name=None, synthesis_mode="constrained"):
             captured["description"] = description
             return {
                 "program": motor_program.model_dump(),

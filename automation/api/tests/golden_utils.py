@@ -190,9 +190,65 @@ PATTERN_4J_EXPORT_CASES: list[dict[str, Any]] = [
     },
 ]
 
+PATTERN_V2_EXPORT_CASES: list[dict[str, Any]] = [
+    {
+        "id": "motor_interlock_schneider",
+        "pattern": "motor_interlock",
+        "vendor": "schneider",
+        "model": "TM221CE24R",
+        "projectName": "Golden_Interlock_Schneider",
+    },
+    {
+        "id": "motor_interlock_siemens",
+        "pattern": "motor_interlock",
+        "vendor": "siemens",
+        "model": "S7-1200",
+        "projectName": "Golden_Interlock_Siemens",
+    },
+    {
+        "id": "pump_staging_schneider",
+        "pattern": "pump_staging",
+        "vendor": "schneider",
+        "model": "TM221CE24R",
+        "projectName": "Golden_Staging_Schneider",
+    },
+    {
+        "id": "pump_staging_rockwell",
+        "pattern": "pump_staging",
+        "vendor": "rockwell",
+        "model": "1769-L33ER",
+        "projectName": "Golden_Staging_Rockwell",
+    },
+    {
+        "id": "timed_motor_schneider",
+        "pattern": "timed_motor",
+        "vendor": "schneider",
+        "model": "TM221CE24R",
+        "projectName": "Golden_Timed_Schneider",
+        "runSeconds": 5,
+    },
+    {
+        "id": "timed_motor_mitsubishi",
+        "pattern": "timed_motor",
+        "vendor": "mitsubishi",
+        "model": "FX5U",
+        "projectName": "Golden_Timed_Mitsubishi",
+        "runSeconds": 5,
+    },
+    {
+        "id": "plcopen_interlock_codesys",
+        "pattern": "motor_interlock",
+        "vendor": "codesys",
+        "model": "Generic",
+        "projectName": "Golden_Interlock_Plcopen",
+        "plcopen": True,
+    },
+]
+
 EXPORT_CASES: list[dict[str, Any]] = [
     *IR_FIXTURE_CASES,
     *PATTERN_4J_EXPORT_CASES,
+    *PATTERN_V2_EXPORT_CASES,
     {
         "id": "motor_startstop_siemens",
         "pattern": "motor_startstop",
@@ -278,6 +334,7 @@ def build_ir_program(case: dict[str, Any]) -> dict[str, Any]:
         num_lights=int(case.get("numLights", 4)),
         delay_seconds=int(case.get("delaySeconds", 3)),
         cycle_seconds=int(case.get("cycleSeconds", 5)),
+        run_seconds=int(case.get("runSeconds", 5)),
     )
     return normalize_ir_program(program.model_dump())
 

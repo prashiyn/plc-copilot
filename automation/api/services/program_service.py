@@ -31,6 +31,7 @@ class ProgramService:
                 num_lights=source.get("numLights", 4),
                 delay_seconds=source.get("delaySeconds", 3),
                 cycle_seconds=source.get("cycleSeconds", 5),
+                run_seconds=source.get("runSeconds", 5),
             )
             result = self._ir.serialize(ir_payload["program"])
             result["metadata"]["ir"] = ir_payload["program"]
@@ -50,6 +51,7 @@ class ProgramService:
                 vendor=platform,
                 model=controller,
                 project_name=project_name,
+                synthesis_mode=source.get("synthesisMode", "constrained"),
             )
             result = self._ir.serialize(ir_result["program"])
             result["metadata"]["ir"] = ir_result["program"]
@@ -86,6 +88,7 @@ class ProgramService:
             num_lights=int(request.get("numLights", 4)),
             delay_seconds=int(request.get("delaySeconds", 3)),
             cycle_seconds=int(request.get("cycleSeconds", 5)),
+            run_seconds=int(request.get("runSeconds", 5)),
         )
         program = dict(ir_payload["program"])
         program["target"] = {"vendor": vendor, "model": controller}

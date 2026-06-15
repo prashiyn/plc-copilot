@@ -15,11 +15,11 @@ def service():
 
 
 class TestPatternCatalog:
-    def test_catalog_lists_six_patterns(self):
+    def test_catalog_lists_nine_patterns(self):
         patterns = list_patterns()
         ids = {item["id"] for item in patterns}
         assert ids == set(PATTERN_CATALOG.keys())
-        assert len(ids) == 6
+        assert len(ids) == 9
 
     @pytest.mark.parametrize(
         "pattern",

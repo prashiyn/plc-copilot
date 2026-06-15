@@ -281,6 +281,17 @@ Automated pre-import validation + lab export bundle for manual IDE testing.
 
 **Delivered:** Tier-2 serializers accept all 6 IR patterns; PLCopen via `plcopen_from_ir.py`; sketch generate for `siemens` + `mitsubishi`; 31 golden export hashes.
 
+### Phase 5 P3 — Logic depth ✅ (2026-06-15)
+
+| Command | Purpose |
+|---------|---------|
+| `uv run pytest api/tests/test_p3_logic_depth.py api/tests/test_patterns_v2.py -v` | Arbitrary synthesis, M221 direct IR, pattern v2 |
+| `uv run pytest api/tests/test_claude_ir.py -v` | Constrained fallback + arbitrary mode |
+
+**Docs:** [ARBITRARY_LOGIC_SYNTHESIS.md](architecture/ARBITRARY_LOGIC_SYNTHESIS.md)  
+**Patterns v2:** `motor_interlock`, `pump_staging`, `timed_motor` (9 total)  
+**M221:** `generate_from_description` → `IrService.serialize` (`metadata.exportPath=ir_direct`)
+
 **Updating schemas / older IDE versions:** [VENDOR_SCHEMA_MAINTENANCE.md](architecture/VENDOR_SCHEMA_MAINTENANCE.md)
 
 | Command | Purpose |

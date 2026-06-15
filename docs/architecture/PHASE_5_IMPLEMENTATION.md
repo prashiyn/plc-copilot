@@ -140,6 +140,8 @@ Implement in this order unless the user reprioritizes. Each item includes **why*
 | 10 | **Pattern library v2** | More industrial templates (PID, interlocks, …) | Same pattern as 4j: IR + validator + round-trip rows |
 | 11 | **M221 direct IR→Calaos** (optional) | Remove adapter hop; cosmetic architecture | Regression: `test_m221*.py` |
 
+**P3 delivered (2026-06-15):** `synthesisMode: arbitrary|constrained` in Claude IR; [ARBITRARY_LOGIC_SYNTHESIS.md](ARBITRARY_LOGIC_SYNTHESIS.md); patterns `motor_interlock`, `pump_staging`, `timed_motor`; M221 generate uses `IrService.serialize` (`exportPath: ir_direct`); `test_p3_logic_depth.py`, `test_patterns_v2.py`; 38 golden export cases.
+
 ### P4 — Parallel polish (non-blocking)
 
 | # | Item | Why | Verify |
@@ -207,6 +209,7 @@ Do **not** treat Track B as a substitute for program generate from description (
 |------|-------|
 | 2026-06-14 | Initial backlog from Phase 4 planning |
 | 2026-06-14 | FastAPI Phases 0–5 + §7 sprint complete |
+| 2026-06-15 | P3 logic depth: arbitrary synthesis, pattern v2, M221 direct IR export |
 | 2026-06-15 | P2 export scope: Tier-2 all patterns, PLCopen IR walk, sketch Tier-2 |
 | 2026-06-15 | P1 XSD validation + golden 4j export hashes |
 

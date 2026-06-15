@@ -31,6 +31,7 @@ class IrService:
         num_lights: int = 4,
         delay_seconds: int = 3,
         cycle_seconds: int = 5,
+        run_seconds: int = 5,
     ) -> dict[str, Any]:
         program = build_pattern(
             pattern,
@@ -40,6 +41,7 @@ class IrService:
             num_lights=num_lights,
             delay_seconds=delay_seconds,
             cycle_seconds=cycle_seconds,
+            run_seconds=run_seconds,
         )
         validated = validate_program(program)
         return {

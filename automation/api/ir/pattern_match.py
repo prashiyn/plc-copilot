@@ -7,12 +7,14 @@ from ..schemas.ir import PatternName, PlcVendor
 _DEFAULT_PROJECT = "PLCAutoProgram"
 
 
-def detect_pattern_from_description(description: str) -> tuple[PatternName, str, int, int, int]:
+def detect_pattern_from_description(
+    description: str,
+) -> tuple[PatternName, str, int, int, int, int]:
     """
     Infer the closest vetted pattern from user text.
 
     Returns:
-        (pattern_name, project_name, num_lights, delay_seconds, cycle_seconds)
+        (pattern_name, project_name, num_lights, delay_seconds, cycle_seconds, run_seconds)
     """
     lower = description.lower()
     light_match = re.search(r"(\d+)\s+(?:sequential\s+)?lights?", description, re.I)
@@ -24,8 +26,16 @@ def detect_pattern_from_description(description: str) -> tuple[PatternName, str,
 
     if any(kw in lower for kw in ("traffic light", "traffic lights", "red light", "red/yellow/green")):
         pattern = "traffic_lights"
+    elif any(kw in lower for kw in ("lead", "lag", "staging")) and "pump" in lower:
+        pattern = "pump_staging"
+    elif any(kw in lower for kw in ("interlock", "mutual exclusion", "mutual-exclusion")) and (
+        "motor" in lower or "dual" in lower
+    ):
+        pattern = "motor_interlock"
+    elif any(kw in lower for kw in ("timed", "timer", "delay", "on-delay")) and "motor" in lower:
+        pattern = "timed_motor"
     elif any(kw in lower for kw in ("tank", "level control", "fill pump", "pump level")) or (
-        "level" in lower and "pump" in lower
+        "level" in lower and "pump" in lower and "staging" not in lower
     ):
         pattern = "tank_level"
     elif any(kw in lower for kw in ("e-stop", "estop", "e stop", "emergency stop")) and "motor" in lower:
@@ -44,7 +54,7 @@ def detect_pattern_from_description(description: str) -> tuple[PatternName, str,
         num_lights = min(8, max(2, int(light_match.group(1))))
 
     delay_seconds = 3
-    if time_match and pattern != "traffic_lights":
+    if time_match and pattern not in {"traffic_lights", "timed_motor"}:
         delay_seconds = min(60, max(1, int(time_match.group(1))))
 
     cycle_seconds = 5
@@ -53,13 +63,17 @@ def detect_pattern_from_description(description: str) -> tuple[PatternName, str,
     elif time_match and pattern == "traffic_lights":
         cycle_seconds = min(60, max(1, int(time_match.group(1))))
 
+    run_seconds = 5
+    if time_match and pattern == "timed_motor":
+        run_seconds = min(60, max(1, int(time_match.group(1))))
+
     if name_match:
         project_name = name_match.group(1).strip()
         project_name = re.sub(r"[^a-zA-Z0-9_]", "_", project_name) or _DEFAULT_PROJECT
     else:
         project_name = _DEFAULT_PROJECT
 
-    return pattern, project_name, num_lights, delay_seconds, cycle_seconds
+    return pattern, project_name, num_lights, delay_seconds, cycle_seconds, run_seconds
 
 
 def normalize_vendor(vendor: str) -> PlcVendor:

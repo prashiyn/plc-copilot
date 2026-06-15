@@ -29,6 +29,9 @@ EXPORT_PATTERNS = frozenset(
         "tank_level",
         "conveyor_startstop",
         "traffic_lights",
+        "motor_interlock",
+        "pump_staging",
+        "timed_motor",
     }
 )
 
@@ -101,6 +104,44 @@ def validate_program(program: PlcProgram | dict) -> PlcProgram:
         missing = required - defined
         if missing:
             errors.append(f"Traffic lights pattern missing symbols: {', '.join(sorted(missing))}")
+
+    if model.meta.pattern == "motor_interlock":
+        required = {
+            "START_A",
+            "STOP_A",
+            "MOTOR_A_RUN",
+            "START_B",
+            "STOP_B",
+            "MOTOR_B_RUN",
+            "MOTOR_A_MEM",
+            "MOTOR_B_MEM",
+        }
+        missing = required - defined
+        if missing:
+            errors.append(f"Motor interlock pattern missing symbols: {', '.join(sorted(missing))}")
+
+    if model.meta.pattern == "pump_staging":
+        required = {
+            "AUTO_MODE",
+            "TANK_LOW",
+            "TANK_HIGH",
+            "LEAD_RUN",
+            "LAG_RUN",
+            "PUMP_LEAD",
+            "PUMP_LAG",
+        }
+        missing = required - defined
+        if missing:
+            errors.append(f"Pump staging pattern missing symbols: {', '.join(sorted(missing))}")
+
+    if model.meta.pattern == "timed_motor":
+        required = {"START_BTN", "STOP_BTN", "MOTOR_RUN", "RUN_TIMER", "MOTOR_OUTPUT"}
+        missing = required - defined
+        if missing:
+            errors.append(f"Timed motor pattern missing symbols: {', '.join(sorted(missing))}")
+        timer_var = var_by_symbol.get("RUN_TIMER")
+        if timer_var is None or timer_var.kind != "timer":
+            errors.append("timed_motor pattern requires RUN_TIMER timer variable")
 
     if model.meta.requireEstop:
         errors.extend(_validate_estop_requirements(model))

@@ -3,7 +3,7 @@ import pytest
 from api.ir.pattern_match import detect_pattern_from_description, normalize_vendor
 from api.ir.patterns import build_pattern
 from api.ir.validator import validate_program
-from api.services.claude_ir_service import ClaudeIrService, MAX_RETRIES
+from api.services.claude_ir_service import ClaudeIrService, IrSynthesisError, MAX_RETRIES
 
 
 class FakeClaude:
@@ -40,13 +40,13 @@ def _invalid_motor_ir() -> dict:
 
 class TestPatternMatch:
     def test_detects_motor_from_description(self):
-        pattern, name, _lights, _delay, _cycle = detect_pattern_from_description(
+        pattern, name, _lights, _delay, _cycle, _run = detect_pattern_from_description(
             "Motor start stop circuit with START and STOP buttons."
         )
         assert pattern == "motor_startstop"
 
     def test_detects_sequential_lights(self):
-        pattern, _name, num_lights, delay, _cycle = detect_pattern_from_description(
+        pattern, _name, num_lights, delay, _cycle, _run = detect_pattern_from_description(
             "3 sequential lights with 3-second delays."
         )
         assert pattern == "sequential_lights"
@@ -54,29 +54,47 @@ class TestPatternMatch:
         assert delay == 3
 
     def test_detects_estop_motor(self):
-        pattern, _name, _lights, _delay, _cycle = detect_pattern_from_description(
+        pattern, _name, _lights, _delay, _cycle, _run = detect_pattern_from_description(
             "Motor with emergency stop E-stop button and seal-in."
         )
         assert pattern == "estop_motor"
 
     def test_detects_tank_level(self):
-        pattern, _name, _lights, _delay, _cycle = detect_pattern_from_description(
+        pattern, _name, _lights, _delay, _cycle, _run = detect_pattern_from_description(
             "Tank level control with fill pump and high/low sensors."
         )
         assert pattern == "tank_level"
 
     def test_detects_conveyor(self):
-        pattern, _name, _lights, _delay, _cycle = detect_pattern_from_description(
+        pattern, _name, _lights, _delay, _cycle, _run = detect_pattern_from_description(
             "Conveyor belt start stop with run signal."
         )
         assert pattern == "conveyor_startstop"
 
     def test_detects_traffic_lights(self):
-        pattern, _name, _lights, _delay, cycle = detect_pattern_from_description(
+        pattern, _name, _lights, _delay, cycle, _run = detect_pattern_from_description(
             "Traffic light sequence with 4 second cycle."
         )
         assert pattern == "traffic_lights"
         assert cycle == 4
+
+    def test_detects_motor_interlock(self):
+        pattern, _name, *_rest = detect_pattern_from_description(
+            "Dual motor interlock with mutual exclusion"
+        )
+        assert pattern == "motor_interlock"
+
+    def test_detects_pump_staging(self):
+        pattern, _name, *_rest = detect_pattern_from_description(
+            "Lead lag pump staging for tank"
+        )
+        assert pattern == "pump_staging"
+
+    def test_detects_timed_motor(self):
+        pattern, _name, *_rest = detect_pattern_from_description(
+            "Timed motor with 7 second on-delay"
+        )
+        assert pattern == "timed_motor"
 
     def test_normalize_vendor_maps_rockwell_aliases(self):
         assert normalize_vendor("Allen-Bradley") == "rockwell"
@@ -109,6 +127,14 @@ class TestClaudeIrService:
         assert result["attempts"] == 2
         assert fake.calls == 2
         assert "INVALID" in fake.prompts[1] or "Previous response" in fake.prompts[1]
+
+    def test_arbitrary_mode_raises_on_exhausted_retries(self):
+        fake = FakeClaude([_invalid_motor_ir()] * (MAX_RETRIES + 1))
+        with pytest.raises(IrSynthesisError):
+            ClaudeIrService(claude=fake).generate_program_ir(
+                "Custom permissive logic with three inputs",
+                synthesis_mode="arbitrary",
+            )
 
     def test_exhausted_retries_use_pattern_fallback(self):
         fake = FakeClaude([_invalid_motor_ir()] * (MAX_RETRIES + 1))

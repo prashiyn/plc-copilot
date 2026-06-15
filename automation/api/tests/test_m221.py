@@ -85,7 +85,7 @@ class TestM221GenerateMocked:
         from api.ir.patterns import build_pattern
         from api.services.claude_ir_service import ClaudeIrService
 
-        def fake_generate_ir(self, description, vendor="schneider", model="TM221CE16T", project_name=None):
+        def fake_generate_ir(self, description, vendor="schneider", model="TM221CE16T", project_name=None, synthesis_mode="constrained"):
             captured["description"] = description
             captured["plc_model"] = model
             program = build_pattern(
@@ -114,6 +114,7 @@ class TestM221GenerateMocked:
         assert result["programData"]["projectName"] == "AiMotor"
         assert result["ir"]["name"] == "AiMotor"
         assert result["metadata"]["irSource"] == "claude"
+        assert result["metadata"].get("exportPath") == "ir_direct"
         xml = base64.standard_b64decode(result["contentBase64"]).decode("utf-8")
         assert "Calaos/Case/2.0" in xml
 

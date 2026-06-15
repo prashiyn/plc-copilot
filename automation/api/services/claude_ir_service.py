@@ -1,9 +1,9 @@
-"""Claude → validated PlcProgram IR with retry and deterministic pattern fallback."""
+"""Claude → validated PlcProgram IR with retry and optional pattern fallback."""
 
 from __future__ import annotations
 
 import json
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 from ..ir.pattern_match import detect_pattern_from_description, normalize_vendor
 from ..ir.patterns import build_pattern
@@ -13,6 +13,7 @@ from ..schemas.ir import PlcProgram, PlcVendor
 from .claude_service import ClaudeService
 
 MAX_RETRIES = 2
+SynthesisMode = Literal["constrained", "arbitrary"]
 
 IR_SYSTEM_PROMPT = """You are a PLC intermediate-representation (IR) generator.
 Return ONE JSON object: a PlcProgram for ladder-oriented logic.
@@ -27,6 +28,25 @@ Rules:
 - Motor start/stop: seal-in with START_BTN, STOP_BTN (NC), MOTOR_RUN output
 - Do NOT emit vendor export formats (no L5X, no smbp XML, no SCL text)
 - Output ONLY valid JSON — no markdown fences or commentary"""
+
+ARBITRARY_IR_SYSTEM_PROMPT = IR_SYSTEM_PROMPT + """
+
+Arbitrary-logic mode:
+- Implement the user's described ladder logic directly — do NOT map to a canned template name
+- Set meta.pattern to null unless the program exactly matches a standard library pattern
+- Prefer explicit symbols and rung comments that match the user's terminology
+- Use timers/counters only when the description requires timed or counted behavior"""
+
+
+class IrSynthesisError(ValueError):
+    """Raised when arbitrary IR synthesis fails validation after all retries."""
+
+    def __init__(self, errors: list[str], attempts: int):
+        self.errors = errors
+        self.attempts = attempts
+        super().__init__(
+            f"IR synthesis failed after {attempts} attempts: " + "; ".join(errors[:5])
+        )
 
 
 class JsonAskClient(Protocol):
@@ -50,26 +70,31 @@ class ClaudeIrService:
         vendor: str = "schneider",
         model: str = "TM221CE24R",
         project_name: str | None = None,
+        synthesis_mode: SynthesisMode = "constrained",
     ) -> dict[str, Any]:
         vendor_norm = normalize_vendor(vendor)
-        pattern_hint, detected_name, num_lights, delay_seconds, cycle_seconds = detect_pattern_from_description(
-            description
+        pattern_hint, detected_name, num_lights, delay_seconds, cycle_seconds, run_seconds = (
+            detect_pattern_from_description(description)
         )
         resolved_name = project_name or detected_name
 
         claude = self._claude or ClaudeService()
         last_errors: list[str] = []
+        system_prompt = (
+            ARBITRARY_IR_SYSTEM_PROMPT if synthesis_mode == "arbitrary" else IR_SYSTEM_PROMPT
+        )
 
         for attempt in range(MAX_RETRIES + 1):
             try:
                 raw = claude.ask_json(
-                    IR_SYSTEM_PROMPT,
+                    system_prompt,
                     _build_user_prompt(
                         description,
                         vendor=vendor_norm,
                         model=model,
                         project_name=resolved_name,
                         validation_errors=last_errors if attempt > 0 else None,
+                        synthesis_mode=synthesis_mode,
                     ),
                     max_tokens=4096,
                 )
@@ -84,11 +109,15 @@ class ClaudeIrService:
                     attempts=attempt + 1,
                     pattern=None,
                     fallback_reason=None,
+                    synthesis_mode=synthesis_mode,
                 )
             except IrValidationError as exc:
                 last_errors = list(exc.errors)
             except (ValueError, json.JSONDecodeError, TypeError) as exc:
                 last_errors = [str(exc)]
+
+        if synthesis_mode == "arbitrary":
+            raise IrSynthesisError(last_errors, MAX_RETRIES + 1)
 
         program = build_pattern(
             pattern_hint,
@@ -98,6 +127,7 @@ class ClaudeIrService:
             num_lights=num_lights,
             delay_seconds=delay_seconds,
             cycle_seconds=cycle_seconds,
+            run_seconds=run_seconds,
         )
         validated = validate_program(program)
         reason = (
@@ -110,6 +140,7 @@ class ClaudeIrService:
             attempts=MAX_RETRIES + 1,
             pattern=pattern_hint,
             fallback_reason=reason,
+            synthesis_mode=synthesis_mode,
         )
 
 
@@ -120,12 +151,14 @@ def _build_user_prompt(
     model: str,
     project_name: str,
     validation_errors: list[str] | None,
+    synthesis_mode: SynthesisMode,
 ) -> str:
     schema_hint = json.dumps(ir_schema_for_claude()["schema"], indent=2)[:6000]
     parts = [
         f"Target vendor: {vendor}",
         f"Target model: {model}",
         f"Project name: {project_name}",
+        f"Synthesis mode: {synthesis_mode}",
         "",
         "User requirement:",
         description.strip(),
@@ -174,6 +207,7 @@ def _build_response(
     attempts: int,
     pattern: str | None,
     fallback_reason: str | None,
+    synthesis_mode: SynthesisMode,
 ) -> dict[str, Any]:
     return {
         "program": program.model_dump(),
@@ -182,4 +216,5 @@ def _build_response(
         "attempts": attempts,
         "pattern": pattern,
         "fallbackReason": fallback_reason,
+        "synthesisMode": synthesis_mode,
     }

@@ -112,6 +112,7 @@ async def _dispatch(job_type: str, payload: dict[str, Any]) -> Any:
             vendor=payload.get("vendor", "schneider"),
             model=payload.get("model", "TM221CE24R"),
             project_name=payload.get("projectName"),
+            synthesis_mode=payload.get("synthesisMode", "constrained"),
         )
 
     raise ValueError(f"Unknown job type: {job_type}")

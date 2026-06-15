@@ -96,7 +96,7 @@ async def test_generate_claude_ir_api(client, redis, auth_headers, monkeypatch):
     from api.ir.patterns import build_pattern
     from api.services.claude_ir_service import ClaudeIrService
 
-    def fake_generate_ir(self, description, vendor="schneider", model="TM221CE24R", project_name=None):
+    def fake_generate_ir(self, description, vendor="schneider", model="TM221CE24R", project_name=None, synthesis_mode="constrained"):
         program = build_pattern(
             "motor_startstop",
             project_name=project_name or "ApiClaude",

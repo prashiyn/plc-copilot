@@ -89,6 +89,34 @@
       "sha256": "b6c8bc260b3bb5a3c75633c8e8368eaa09b22033971885893e0b08fdb0a21c8b",
       "format": "mitsubishi_tier2_zip"
     },
+    "motor_interlock_schneider": {
+      "sha256": "1ab7e77def4f95218df38b86181d2474173ec58067593586784c5d53fa223d76",
+      "format": "machine_expert_basic_xml"
+    },
+    "motor_interlock_siemens": {
+      "sha256": "7d99dd019199685707752f653f73279407df223d130d89117be05683256a369c",
+      "format": "scl"
+    },
+    "pump_staging_schneider": {
+      "sha256": "500257fcbb28237f57aa694ae890436eff80b0c038f4afb1ad3abe110bf0f17f",
+      "format": "machine_expert_basic_xml"
+    },
+    "pump_staging_rockwell": {
+      "sha256": "ea105f9355b1168ff11133947eeed0d2d1d1354a4b0bd553c989d5c521929911",
+      "format": "l5x"
+    },
+    "timed_motor_schneider": {
+      "sha256": "00e0d0f1897bad589637a65c818d455a08a7ea4cc35ce057ec53f81a9e1ce953",
+      "format": "machine_expert_basic_xml"
+    },
+    "timed_motor_mitsubishi": {
+      "sha256": "a087b7eda49a1614d622afe4391f4a12d80bc48a6179eab87a4451e55cf15e4d",
+      "format": "mitsubishi_tier2_zip"
+    },
+    "plcopen_interlock_codesys": {
+      "sha256": "7968c52eccbd401cf5ea176d469c6afdd4fe4f2afee93102ab4531bf03cbaa0f",
+      "format": "plcopen_xml"
+    },
     "motor_startstop_siemens": {
       "sha256": "995be073b397abc2c4d5bdb063780bbedffd67155d55b7cf0725ff435e39d470",
       "format": "scl"

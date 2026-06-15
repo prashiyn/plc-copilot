@@ -15,6 +15,9 @@ PatternName = Literal[
     "tank_level",
     "conveyor_startstop",
     "traffic_lights",
+    "motor_interlock",
+    "pump_staging",
+    "timed_motor",
 ]
 TimerType = Literal["TON", "TOF", "TP"]
 CounterType = Literal["CTU", "CTD", "CTUD"]

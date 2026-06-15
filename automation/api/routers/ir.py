@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
@@ -26,6 +26,7 @@ class IrPatternRequest(BaseModel):
     numLights: int = Field(default=4, ge=2, le=8)
     delaySeconds: int = Field(default=3, ge=1, le=60)
     cycleSeconds: int = Field(default=5, ge=1, le=60)
+    runSeconds: int = Field(default=5, ge=1, le=60)
 
 
 class IrGenerateFromDescriptionRequest(BaseModel):
@@ -33,6 +34,7 @@ class IrGenerateFromDescriptionRequest(BaseModel):
     vendor: PlcVendor = "schneider"
     model: str = "TM221CE24R"
     projectName: str | None = None
+    synthesisMode: Literal["constrained", "arbitrary"] = "constrained"
 
 
 @router.get("/patterns")
@@ -56,6 +58,7 @@ async def get_pattern_ir(pattern_name: PatternName, body: IrPatternRequest):
         num_lights=body.numLights,
         delay_seconds=body.delaySeconds,
         cycle_seconds=body.cycleSeconds,
+        run_seconds=body.runSeconds,
     )
 
 
@@ -94,6 +97,7 @@ async def generate_ir_from_description(
             "vendor": body.vendor,
             "model": body.model,
             "projectName": body.projectName,
+            "synthesisMode": body.synthesisMode,
         },
     )
     return JSONResponse(status_code=202, content={"jobId": job_id, "status": "queued"})

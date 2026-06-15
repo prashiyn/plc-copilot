@@ -9,7 +9,7 @@ from typing import Any
 
 from ...schemas.ir import PlcProgram
 from ...schemas.m221 import M221ProgramData
-from ..m221_adapter import plc_program_to_m221_data
+from ..m221_adapter import ir_program_to_m221_data
 
 SAMPLES_DIR = Path(__file__).resolve().parents[3] / "samples"
 CALAOS_TEMPLATE = SAMPLES_DIR / "tankcontrol.smbp"
@@ -41,7 +41,7 @@ IL_ELEMENT_MAP = {
 
 
 def render_calaos_smbp_from_program(program: PlcProgram, plc_model: str) -> str:
-    data = M221ProgramData.model_validate(plc_program_to_m221_data(program))
+    data = M221ProgramData.model_validate(ir_program_to_m221_data(program))
     return render_calaos_smbp_from_data(data, plc_model)
 
 

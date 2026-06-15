@@ -1,4 +1,4 @@
-"""Convert validated PlcProgram IR into M221 builder JSON (Calaos export path)."""
+"""Convert PlcProgram IR to M221ProgramData-compatible dict for Calaos rendering."""
 
 from __future__ import annotations
 
@@ -19,8 +19,8 @@ from ..schemas.ir import (
 )
 
 
-def plc_program_to_m221_data(program: PlcProgram) -> dict[str, Any]:
-    """Map PlcProgram IR to M221ProgramData-compatible dict for M221SmbpBuilder."""
+def ir_program_to_m221_data(program: PlcProgram) -> dict[str, Any]:
+    """Map PlcProgram IR to M221ProgramData-compatible dict."""
     inputs: list[dict[str, str]] = []
     outputs: list[dict[str, str]] = []
     memory: list[dict[str, str]] = []
@@ -39,11 +39,17 @@ def plc_program_to_m221_data(program: PlcProgram) -> dict[str, Any]:
         elif var.kind == "memory":
             memory.append(point)
         elif var.kind == "timer":
+            preset_seconds = 3
+            params = program.meta.patternParams or {}
+            if isinstance(params.get("runSeconds"), int):
+                preset_seconds = int(params["runSeconds"])
+            elif isinstance(params.get("delaySeconds"), int):
+                preset_seconds = int(params["delaySeconds"])
             timers.append(
                 {
                     **point,
                     "type": var.dataType if var.dataType in {"TON", "TOF", "TP"} else "TON",
-                    "preset": 3,
+                    "preset": preset_seconds,
                     "timebase": "1s",
                 }
             )
@@ -68,7 +74,7 @@ def plc_program_to_m221_data(program: PlcProgram) -> dict[str, Any]:
             )
 
     if not rungs:
-        from ..services.m221_smbp_builder import default_m221_program
+        from ...services.m221_smbp_builder import default_m221_program
 
         fallback = default_m221_program(program.name)
         fallback["inputs"] = inputs or fallback["inputs"]
@@ -87,6 +93,11 @@ def plc_program_to_m221_data(program: PlcProgram) -> dict[str, Any]:
     }
 
 
+def plc_program_to_m221_data(program: PlcProgram) -> dict[str, Any]:
+    """Backward-compatible alias for ir_program_to_m221_data."""
+    return ir_program_to_m221_data(program)
+
+
 def logic_to_il(node: LogicNode, var_by_symbol: dict[str, PlcVar]) -> list[str]:
     if isinstance(node, AndNode):
         lines: list[str] = []
@@ -103,7 +114,12 @@ def logic_to_il(node: LogicNode, var_by_symbol: dict[str, PlcVar]) -> list[str]:
     return _logic_part_il(node, var_by_symbol, first=True)
 
 
-def _logic_part_il(node: LogicNode, var_by_symbol: dict[str, PlcVar], *, first: bool) -> list[str]:
+def _logic_part_il(
+    node: LogicNode,
+    var_by_symbol: dict[str, PlcVar],
+    *,
+    first: bool,
+) -> list[str]:
     if isinstance(node, ContactNode):
         op = _operand(node.symbol, var_by_symbol)
         prefix = "LD" if first else "AND"
