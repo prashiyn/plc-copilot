@@ -9,6 +9,7 @@ from redis.asyncio import Redis
 from ..config import get_settings
 from ..dependencies import get_redis, verify_api_key
 from ..jobs.store import JobStore
+from ..services.program_service import SKETCH_EXPORT_PLATFORMS
 
 router = APIRouter(prefix="/v1/sketches", tags=["sketches"], dependencies=[Depends(verify_api_key)])
 
@@ -47,10 +48,10 @@ async def generate_from_sketch(
     image: UploadFile = File(...),
     redis: Redis = Depends(get_redis),
 ):
-    if platform not in ("schneider", "rockwell"):
+    if platform not in SKETCH_EXPORT_PLATFORMS:
         raise HTTPException(
             status_code=422,
-            detail="Sketch generation supports schneider and rockwell platforms",
+            detail=f"Sketch generation supports: {', '.join(sorted(SKETCH_EXPORT_PLATFORMS))}",
         )
 
     image_path = await _save_upload(image)

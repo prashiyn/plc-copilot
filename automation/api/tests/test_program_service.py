@@ -122,13 +122,18 @@ class TestProgramPlcopen:
             assert marker in generated
             assert marker in golden
 
-    def test_sequential_lights_plcopen_rejected(self, service):
-        with pytest.raises(ValueError, match="motor_startstop only"):
-            service.generate_plcopen({
-                "name": "Seq",
-                "platform": "universal",
-                "pattern": "sequential_lights",
-            })
+    def test_sequential_lights_plcopen_exports(self, service):
+        result = service.generate_plcopen({
+            "name": "Seq",
+            "platform": "universal",
+            "pattern": "sequential_lights",
+            "numLights": 4,
+            "delaySeconds": 3,
+        })
+        generated = base64.standard_b64decode(result["contentBase64"]).decode("utf-8")
+        assert "LIGHT1" in generated
+        assert "LIGHT4" in generated
+        assert "SEQ_RUN" in generated
 
 
 class TestProgramParse:

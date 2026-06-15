@@ -1,6 +1,6 @@
 from plc_file_handler.converters.sketch_analyzer import SketchAnalyzer
 
-from .program_service import ProgramService
+from .program_service import ProgramService, SKETCH_EXPORT_PLATFORMS
 
 
 class SketchService:
@@ -29,8 +29,11 @@ class SketchService:
         if errors:
             raise ValueError("; ".join(errors))
 
-        if platform not in ("schneider", "rockwell"):
-            raise ValueError(f"Unsupported sketch generation platform: {platform}")
+        if platform not in SKETCH_EXPORT_PLATFORMS:
+            raise ValueError(
+                f"Unsupported sketch generation platform: {platform}; "
+                f"supported: {', '.join(sorted(SKETCH_EXPORT_PLATFORMS))}"
+            )
 
         return ProgramService().generate(
             {

@@ -50,6 +50,9 @@ class PlcopenGenerateRequest(BaseModel):
     platform: PlcopenPlatform = "universal"
     pattern: PatternName = "motor_startstop"
     controller: str = "TM221CE24R"
+    numLights: int = Field(default=4, ge=2, le=8)
+    delaySeconds: int = Field(default=3, ge=1, le=60)
+    cycleSeconds: int = Field(default=5, ge=1, le=60)
 
 
 class ProgramFileResult(BaseModel):

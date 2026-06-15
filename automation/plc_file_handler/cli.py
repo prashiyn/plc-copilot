@@ -142,13 +142,18 @@ def generate_file(args):
     """Generate a PLC file from sketch or JSON via IR pipeline."""
 
     try:
-        if args.platform not in ("schneider", "rockwell"):
-            print(f"Error: sketch generation supports schneider and rockwell (got {args.platform})")
+        if args.platform not in ("schneider", "rockwell", "siemens", "mitsubishi"):
+            print(
+                "Error: sketch generation supports schneider, rockwell, siemens, and mitsubishi "
+                f"(got {args.platform})"
+            )
             sys.exit(1)
 
         default_controllers = {
             "schneider": "TM221CE24R",
             "rockwell": "1769-L33ER",
+            "siemens": "S7-1200",
+            "mitsubishi": "FX5U",
         }
         controller = args.controller or default_controllers[args.platform]
 
@@ -329,7 +334,7 @@ Examples:
     # Generate command
     generate_parser = subparsers.add_parser('generate', help='Generate a PLC file')
     generate_parser.add_argument('--platform', required=True,
-                                choices=['schneider', 'rockwell'],
+                                choices=['schneider', 'rockwell', 'siemens', 'mitsubishi'],
                                 help='Target platform')
     generate_parser.add_argument('--name', required=True, help='Project name')
     generate_parser.add_argument('--controller', help='Controller model')

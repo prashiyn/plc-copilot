@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "cases": {
+    "signoff_schneider_motor": {
+      "platform": "Schneider Electric",
+      "ide": "EcoStruxure Machine Expert - Basic",
+      "ideVersionHint": "1.2+",
+      "pattern": "motor_startstop",
+      "tier": 1,
+      "importType": "full_project",
+      "exportCaseId": "motor_startstop_schneider",
+      "exportFile": "signoff_schneider_motor.smbp",
+      "manualSteps": "File \u2192 Open \u2192 select .smbp \u2192 verify zero import errors \u2192 Build \u2192 verify compile succeeds \u2192 confirm START/STOP/MOTOR_RUN logic.",
+      "automated": {
+        "status": "passed",
+        "checks": [
+          "serialize",
+          "ir_validate",
+          "roundtrip",
+          "format_structure",
+          "golden_hash"
+        ],
+        "lastRun": "2026-06-15T12:28:27+00:00",
+        "failures": []
+      },
+      "manual": {
+        "status": "pending",
+        "importErrors": null,
+        "compiles": null,
+        "testedBy": null,
+        "testedAt": null,
+        "ideVersion": null,
+        "notes": null,
+        "issues": []
+      }
+    },
+    "signoff_schneider_sequential": {
+      "platform": "Schneider Electric",
+      "ide": "EcoStruxure Machine Expert - Basic",
+      "ideVersionHint": "1.2+",
+      "pattern": "sequential_lights",
+      "tier": 1,
+      "importType": "full_project",
+      "exportCaseId": "sequential_lights_schneider",
+      "exportFile": "signoff_schneider_sequential.smbp",
+      "manualSteps": "Open .smbp \u2192 verify timers and LIGHT outputs import \u2192 Build \u2192 confirm sequential START/STOP behavior in ladder view.",
+      "automated": {
+        "status": "passed",
+        "checks": [
+          "serialize",
+          "ir_validate",
+          "roundtrip",
+          "format_structure",
+          "golden_hash"
+        ],
+        "lastRun": "2026-06-15T12:28:27+00:00",
+        "failures": []
+      },
+      "manual": {
+        "status": "pending",
+        "importErrors": null,
+        "compiles": null,
+        "testedBy": null,
+        "testedAt": null,
+        "ideVersion": null,
+        "notes": null,
+        "issues": []
+      }
+    },
+    "signoff_rockwell_motor": {
+      "platform": "Rockwell Automation",
+      "ide": "Studio 5000 Logix Designer",
+      "ideVersionHint": "v32+",
+      "pattern": "motor_startstop",
+      "tier": 1,
+      "importType": "full_project",
+      "exportCaseId": "motor_startstop_rockwell",
+      "exportFile": "signoff_rockwell_motor.L5X",
+      "manualSteps": "File \u2192 Open \u2192 .L5X \u2192 import with matching controller family \u2192 verify zero errors \u2192 Verify Controller \u2192 confirm tag/rung presence.",
+      "automated": {
+        "status": "passed",
+        "checks": [
+          "serialize",
+          "ir_validate",
+          "roundtrip",
+          "format_structure",
+          "golden_hash"
+        ],
+        "lastRun": "2026-06-15T12:28:27+00:00",
+        "failures": []
+      },
+      "manual": {
+        "status": "pending",
+        "importErrors": null,
+        "compiles": null,
+        "testedBy": null,
+        "testedAt": null,
+        "ideVersion": null,
+        "notes": null,
+        "issues": []
+      }
+    },
+    "signoff_rockwell_sequential": {
+      "platform": "Rockwell Automation",
+      "ide": "Studio 5000 Logix Designer",
+      "ideVersionHint": "v32+",
+      "pattern": "sequential_lights",
+      "tier": 1,
+      "importType": "full_project",
+      "exportCaseId": "sequential_lights_rockwell",
+      "exportFile": "signoff_rockwell_sequential.L5X",
+      "manualSteps": "Open .L5X \u2192 verify TON timers and LIGHT tags \u2192 Verify Controller \u2192 confirm sequential logic in MainProgram.",
+      "automated": {
+        "status": "passed",
+        "checks": [
+          "serialize",
+          "ir_validate",
+          "roundtrip",
+          "format_structure",
+          "golden_hash"
+        ],
+        "lastRun": "2026-06-15T12:28:27+00:00",
+        "failures": []
+      },
+      "manual": {
+        "status": "pending",
+        "importErrors": null,
+        "compiles": null,
+        "testedBy": null,
+        "testedAt": null,
+        "ideVersion": null,
+        "notes": null,
+        "issues": []
+      }
+    },
+    "signoff_siemens_motor": {
+      "platform": "Siemens",
+      "ide": "TIA Portal",
+      "ideVersionHint": "V17+",
+      "pattern": "motor_startstop",
+      "tier": 2,
+      "importType": "source_import",
+      "exportCaseId": "motor_startstop_siemens",
+      "exportFile": "signoff_siemens_motor.scl",
+      "manualSteps": "External source files \u2192 Add existing .scl \u2192 import blocks \u2192 Compile \u2192 verify no syntax errors (source import, not full .ap15 project).",
+      "automated": {
+        "status": "passed",
+        "checks": [
+          "serialize",
+          "ir_validate",
+          "roundtrip",
+          "format_structure",
+          "golden_hash"
+        ],
+        "lastRun": "2026-06-15T12:28:27+00:00",
+        "failures": []
+      },
+      "manual": {
+        "status": "pending",
+        "importErrors": null,
+        "compiles": null,
+        "testedBy": null,
+        "testedAt": null,
+        "ideVersion": null,
+        "notes": null,
+        "issues": []
+      }
+    },
+    "signoff_mitsubishi_motor": {
+      "platform": "Mitsubishi Electric",
+      "ide": "GX Works3",
+      "ideVersionHint": "1.080+",
+      "pattern": "motor_startstop",
+      "tier": 2,
+      "importType": "source_import",
+      "exportCaseId": "motor_startstop_mitsubishi",
+      "exportFile": "signoff_mitsubishi_motor.zip",
+      "manualSteps": "Extract ZIP \u2192 import IL/ST/device comments per GX Works workflow \u2192 Convert/compile \u2192 verify symbols (source bundle, not .gxw project).",
+      "automated": {
+        "status": "passed",
+        "checks": [
+          "serialize",
+          "ir_validate",
+          "roundtrip",
+          "format_structure",
+          "golden_hash"
+        ],
+        "lastRun": "2026-06-15T12:28:27+00:00",
+        "failures": []
+      },
+      "manual": {
+        "status": "pending",
+        "importErrors": null,
+        "compiles": null,
+        "testedBy": null,
+        "testedAt": null,
+        "ideVersion": null,
+        "notes": null,
+        "issues": []
+      }
+    },
+    "signoff_codesys_motor": {
+      "platform": "CODESYS",
+      "ide": "CODESYS Development System",
+      "ideVersionHint": "3.5 SP19+",
+      "pattern": "motor_startstop",
+      "tier": 1,
+      "importType": "full_project",
+      "exportCaseId": "plcopen_motor_codesys",
+      "exportFile": "signoff_codesys_motor.xml",
+      "manualSteps": "File \u2192 Open project from PLCopen XML \u2192 verify POUs/variables \u2192 Build \u2192 confirm ladder matches motor start/stop pattern.",
+      "automated": {
+        "status": "passed",
+        "checks": [
+          "serialize",
+          "ir_validate",
+          "roundtrip",
+          "format_structure",
+          "golden_hash"
+        ],
+        "lastRun": "2026-06-15T12:28:27+00:00",
+        "failures": []
+      },
+      "manual": {
+        "status": "pending",
+        "importErrors": null,
+        "compiles": null,
+        "testedBy": null,
+        "testedAt": null,
+        "ideVersion": null,
+        "notes": null,
+        "issues": []
+      }
+    }
+  },
+  "updatedAt": "2026-06-15T12:28:27+00:00"
+}

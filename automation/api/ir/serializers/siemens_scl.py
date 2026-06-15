@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from plc_file_handler.converters.platform_converter import PlatformConverter
 
-from ..validator import MOTOR_LIKE_PATTERNS
 from ...schemas.ir import (
     AndNode,
     CoilNode,
@@ -39,11 +38,6 @@ _SCL_TYPE_MAP = {
 
 
 def render_siemens_scl(program: PlcProgram, controller: str) -> str:
-    if program.meta.pattern and program.meta.pattern not in MOTOR_LIKE_PATTERNS:
-        raise ValueError(
-            f"Siemens SCL export supports {', '.join(sorted(MOTOR_LIKE_PATTERNS))} patterns only"
-        )
-
     converter = PlatformConverter("schneider", "siemens")
     var_lines = _render_var_block(program.vars, converter)
     body_lines = _render_networks(program)

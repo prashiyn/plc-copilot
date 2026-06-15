@@ -1,5 +1,7 @@
 """Phase 4j — expanded deterministic pattern library."""
 
+import base64
+
 import pytest
 
 from api.ir.patterns import PATTERN_CATALOG, build_pattern, list_patterns
@@ -158,13 +160,15 @@ class TestPatternValidationRules:
         with pytest.raises(IrValidationError, match="Tank level pattern missing"):
             validate_program(program)
 
-    def test_siemens_rejects_tank_level(self):
+    def test_siemens_exports_tank_level(self):
         program = build_pattern(
             "tank_level",
             project_name="TankSiemens",
             vendor="siemens",
             model="S7-1200",
         )
-        with pytest.raises(ValueError, match="Siemens SCL export supports"):
-            service = IrService()
-            service.serialize(program.model_dump())
+        service = IrService()
+        result = service.serialize(program.model_dump())
+        scl = base64.standard_b64decode(result["contentBase64"]).decode("utf-8")
+        assert "PUMP_RUN" in scl
+        assert "TANK_HIGH" in scl

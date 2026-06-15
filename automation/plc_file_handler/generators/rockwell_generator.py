@@ -101,9 +101,6 @@ class RockwellGenerator:
         # Add programs
         self._add_programs(controller)
 
-        # Add I/O configuration placeholder
-        self._add_io_config(controller)
-
         # Write to file
         xml_str = self._prettify_xml(root)
         output_file = Path(output_path)
@@ -134,8 +131,7 @@ class RockwellGenerator:
                 # Add description
                 if tag['comment']:
                     desc = ET.SubElement(tag_elem, 'Description')
-                    desc_cdata = ET.SubElement(desc, 'CData')
-                    desc_cdata.text = tag['comment']
+                    desc.text = tag['comment']
 
                 # Add data/value
                 data = ET.SubElement(tag_elem, 'Data')
@@ -150,7 +146,6 @@ class RockwellGenerator:
         programs_elem = ET.SubElement(controller, 'Programs')
 
         program = ET.SubElement(programs_elem, 'Program')
-        program.set('Use', 'Context')
         program.set('Name', self.program_name)
         program.set('TestEdits', 'false')
         program.set('Disabled', 'false')
@@ -167,8 +162,7 @@ class RockwellGenerator:
 
                 if tag['comment']:
                     desc = ET.SubElement(tag_elem, 'Description')
-                    desc_cdata = ET.SubElement(desc, 'CData')
-                    desc_cdata.text = tag['comment']
+                    desc.text = tag['comment']
 
         # Add routines
         routines_elem = ET.SubElement(program, 'Routines')
@@ -178,14 +172,12 @@ class RockwellGenerator:
         """Add ladder logic routine."""
 
         routine = ET.SubElement(routines_elem, 'Routine')
-        routine.set('Use', 'Context')
         routine.set('Name', self.routine_name)
         routine.set('Type', 'RLL')
 
         # Add routine description
         desc = ET.SubElement(routine, 'Description')
-        desc_cdata = ET.SubElement(desc, 'CData')
-        desc_cdata.text = 'Main ladder logic routine'
+        desc.text = 'Main ladder logic routine'
 
         # Add RLL content
         rll_content = ET.SubElement(routine, 'RLLContent')
@@ -198,13 +190,10 @@ class RockwellGenerator:
             # Add comment
             if rung['comment']:
                 comment = ET.SubElement(rung_elem, 'Comment')
-                comment_cdata = ET.SubElement(comment, 'CData')
-                comment_cdata.text = rung['comment']
+                comment.text = rung['comment']
 
-            # Add logic text
             text = ET.SubElement(rung_elem, 'Text')
-            text_cdata = ET.SubElement(text, 'CData')
-            text_cdata.text = rung['text']
+            text.text = rung['text']
 
     def _add_io_config(self, controller: ET.Element):
         """Add basic I/O configuration (placeholder)."""

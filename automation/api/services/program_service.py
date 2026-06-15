@@ -9,6 +9,8 @@ from ..ir.sketch_adapter import sketch_analysis_to_ir
 from .claude_ir_service import ClaudeIrService
 from .ir_service import IrService
 
+SKETCH_EXPORT_PLATFORMS = frozenset({"schneider", "rockwell", "siemens", "mitsubishi"})
+
 class ProgramService:
     def __init__(self) -> None:
         self._ir = IrService()
@@ -75,15 +77,15 @@ class ProgramService:
         platform_key = request.get("platform", "universal")
         controller = request.get("controller", "TM221CE24R")
 
-        if pattern != "motor_startstop":
-            raise ValueError("PLCopen export supports motor_startstop only; use /v1/programs/generate for other patterns")
-
         vendor = platform_key if platform_key != "universal" else "generic"
         ir_payload = self._ir.get_pattern_ir(
-            "motor_startstop",
+            pattern,
             project_name=name,
             vendor=vendor,
             model=controller,
+            num_lights=int(request.get("numLights", 4)),
+            delay_seconds=int(request.get("delaySeconds", 3)),
+            cycle_seconds=int(request.get("cycleSeconds", 5)),
         )
         program = dict(ir_payload["program"])
         program["target"] = {"vendor": vendor, "model": controller}
@@ -125,8 +127,11 @@ class ProgramService:
         controller: str,
         analysis: dict[str, Any],
     ) -> dict[str, Any]:
-        if platform not in ("schneider", "rockwell"):
-            raise ValueError(f"Unsupported sketch generation platform: {platform}")
+        if platform not in SKETCH_EXPORT_PLATFORMS:
+            raise ValueError(
+                f"Unsupported sketch generation platform: {platform}; "
+                f"supported: {', '.join(sorted(SKETCH_EXPORT_PLATFORMS))}"
+            )
 
         program = sketch_analysis_to_ir(
             analysis,

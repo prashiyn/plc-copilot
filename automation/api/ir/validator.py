@@ -21,6 +21,16 @@ TIMER_DATA_TYPES = frozenset({"TON", "TOF", "TP"})
 COUNTER_DATA_TYPES = frozenset({"CTU", "CTD", "CTUD"})
 ESTOP_SYMBOLS = frozenset({"ESTOP_BTN", "E_STOP", "EMERGENCY_STOP"})
 MOTOR_LIKE_PATTERNS = frozenset({"motor_startstop", "estop_motor", "conveyor_startstop"})
+EXPORT_PATTERNS = frozenset(
+    {
+        "motor_startstop",
+        "sequential_lights",
+        "estop_motor",
+        "tank_level",
+        "conveyor_startstop",
+        "traffic_lights",
+    }
+)
 
 
 class IrValidationError(ValueError):

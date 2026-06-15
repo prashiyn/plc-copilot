@@ -83,7 +83,7 @@ class TestMitsubishiRenderer:
         assert "X00,START_BTN,Start push button" in csv_text
         assert "Y00,MOTOR_RUN,Motor contactor" in csv_text
 
-    def test_sequential_lights_rejected(self):
+    def test_sequential_lights_exports(self):
         program = build_pattern(
             "sequential_lights",
             project_name="Seq",
@@ -92,8 +92,11 @@ class TestMitsubishiRenderer:
             num_lights=4,
             delay_seconds=3,
         )
-        with pytest.raises(ValueError, match="motor_startstop"):
-            build_mitsubishi_tier2_export(program, "FX5U")
+        bundle = build_mitsubishi_tier2_export(program, "FX5U")
+        assert "LIGHT1=Y00" in bundle["il"]
+        assert "LIGHT4=Y03" in bundle["il"]
+        assert "SEQ_RUN=M0" in bundle["il"]
+        assert "Y00 :=" in bundle["st"]
 
 
 class TestMitsubishiIntegration:

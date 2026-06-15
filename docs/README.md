@@ -28,6 +28,7 @@ Project docs, grouped by topic. (Moved out of the repo root during the v1.4→v1
 - [FASTAPI_AUTOMATION_SERVICE.md](architecture/FASTAPI_AUTOMATION_SERVICE.md) — FastAPI sidecar design + execution plan (Phases 0–5 ✅)
 - [PHASE_4_PLATFORM_INTEGRATIONS.md](architecture/PHASE_4_PLATFORM_INTEGRATIONS.md) — per-vendor export + IR pipeline; **§7.0 complete** (v1.5)
 - [PHASE_5_IMPLEMENTATION.md](architecture/PHASE_5_IMPLEMENTATION.md) — **Phase 5 implementation plan** (scope limits + prioritized work + frozen tracks)
+- [VENDOR_SCHEMA_MAINTENANCE.md](architecture/VENDOR_SCHEMA_MAINTENANCE.md) — vendor XSD registry, CI validation, field updates for older IDE versions
 - [DIGITAL_TWIN_ARCHITECTURE.md](architecture/DIGITAL_TWIN_ARCHITECTURE.md), [SIMULATION_AND_TESTING.md](architecture/SIMULATION_AND_TESTING.md) — simulation / digital twin (see `lib/simulation/`)
 - [ON_PREMISES_DEPLOYMENT.md](architecture/ON_PREMISES_DEPLOYMENT.md) — on-prem deployment
 - [COMPETITIVE_ANALYSIS.md](architecture/COMPETITIVE_ANALYSIS.md) — market positioning

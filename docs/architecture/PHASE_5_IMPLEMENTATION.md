@@ -6,7 +6,7 @@ Execution plan for **post–v1.5** work: known limits of the v1.5 ship, prioriti
 
 **Verify v1.5 release:**
 ```bash
-cd automation && uv run pytest api/tests -v   # 159 tests
+cd automation && uv run pytest api/tests -v   # 195+ tests
 npm run test:plc && npm run build             # 20 BFF tests
 ```
 
@@ -45,6 +45,8 @@ npm run test:plc && npm run build             # 20 BFF tests
 | BFF routes + IR persistence | **4g** | `generation_parameters.ir`, `downloadParams` |
 | M221 AI + IR metadata | **4e-3** | `m221_program_service.py`, `generate-plc-ai/route.ts` |
 | v1.5 polish (2026-06-14) | — | BFF sketch metadata test; CLI `--from-json` → IR; deprecated offline scripts; FASTAPI as-built doc |
+| P0 automated IDE gates (2026-06-15) | **P0** | `api/ide_signoff/`; `test_ide_signoff.py`; lab export bundle |
+| P1 XSD + golden 4j (2026-06-15) | **P1** | `api/validation/`; 19 golden export hashes; L5X/Calaos XSD CI |
 
 ---
 
@@ -77,11 +79,11 @@ These are **not bugs** — they define what v1.5 promises vs what Phase 5 must a
 |-------|------|---------|
 | IR schema + `validate_program()` | ✅ | — |
 | Round-trip parse in CI | ✅ all patterns + sketch | — |
-| Golden export SHA-256 (7 baseline cases) | ✅ | Extend to 4j pattern exports |
-| L5X well-formed + parser | ✅ `test_l5x_schema.py` | Full **XSD** schema validation |
-| Calaos structural + parser | ✅ | Optional XSD if artifact available |
+| Golden export SHA-256 (7 baseline cases) | ✅ | ✅ **19 cases** incl. 4j patterns |
+| L5X well-formed + parser | ✅ `test_l5x_schema.py` | Full **XSD** `l5x-v32.xsd` ✅ |
+| Calaos structural + parser | ✅ | **Subset XSD** `calaos-case-2.0-subset.xsd` ✅ |
 | PLCopen golden structure | ✅ | — |
-| **Real IDE import (zero errors)** | ❌ | **Manual lab gate** — primary Phase 5 milestone |
+| **Real IDE import (zero errors)** | ❌ automated gates ✅ | **Manual lab gate** — primary Phase 5 milestone |
 
 ### Format scope (unchanged)
 
@@ -103,16 +105,22 @@ Implement in this order unless the user reprioritizes. Each item includes **why*
 
 | # | Item | Why | Verify |
 |---|------|-----|--------|
-| 1 | **Real IDE import sign-off** | §1 acceptance criteria (1)–(2) not met in CI | Manual: Studio 5000, EcoStruxure Machine Expert, TIA Portal, GX Works — document results in RUNBOOK |
-| 2 | **IDE issue backlog from sign-off** | Fix export issues found in lab | Re-import until zero errors per platform |
+| 1 | **Real IDE import sign-off** | §1 acceptance criteria (1)–(2) not met in CI | Automated: `uv run python -m api.ide_signoff run` + `pytest api/tests/test_ide_signoff.py`. Manual: lab exports in `fixtures/ide_signoff/exports/` — see RUNBOOK Phase 5 P0 |
+| 2 | **IDE issue backlog from sign-off** | Fix export issues found in lab | Re-import until zero errors; record via `ide_signoff record`; fix serializers and re-run automated gates |
+
+**P0 automated gates — delivered (2026-06-15):** `automation/api/ide_signoff/` (matrix, checks, manifest, CLI). Manual lab remains pending until all `manual.status=passed` in manifest.
 
 ### P1 — CI hardening (engineering)
 
 | # | Item | Why | Verify |
 |---|------|-----|--------|
-| 3 | **Full L5X XSD validation** | Structural tests ≠ schema compliance | Add XSD artifact + pytest; fail on schema violations |
-| 4 | **Golden export hashes for 4j patterns** | Baseline manifest only covers original 4 patterns + tier-2 motor | Extend `golden_utils.EXPORT_CASES`; run `update_golden_fixtures.py` |
-| 5 | **Calaos XSD** (if schema available) | Same as L5X | Optional pytest against XSD |
+| 3 | **Full L5X XSD validation** | Structural tests ≠ schema compliance | `l5x-v32.xsd` + `validate_l5x()`; `test_l5x_schema.py` |
+| 4 | **Golden export hashes for 4j patterns** | Baseline manifest only covered original patterns | 12 new `PATTERN_4J_EXPORT_CASES` in `golden_utils.py`; `test_golden_exports.py` |
+| 5 | **Calaos XSD** (subset) | Official ProjectSchema.xsd not redistributable | `calaos-case-2.0-subset.xsd` + `test_calaos_schema.py` |
+
+**P1 delivered (2026-06-15):** `api/validation/`; Rockwell generator XSD fixes; golden manifest extended to 19 export cases.
+
+**Schema ops (post-P1):** [VENDOR_SCHEMA_MAINTENANCE.md](VENDOR_SCHEMA_MAINTENANCE.md) — what is full vs subset per vendor, how to update XSDs, version registry (`schemas/manifest.json`), and supporting older Studio 5000 / Machine Expert targets in the field.
 
 ### P2 — Export scope expansion
 
@@ -121,6 +129,8 @@ Implement in this order unless the user reprioritizes. Each item includes **why*
 | 6 | **Tier-2 serializers for all 6 patterns** | Siemens/Mitsubishi reject tank/traffic/sequential today | Extend `siemens_scl.py` / `mitsubishi.py` or document permanent limits |
 | 7 | **PLCopen for patterns beyond motor** | `PlcopenProvider` raises on non-motor | IR walk or template expansion + golden tests |
 | 8 | **Sketch export for Tier-2 vendors** | Sketch path Schneider/Rockwell only | sketch_adapter + provider routing |
+
+**P2 delivered (2026-06-15):** Tier-2 Siemens/Mitsubishi export all 6 IR patterns; `plcopen_from_ir.py` IR walk for PLCopen; sketch generate supports `siemens` + `mitsubishi`; 31 golden export cases; `test_p2_export_scope.py`.
 
 ### P3 — Logic depth
 
@@ -197,7 +207,8 @@ Do **not** treat Track B as a substitute for program generate from description (
 |------|-------|
 | 2026-06-14 | Initial backlog from Phase 4 planning |
 | 2026-06-14 | FastAPI Phases 0–5 + §7 sprint complete |
-| 2026-06-14 | Renamed to **PHASE_5_IMPLEMENTATION.md**; v1.5 polish items closed |
+| 2026-06-15 | P2 export scope: Tier-2 all patterns, PLCopen IR walk, sketch Tier-2 |
+| 2026-06-15 | P1 XSD validation + golden 4j export hashes |
 
 ---
 

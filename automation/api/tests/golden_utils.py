@@ -53,8 +53,146 @@ IR_FIXTURE_CASES: list[dict[str, Any]] = [
     },
 ]
 
+PATTERN_4J_EXPORT_CASES: list[dict[str, Any]] = [
+    {
+        "id": "estop_motor_schneider",
+        "pattern": "estop_motor",
+        "vendor": "schneider",
+        "model": "TM221CE24R",
+        "projectName": "Golden_Estop_Schneider",
+    },
+    {
+        "id": "estop_motor_rockwell",
+        "pattern": "estop_motor",
+        "vendor": "rockwell",
+        "model": "1769-L33ER",
+        "projectName": "Golden_Estop_Rockwell",
+    },
+    {
+        "id": "estop_motor_siemens",
+        "pattern": "estop_motor",
+        "vendor": "siemens",
+        "model": "S7-1200",
+        "projectName": "Golden_Estop_Siemens",
+    },
+    {
+        "id": "estop_motor_mitsubishi",
+        "pattern": "estop_motor",
+        "vendor": "mitsubishi",
+        "model": "FX5U",
+        "projectName": "Golden_Estop_Mitsubishi",
+    },
+    {
+        "id": "tank_level_schneider",
+        "pattern": "tank_level",
+        "vendor": "schneider",
+        "model": "TM221CE24R",
+        "projectName": "Golden_Tank_Schneider",
+    },
+    {
+        "id": "tank_level_rockwell",
+        "pattern": "tank_level",
+        "vendor": "rockwell",
+        "model": "1769-L33ER",
+        "projectName": "Golden_Tank_Rockwell",
+    },
+    {
+        "id": "conveyor_startstop_schneider",
+        "pattern": "conveyor_startstop",
+        "vendor": "schneider",
+        "model": "TM221CE24R",
+        "projectName": "Golden_Conveyor_Schneider",
+    },
+    {
+        "id": "conveyor_startstop_rockwell",
+        "pattern": "conveyor_startstop",
+        "vendor": "rockwell",
+        "model": "1769-L33ER",
+        "projectName": "Golden_Conveyor_Rockwell",
+    },
+    {
+        "id": "conveyor_startstop_siemens",
+        "pattern": "conveyor_startstop",
+        "vendor": "siemens",
+        "model": "S7-1200",
+        "projectName": "Golden_Conveyor_Siemens",
+    },
+    {
+        "id": "conveyor_startstop_mitsubishi",
+        "pattern": "conveyor_startstop",
+        "vendor": "mitsubishi",
+        "model": "FX5U",
+        "projectName": "Golden_Conveyor_Mitsubishi",
+    },
+    {
+        "id": "traffic_lights_schneider",
+        "pattern": "traffic_lights",
+        "vendor": "schneider",
+        "model": "TM221CE16T",
+        "projectName": "Golden_Traffic_Schneider",
+        "cycleSeconds": 5,
+    },
+    {
+        "id": "traffic_lights_rockwell",
+        "pattern": "traffic_lights",
+        "vendor": "rockwell",
+        "model": "1769-L33ER",
+        "projectName": "Golden_Traffic_Rockwell",
+        "cycleSeconds": 5,
+    },
+    {
+        "id": "tank_level_siemens",
+        "pattern": "tank_level",
+        "vendor": "siemens",
+        "model": "S7-1200",
+        "projectName": "Golden_Tank_Siemens",
+    },
+    {
+        "id": "tank_level_mitsubishi",
+        "pattern": "tank_level",
+        "vendor": "mitsubishi",
+        "model": "FX5U",
+        "projectName": "Golden_Tank_Mitsubishi",
+    },
+    {
+        "id": "traffic_lights_siemens",
+        "pattern": "traffic_lights",
+        "vendor": "siemens",
+        "model": "S7-1200",
+        "projectName": "Golden_Traffic_Siemens",
+        "cycleSeconds": 5,
+    },
+    {
+        "id": "traffic_lights_mitsubishi",
+        "pattern": "traffic_lights",
+        "vendor": "mitsubishi",
+        "model": "FX5U",
+        "projectName": "Golden_Traffic_Mitsubishi",
+        "cycleSeconds": 5,
+    },
+    {
+        "id": "sequential_lights_siemens",
+        "pattern": "sequential_lights",
+        "vendor": "siemens",
+        "model": "S7-1200",
+        "projectName": "Golden_Seq_Siemens",
+        "numLights": 4,
+        "delaySeconds": 3,
+    },
+    {
+        "id": "sequential_lights_mitsubishi",
+        "pattern": "sequential_lights",
+        "vendor": "mitsubishi",
+        "model": "FX5U",
+        "projectName": "Golden_Seq_Mitsubishi",
+        "numLights": 4,
+        "delaySeconds": 3,
+    },
+]
+
 EXPORT_CASES: list[dict[str, Any]] = [
     *IR_FIXTURE_CASES,
+    *PATTERN_4J_EXPORT_CASES,
     {
         "id": "motor_startstop_siemens",
         "pattern": "motor_startstop",
@@ -77,6 +215,49 @@ EXPORT_CASES: list[dict[str, Any]] = [
         "projectName": "MotorControl_Universal",
         "plcopen": True,
     },
+    {
+        "id": "plcopen_estop_codesys",
+        "pattern": "estop_motor",
+        "vendor": "codesys",
+        "model": "Generic",
+        "projectName": "Golden_Estop_Plcopen",
+        "plcopen": True,
+    },
+    {
+        "id": "plcopen_tank_codesys",
+        "pattern": "tank_level",
+        "vendor": "codesys",
+        "model": "Generic",
+        "projectName": "Golden_Tank_Plcopen",
+        "plcopen": True,
+    },
+    {
+        "id": "plcopen_conveyor_codesys",
+        "pattern": "conveyor_startstop",
+        "vendor": "codesys",
+        "model": "Generic",
+        "projectName": "Golden_Conveyor_Plcopen",
+        "plcopen": True,
+    },
+    {
+        "id": "plcopen_traffic_codesys",
+        "pattern": "traffic_lights",
+        "vendor": "codesys",
+        "model": "Generic",
+        "projectName": "Golden_Traffic_Plcopen",
+        "plcopen": True,
+        "cycleSeconds": 5,
+    },
+    {
+        "id": "plcopen_sequential_codesys",
+        "pattern": "sequential_lights",
+        "vendor": "codesys",
+        "model": "Generic",
+        "projectName": "Golden_Seq_Plcopen",
+        "plcopen": True,
+        "numLights": 4,
+        "delaySeconds": 3,
+    },
 ]
 
 
@@ -96,6 +277,7 @@ def build_ir_program(case: dict[str, Any]) -> dict[str, Any]:
         model=case["model"],
         num_lights=int(case.get("numLights", 4)),
         delay_seconds=int(case.get("delaySeconds", 3)),
+        cycle_seconds=int(case.get("cycleSeconds", 5)),
     )
     return normalize_ir_program(program.model_dump())
 
@@ -147,6 +329,7 @@ def serialize_export_case(service: IrService, case: dict[str, Any]) -> tuple[byt
             model=case["model"],
             num_lights=int(case.get("numLights", 4)),
             delay_seconds=int(case.get("delaySeconds", 3)),
+            cycle_seconds=int(case.get("cycleSeconds", 5)),
         )
         program = payload["program"]
         program["target"] = {"vendor": case["vendor"], "model": case["model"]}
@@ -160,6 +343,7 @@ def serialize_export_case(service: IrService, case: dict[str, Any]) -> tuple[byt
             model=case["model"],
             num_lights=int(case.get("numLights", 4)),
             delay_seconds=int(case.get("delaySeconds", 3)),
+            cycle_seconds=int(case.get("cycleSeconds", 5)),
         )
         result = service.serialize(payload["program"])
         export_format = str(result["metadata"].get("format", "unknown"))

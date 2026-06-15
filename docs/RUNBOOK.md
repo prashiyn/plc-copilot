@@ -231,6 +231,62 @@ All §7.0 phases through **4b′** are implemented. Phase 5 items (IDE sign-off,
 - **Docs:** `FASTAPI_AUTOMATION_SERVICE.md` as-built; [PHASE_5_IMPLEMENTATION.md](architecture/PHASE_5_IMPLEMENTATION.md) renamed from backlog.
 - **Verify:** `uv run pytest api/tests -v && npm run test:plc && npm run build`
 
+### Phase 5 P0 — IDE import sign-off ✅ (automated gates)
+
+Automated pre-import validation + lab export bundle for manual IDE testing.
+
+| Command | Purpose |
+|---------|---------|
+| `cd automation && uv run python -m api.ide_signoff run` | Run automated gates; update `manifest.json` |
+| `uv run python -m api.ide_signoff bundle` | Refresh lab exports under `api/tests/fixtures/ide_signoff/exports/` |
+| `uv run python -m api.ide_signoff status` | Show automated/manual status per case |
+| `uv run python -m api.ide_signoff record --case signoff_schneider_motor --status passed --tested-by "Name" --ide-version "1.2.0.5" --compiles true` | Record manual lab result |
+
+**Automated gates (CI):** serialize → IR validate → round-trip parse → format structure → golden hash.  
+**Tests:** `uv run pytest api/tests/test_ide_signoff.py -v`
+
+**Manual lab (Windows with vendor IDEs):**
+
+1. Open each file in `automation/api/tests/fixtures/ide_signoff/exports/`.
+2. Follow `manualSteps` in `api/tests/fixtures/ide_signoff/manifest.json` for that case.
+3. Record result with `ide_signoff record` (or edit manifest `manual` block).
+4. Phase 5 P0 is **complete** when all seven cases show `manual.status=passed`.
+
+| Export file | IDE |
+|-------------|-----|
+| `signoff_schneider_motor.smbp` | EcoStruxure Machine Expert - Basic |
+| `signoff_schneider_sequential.smbp` | EcoStruxure Machine Expert - Basic |
+| `signoff_rockwell_motor.L5X` | Studio 5000 Logix Designer |
+| `signoff_rockwell_sequential.L5X` | Studio 5000 Logix Designer |
+| `signoff_siemens_motor.scl` | TIA Portal (source import) |
+| `signoff_mitsubishi_motor.zip` | GX Works3 (source import) |
+| `signoff_codesys_motor.xml` | CODESYS (PLCopen XML) |
+
+### Phase 5 P1 — CI hardening ✅ (2026-06-15)
+
+| Command | Purpose |
+|---------|---------|
+| `uv run pytest api/tests/test_l5x_schema.py api/tests/test_calaos_schema.py -v` | XSD validation for Rockwell + Schneider exports |
+| `uv run pytest api/tests/test_golden_exports.py -v` | Golden SHA-256 regression (19 export cases) |
+| `uv run python api/tests/update_golden_fixtures.py` | Regenerate manifest after intentional serializer changes |
+
+**Artifacts:** `api/validation/schemas/l5x-v32.xsd`, `calaos-case-2.0-subset.xsd`, `manifest.json`  
+**Rockwell fix:** `.L5X` generator emits XSD-compliant text (no fake `<CData>` elements; no invalid `Use` on Program/Routine).
+
+### Phase 5 P2 — Export scope expansion ✅ (2026-06-15)
+
+| Command | Purpose |
+|---------|---------|
+| `uv run pytest api/tests/test_p2_export_scope.py -v` | All 6 patterns × Siemens/Mitsubishi/PLCopen + sketch Tier-2 |
+
+**Delivered:** Tier-2 serializers accept all 6 IR patterns; PLCopen via `plcopen_from_ir.py`; sketch generate for `siemens` + `mitsubishi`; 31 golden export hashes.
+
+**Updating schemas / older IDE versions:** [VENDOR_SCHEMA_MAINTENANCE.md](architecture/VENDOR_SCHEMA_MAINTENANCE.md)
+
+| Command | Purpose |
+|---------|---------|
+| `uv run pytest api/tests/test_schema_registry.py -v` | Manifest load + L5X version resolution |
+
 ---
 
 ## Troubleshooting

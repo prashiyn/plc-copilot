@@ -1,0 +1,22 @@
+// PLC AutoPilot export — source import only, not a TIA Portal project (.ap* / .zap*).
+// Controller: S7-1200
+// Project: Golden_Motor_Siemens
+// Pattern: motor_startstop
+
+ORGANIZATION_BLOCK "Main"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR
+      START_BTN AT %I0.0 : Bool; // Start push button
+      STOP_BTN AT %I0.1 : Bool; // Stop push button
+      MOTOR_RUN AT %Q0.0 : Bool; // Motor contactor
+      GREEN_LED AT %Q0.1 : Bool; // Motor running indicator
+   END_VAR
+
+BEGIN
+   // Motor start/stop control with latching
+   MOTOR_RUN := (START_BTN OR MOTOR_RUN) AND NOT STOP_BTN;
+
+   // Motor running indicator
+   GREEN_LED := MOTOR_RUN;
+END_ORGANIZATION_BLOCK

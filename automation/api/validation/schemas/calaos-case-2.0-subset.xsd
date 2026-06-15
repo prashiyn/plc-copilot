@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PLCAutoPilot subset schema for Schneider Calaos/Case 2.0 .smbp exports.
+  Derived from automation/samples/tankcontrol.smbp — not the proprietary EcoStruxure
+  ProjectSchema.xsd (not publicly redistributable). Validates structure our IR pipeline emits.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.schneider-electric.com/Calaos/Case/2.0"
+           xmlns:calaos="http://www.schneider-electric.com/Calaos/Case/2.0"
+           elementFormDefault="qualified">
+
+  <xs:element name="Project" type="calaos:RootProjectType"/>
+
+  <xs:complexType name="RootProjectType">
+    <xs:sequence>
+      <xs:element name="FileHeader" type="calaos:FileHeaderType"/>
+      <xs:element name="ContentHeader" type="calaos:ContentHeaderType"/>
+      <xs:element name="Workspace" type="calaos:WorkspaceType"/>
+      <xs:element name="Project" type="calaos:InnerProjectType"/>
+      <xs:element name="Device" type="calaos:DeviceType" minOccurs="0"/>
+      <xs:element name="Configuration" type="calaos:ConfigurationType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="FileHeaderType">
+    <xs:attribute name="Company" type="xs:string" use="required"/>
+    <xs:attribute name="CreationDateTime" type="xs:string" use="required"/>
+    <xs:attribute name="Creator" type="xs:string" use="required"/>
+    <xs:attribute name="Product" type="xs:string" use="required"/>
+    <xs:attribute name="ProductVersion" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="ContentHeaderType">
+    <xs:sequence>
+      <xs:element name="Comment" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="ModificationDateTime" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="WorkspaceType">
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="InnerProjectType">
+    <xs:sequence>
+      <xs:element name="POU" type="calaos:PouType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PouType">
+    <xs:sequence>
+      <xs:element name="interface" type="calaos:InterfaceType" minOccurs="0"/>
+      <xs:element name="body" type="calaos:BodyType"/>
+      <xs:element name="addData" type="calaos:AddDataType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="Type" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="InterfaceType">
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="BodyType">
+    <xs:sequence>
+      <xs:element name="LD" type="calaos:LdType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="LdType">
+    <xs:sequence>
+      <xs:element name="Rungs" type="calaos:RungsType"/>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RungsType">
+    <xs:sequence>
+      <xs:element name="RungEntity" type="calaos:RungEntityType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RungEntityType">
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AddDataType">
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DeviceType">
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ConfigurationType">
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

@@ -49,7 +49,7 @@ class TestSiemensSclRenderer:
         or_node = network.logic.inputs[0]
         assert logic_expr(or_node) == "(START_BTN OR MOTOR_RUN)"
 
-    def test_sequential_lights_rejected(self):
+    def test_sequential_lights_exports(self):
         program = build_pattern(
             "sequential_lights",
             project_name="Seq",
@@ -58,8 +58,10 @@ class TestSiemensSclRenderer:
             num_lights=4,
             delay_seconds=3,
         )
-        with pytest.raises(ValueError, match="motor_startstop"):
-            render_siemens_scl(program, "S7-1200")
+        scl = render_siemens_scl(program, "S7-1200")
+        assert "LIGHT1" in scl
+        assert "LIGHT4" in scl
+        assert "SEQ_RUN" in scl
 
 
 class TestSiemensSclIntegration:

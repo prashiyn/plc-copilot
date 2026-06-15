@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "updatedAt": "2026-06-15",
+  "documentation": "docs/architecture/VENDOR_SCHEMA_MAINTENANCE.md",
+  "providers": {
+    "rockwell_l5x": {
+      "format": ".L5X",
+      "validationType": "full_xsd",
+      "defaultSchema": "l5x-v32.xsd",
+      "versionSelector": "RSLogix5000Content@SoftwareRevision major version → l5x-v{major}.xsd",
+      "versions": [
+        {
+          "id": "v32",
+          "file": "l5x-v32.xsd",
+          "softwareRevisionRange": ["32.00", "32.99"],
+          "studio5000Hint": "v32–v34 Logix Designer",
+          "source": "https://github.com/benmusson/l5x-schema/blob/main/schemas/l5x-v32.xsd",
+          "license": "MIT",
+          "ciDefault": true
+        }
+      ],
+      "availableUpstream": [
+        "l5x-v32.xsd",
+        "l5x-v33.xsd",
+        "l5x-v34.xsd",
+        "l5x-v35.xsd",
+        "l5x-v36.xsd",
+        "l5x-v37.xsd",
+        "l5x-v38.xsd"
+      ]
+    },
+    "schneider_calaos": {
+      "format": ".smbp",
+      "validationType": "subset_xsd",
+      "defaultSchema": "calaos-case-2.0-subset.xsd",
+      "versionSelector": "Fixed subset — EcoStruxure Machine Expert product version recorded in FileHeader@ProductVersion",
+      "versions": [
+        {
+          "id": "case-2.0-subset",
+          "file": "calaos-case-2.0-subset.xsd",
+          "productVersionRange": ["1.2", "2.x"],
+          "source": "PLCAutoPilot — derived from automation/samples/tankcontrol.smbp",
+          "license": "proprietary-subset",
+          "ciDefault": true,
+          "notes": "Official Schneider ProjectSchema.xsd is not redistributable. Subset validates structure our IR pipeline emits."
+        }
+      ]
+    },
+    "siemens_scl": {
+      "format": ".scl",
+      "validationType": "structural_only",
+      "defaultSchema": null,
+      "versions": [],
+      "notes": "Tier-2 source import. TIA Portal project XSD is proprietary. P1 uses marker checks in ide_signoff + parser round-trip."
+    },
+    "mitsubishi_tier2": {
+      "format": ".zip",
+      "validationType": "structural_only",
+      "defaultSchema": null,
+      "versions": [],
+      "notes": "IL/ST/CSV bundle. GX Works native project XSD not applicable."
+    },
+    "plcopen_xml": {
+      "format": ".xml",
+      "validationType": "golden_structure",
+      "defaultSchema": null,
+      "versions": [],
+      "notes": "PLCopen TC6 0201 XSD exists publicly — candidate for future P1.x. Today: test_plcopen_golden.py."
+    }
+  }
+}

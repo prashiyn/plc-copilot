@@ -6,7 +6,7 @@
       "format": "machine_expert_basic_xml"
     },
     "motor_startstop_rockwell": {
-      "sha256": "3aaf1648df6ec983fdc99305c0e3af20cfa27db24f4271903f0d24f5a92cc818",
+      "sha256": "104f81dbd8f149d17697a964c6c69ff9fc0b6a9e3de6fc8312efa29676f82564",
       "format": "l5x"
     },
     "sequential_lights_schneider": {
@@ -14,8 +14,80 @@
       "format": "machine_expert_basic_xml"
     },
     "sequential_lights_rockwell": {
-      "sha256": "155b757f65a1ebff572d0e5d5b94e4e4bdca8afea2a317ae8f9c446e32ac40d3",
+      "sha256": "db4d148421445393d6d4a8c71b5292c9154f1a7e6fba08ba1f15909257a06838",
       "format": "l5x"
+    },
+    "estop_motor_schneider": {
+      "sha256": "ef0fd05fb79a59cc5e131f14428b8b2c21022c49b865c1941ed4a8827a0be9ab",
+      "format": "machine_expert_basic_xml"
+    },
+    "estop_motor_rockwell": {
+      "sha256": "69e44278789b3add069c6c78d98eb4ee9d27f82921ae2a98f1e8210bc86c6ae7",
+      "format": "l5x"
+    },
+    "estop_motor_siemens": {
+      "sha256": "2e23b1c81e20fcf26cd097873d36b1da131e98a5ac6abab141b91638d4f6d6bb",
+      "format": "scl"
+    },
+    "estop_motor_mitsubishi": {
+      "sha256": "3a620ca032324bdf398ca0b07a58dc89e89518b67090ed43d63b65cdfca45f16",
+      "format": "mitsubishi_tier2_zip"
+    },
+    "tank_level_schneider": {
+      "sha256": "ae268fc64a12f9bf31747aac352db95704067f13063828d2bace21be44bbdd12",
+      "format": "machine_expert_basic_xml"
+    },
+    "tank_level_rockwell": {
+      "sha256": "306d1d6a2b8d740caf418acc754a01046c591ede5988fd895289e07032c578ca",
+      "format": "l5x"
+    },
+    "conveyor_startstop_schneider": {
+      "sha256": "5dc29f7c56982de25de1d1fbebe057b5c9b2aca047219f91f1946c52c29e75e2",
+      "format": "machine_expert_basic_xml"
+    },
+    "conveyor_startstop_rockwell": {
+      "sha256": "75cd8a1c96b4eaf17e49158ee9d59b6b9ebe43ce6b34e9dd9be1540009d1548d",
+      "format": "l5x"
+    },
+    "conveyor_startstop_siemens": {
+      "sha256": "97f313d3a4f8c510e3f7ab42ebe78a3629af276dccff6a6932b10314e72bc9ed",
+      "format": "scl"
+    },
+    "conveyor_startstop_mitsubishi": {
+      "sha256": "86586aac37452c4140501a9f1fa466b4ea30955dcbbe9d5b05f7ed03f9b24584",
+      "format": "mitsubishi_tier2_zip"
+    },
+    "traffic_lights_schneider": {
+      "sha256": "39c5d4ea2ae416c9bec71a760abf3b49476eae12739b7b42a040c2029c21101c",
+      "format": "machine_expert_basic_xml"
+    },
+    "traffic_lights_rockwell": {
+      "sha256": "e510eb192e7fbbc045ac96b453f550d7f91c69c1f51c885d6770fe369780c441",
+      "format": "l5x"
+    },
+    "tank_level_siemens": {
+      "sha256": "73f89a8397a8517fb5e51effc3f7f530af13393b454da374a886533b42ed9fff",
+      "format": "scl"
+    },
+    "tank_level_mitsubishi": {
+      "sha256": "97725ed43b060a54adbe216b6aa3e6cbf06ac9d1b7a44857427757d431a4133c",
+      "format": "mitsubishi_tier2_zip"
+    },
+    "traffic_lights_siemens": {
+      "sha256": "77ec4f2aebda26e18d1be0b985b5d4b172f59d82101e99e2d3d9dff62218fa92",
+      "format": "scl"
+    },
+    "traffic_lights_mitsubishi": {
+      "sha256": "d67c58f1819615377ba5b97c9a22db3fdf27a33f4e39969cc596e7835de25923",
+      "format": "mitsubishi_tier2_zip"
+    },
+    "sequential_lights_siemens": {
+      "sha256": "635bc6099b8db7c46f0610cf5290e757e55922c48968d36a2998953f71db22f0",
+      "format": "scl"
+    },
+    "sequential_lights_mitsubishi": {
+      "sha256": "b6c8bc260b3bb5a3c75633c8e8368eaa09b22033971885893e0b08fdb0a21c8b",
+      "format": "mitsubishi_tier2_zip"
     },
     "motor_startstop_siemens": {
       "sha256": "995be073b397abc2c4d5bdb063780bbedffd67155d55b7cf0725ff435e39d470",
@@ -26,7 +98,27 @@
       "format": "mitsubishi_tier2_zip"
     },
     "plcopen_motor_codesys": {
-      "sha256": "3e2603d141b7238a693758625882dc1ca3236e47a439cda1a97b48e96cdc217f",
+      "sha256": "a76914e330f1adca0c96c029a8c131b89f46a5b5aea1c6d8c0b05cdb6ebf58ae",
+      "format": "plcopen_xml"
+    },
+    "plcopen_estop_codesys": {
+      "sha256": "0852d89f64d808b55ff09faf5286f7368f77c6f3c3ce0ee1bae80c5ba400b6ec",
+      "format": "plcopen_xml"
+    },
+    "plcopen_tank_codesys": {
+      "sha256": "0cb43c91915b19aed14108a808db505e640a460f3e8e618f92a04eb3b630ad45",
+      "format": "plcopen_xml"
+    },
+    "plcopen_conveyor_codesys": {
+      "sha256": "6247fe3074e082db81b1e0173c1a968d54ec1f215164a3db73a3329e8d07e317",
+      "format": "plcopen_xml"
+    },
+    "plcopen_traffic_codesys": {
+      "sha256": "e92898aa0760034fecfd47ccd910255221f9f006e52b5dfed47278d2a0b3f2b4",
+      "format": "plcopen_xml"
+    },
+    "plcopen_sequential_codesys": {
+      "sha256": "53d95098d964fddfe6d55085b428dac7d45f031e57b624adc879adc5d5dfe361",
       "format": "plcopen_xml"
     }
   }

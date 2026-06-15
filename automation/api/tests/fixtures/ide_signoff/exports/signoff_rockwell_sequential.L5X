@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RSLogix5000Content SchemaRevision="1.0" SoftwareRevision="32.00" TargetName="Golden_Seq_Rockwell" TargetType="Controller" ContainsContext="true" ExportDate="Mon Jun 15 17:57:39 2026" ExportOptions="References NoRawData L5KData DecoratedData Context Dependencies ForceProtectedEncoding AllProjDocTrans">
+  <Controller Use="Context" Name="Golden_Seq_Rockwell" ProcessorType="1769-L33ER" MajorRev="32" MinorRev="11" TimeSlice="20" ShareUnusedTimeSlice="1">
+    <Tags>
+      <Tag Name="START_BTN" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Start button</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="STOP_BTN" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Stop button</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="SEQ_RUN" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Sequence running flag</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="LIGHT1" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Light 1 output</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="LIGHT2" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Light 2 output</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="LIGHT3" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Light 3 output</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="LIGHT4" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Light 4 output</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="TIMER_1" TagType="Base" DataType="TON" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>3s delay before light 2</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="TON" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="TIMER_2" TagType="Base" DataType="TON" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>3s delay before light 3</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="TON" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="TIMER_3" TagType="Base" DataType="TON" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>3s delay before light 4</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="TON" Value="0"/>
+        </Data>
+      </Tag>
+    </Tags>
+    <Programs>
+      <Program Name="MainProgram" TestEdits="false" Disabled="false" UseAsFolder="false">
+        <Tags/>
+        <Routines>
+          <Routine Name="MainRoutine" Type="RLL">
+            <Description>Main ladder logic routine</Description>
+            <RLLContent>
+              <Rung Number="0" Type="N">
+                <Comment>Sequence start/stop latch</Comment>
+                <Text>XIC(START_BTN)XIC(SEQ_RUN)XIO(STOP_BTN)OTE(SEQ_RUN);</Text>
+              </Rung>
+              <Rung Number="1" Type="N">
+                <Comment>Light 1 immediate</Comment>
+                <Text>XIC(SEQ_RUN)OTE(LIGHT1);</Text>
+              </Rung>
+              <Rung Number="2" Type="N">
+                <Comment>Light 2 step</Comment>
+                <Text>XIC(SEQ_RUN)OTE(LIGHT2);</Text>
+              </Rung>
+              <Rung Number="3" Type="N">
+                <Comment>Light 3 step</Comment>
+                <Text>XIC(LIGHT2)OTE(LIGHT3);</Text>
+              </Rung>
+              <Rung Number="4" Type="N">
+                <Comment>Light 4 step</Comment>
+                <Text>XIC(LIGHT3)OTE(LIGHT4);</Text>
+              </Rung>
+            </RLLContent>
+          </Routine>
+        </Routines>
+      </Program>
+    </Programs>
+  </Controller>
+</RSLogix5000Content>

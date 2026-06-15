@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RSLogix5000Content SchemaRevision="1.0" SoftwareRevision="32.00" TargetName="Golden_Motor_Rockwell" TargetType="Controller" ContainsContext="true" ExportDate="Mon Jun 15 17:57:39 2026" ExportOptions="References NoRawData L5KData DecoratedData Context Dependencies ForceProtectedEncoding AllProjDocTrans">
+  <Controller Use="Context" Name="Golden_Motor_Rockwell" ProcessorType="1769-L33ER" MajorRev="32" MinorRev="11" TimeSlice="20" ShareUnusedTimeSlice="1">
+    <Tags>
+      <Tag Name="START_BTN" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Start push button</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="STOP_BTN" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Stop push button</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="MOTOR_RUN" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Motor contactor</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+      <Tag Name="GREEN_LED" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write">
+        <Description>Motor running indicator</Description>
+        <Data Format="Decorated">
+          <DataValue DataType="BOOL" Value="0"/>
+        </Data>
+      </Tag>
+    </Tags>
+    <Programs>
+      <Program Name="MainProgram" TestEdits="false" Disabled="false" UseAsFolder="false">
+        <Tags/>
+        <Routines>
+          <Routine Name="MainRoutine" Type="RLL">
+            <Description>Main ladder logic routine</Description>
+            <RLLContent>
+              <Rung Number="0" Type="N">
+                <Comment>Motor start/stop control with latching</Comment>
+                <Text>XIC(START_BTN)XIC(MOTOR_RUN)XIO(STOP_BTN)OTE(MOTOR_RUN);</Text>
+              </Rung>
+              <Rung Number="1" Type="N">
+                <Comment>Motor running indicator</Comment>
+                <Text>XIC(MOTOR_RUN)OTE(GREEN_LED);</Text>
+              </Rung>
+            </RLLContent>
+          </Routine>
+        </Routines>
+      </Program>
+    </Programs>
+  </Controller>
+</RSLogix5000Content>

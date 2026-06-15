@@ -8,7 +8,6 @@ from typing import Any
 
 from plc_file_handler.converters.platform_converter import PlatformConverter
 
-from ..validator import MOTOR_LIKE_PATTERNS
 from ...schemas.ir import (
     AndNode,
     CoilNode,
@@ -30,17 +29,12 @@ _SOURCE_DISCLAIMER = (
 TIER2_LIMITATIONS = [
     "ZIP bundles IL + ST source and a device-comment CSV — not a native GX Works project file.",
     "Import IL or ST manually in GX Works; use the CSV for device comments where your tool version supports it.",
-    "Motor start/stop, E-stop motor, and conveyor patterns only; sequential or tank logic is not supported on native Mitsubishi export.",
+    "All six vetted IR patterns export to IL/ST; complex parallel branches are approximated in IL — prefer ST import.",
     "Device addresses are mapped from Schneider-style IR via schneider_to_mitsubishi; verify I/O on the target CPU.",
 ]
 
 
 def build_mitsubishi_tier2_export(program: PlcProgram, controller: str) -> dict[str, Any]:
-    if program.meta.pattern and program.meta.pattern not in MOTOR_LIKE_PATTERNS:
-        raise ValueError(
-            f"Mitsubishi Tier-2 export supports {', '.join(sorted(MOTOR_LIKE_PATTERNS))} patterns only"
-        )
-
     converter = PlatformConverter("schneider", "mitsubishi")
     var_by_symbol = {var.symbol: var for var in program.vars}
     mapped_vars = [_map_var(var, converter) for var in program.vars]
