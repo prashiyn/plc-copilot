@@ -10,6 +10,7 @@ from ..services.claude_service import ClaudeService
 from ..services.ir_service import IrService
 from ..services.m221_program_service import M221ProgramService
 from ..services.program_service import ProgramService
+from ..services.recommend_service import RecommendService
 from ..services.sketch_service import SketchService
 from .store import JobStore
 
@@ -68,6 +69,22 @@ async def _dispatch(job_type: str, payload: dict[str, Any]) -> Any:
         claude = ClaudeService()
         text = claude.generate_m221_program(payload["description"], payload.get("plcModel", "TM221CE16T"))
         return {"json": text}
+
+    if job_type == "ai.recommend.plc":
+        service = RecommendService()
+        return service.recommend_plc(payload)
+
+    if job_type == "ai.recommend.solution":
+        service = RecommendService()
+        return service.recommend_solution(
+            payload["projectDescription"],
+            payload.get("criteria", "balanced"),
+            payload.get("constraints"),
+        )
+
+    if job_type == "ai.rectify.error":
+        service = RecommendService()
+        return service.rectify_error(payload)
 
     if job_type == "program.generate":
         service = ProgramService()

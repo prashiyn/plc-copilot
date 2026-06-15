@@ -205,6 +205,54 @@ export async function aiJson(params: {
   return result.data;
 }
 
+export async function recommendPlc(requirements: Record<string, unknown>): Promise<{
+  recommendations: unknown[];
+  source: 'ai' | 'fallback';
+}> {
+  return enqueueAndWait('/v1/ai/recommend-plc', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requirements),
+  });
+}
+
+export async function recommendSolution(params: {
+  projectDescription: string;
+  criteria?: string;
+  constraints?: Record<string, unknown>;
+}): Promise<{
+  recommended: unknown;
+  alternatives: unknown[];
+  comparison: Record<string, unknown>;
+  source: 'ai' | 'fallback';
+}> {
+  return enqueueAndWait('/v1/ai/recommend-solution', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+}
+
+export async function rectifyError(params: {
+  programCode: string;
+  platform: string;
+  errorMessage: string;
+  plcModel: string;
+  errorScreenshot?: string;
+}): Promise<{
+  success: boolean;
+  analysis: Record<string, unknown>;
+  solutions: unknown[];
+  recommendations: string[];
+  source: 'ai' | 'fallback';
+}> {
+  return enqueueAndWait('/v1/ai/rectify-error', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+}
+
 export async function generateM221ProgramJson(
   description: string,
   plcModel: string,

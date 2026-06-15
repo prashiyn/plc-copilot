@@ -6,8 +6,8 @@ Execution plan for **post–v1.5** work: known limits of the v1.5 ship, prioriti
 
 **Verify v1.5 release:**
 ```bash
-cd automation && uv run pytest api/tests -v   # 195+ tests
-npm run test:plc && npm run build             # 20 BFF tests
+cd automation && uv run pytest api/tests -v   # 338+ tests
+npm run test:plc && npm run build             # 22 BFF tests
 ```
 
 ---
@@ -47,6 +47,9 @@ npm run test:plc && npm run build             # 20 BFF tests
 | v1.5 polish (2026-06-14) | — | BFF sketch metadata test; CLI `--from-json` → IR; deprecated offline scripts; FASTAPI as-built doc |
 | P0 automated IDE gates (2026-06-15) | **P0** | `api/ide_signoff/`; `test_ide_signoff.py`; lab export bundle |
 | P1 XSD + golden 4j (2026-06-15) | **P1** | `api/validation/`; 19 golden export hashes; L5X/Calaos XSD CI |
+| P2 export scope (2026-06-15) | **P2** | Tier-2 all patterns; `plcopen_from_ir.py`; sketch Tier-2 |
+| P3 logic depth (2026-06-15) | **P3** | Arbitrary synthesis; pattern v2; M221 direct IR export |
+| P4 recommend/rectify (2026-06-14) | **P4** | `recommend_service.py`; `/v1/ai/recommend-*`, `/v1/ai/rectify-error` |
 
 ---
 
@@ -148,13 +151,15 @@ Implement in this order unless the user reprioritizes. Each item includes **why*
 |---|------|-----|--------|
 | 12 | **Activate recommend/rectify Claude routes** | Infra exists post 4e-2 | E2E with `ANTHROPIC_API_KEY`; see §3 Track B |
 
+**P4 delivered (2026-06-14):** FastAPI jobs `ai.recommend.plc`, `ai.recommend.solution`, `ai.rectify.error` in `recommend_service.py` + deterministic fallbacks; BFF routes proxy via `lib/automation-client.ts`; catalog snapshot `api/data/plc_catalog.txt`; `test_recommend_service.py`, `lib/ai-recommend.test.ts`.
+
 ---
 
-## 3. Track B — optional parallel (does not block P0–P2)
+## 3. Track B — optional parallel (delivered P4)
 
 | Item | Depends on | Notes |
 |------|------------|-------|
-| Activate `/api/recommend-plc`, `/api/recommend-solution`, `/api/recommend-error` | 4e-2 Claude infra | Config + E2E only — not a serializer change |
+| Activate `/api/recommend-plc`, `/api/recommend-solution`, `/api/rectify-error` | 4e-2 Claude infra | Config + E2E only — not a serializer change |
 
 Do **not** treat Track B as a substitute for program generate from description (**4e-3** — already delivered).
 
@@ -212,6 +217,7 @@ Do **not** treat Track B as a substitute for program generate from description (
 | 2026-06-15 | P3 logic depth: arbitrary synthesis, pattern v2, M221 direct IR export |
 | 2026-06-15 | P2 export scope: Tier-2 all patterns, PLCopen IR walk, sketch Tier-2 |
 | 2026-06-15 | P1 XSD validation + golden 4j export hashes |
+| 2026-06-14 | P4 Track B: recommend/rectify FastAPI jobs + BFF proxies |
 
 ---
 

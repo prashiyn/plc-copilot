@@ -68,6 +68,9 @@ flowchart TB
 | `app/api/generate-plc/route.ts` | `generateProgram()` → `/v1/programs/generate` | Pattern / IR generation |
 | `app/api/download-program/route.ts` | FastAPI serialize / plcopen | Vendor bytes from IR |
 | `app/api/generate-plc-ai/route.ts` | `/v1/programs/m221/generate` | Calaos `.smbp` + `metadata.ir` |
+| `app/api/recommend-plc/route.ts` | `recommendPlc()` → `/v1/ai/recommend-plc` | Ranked PLCs + `source: ai\|fallback` |
+| `app/api/recommend-solution/route.ts` | `recommendSolution()` → `/v1/ai/recommend-solution` | Recommended solution + alternatives + `source` |
+| `app/api/rectify-error/route.ts` | `rectifyError()` → `/v1/ai/rectify-error` | Analysis, fixes, recommendations + `source` |
 
 Legacy TS template generators under `app/api/generate-plc/generators/` are **deprecated** — not used on live paths.
 

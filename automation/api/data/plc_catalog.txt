@@ -1,0 +1,176 @@
+Schneider Electric | Modicon M221 | TM221C16R | 9DI+7DO Relay | 100 KB | Serial | $200-400
+Schneider Electric | Modicon M221 | TM221C16T | 9DI+7DO Transistor NPN | 100 KB | Serial | $220-420
+Schneider Electric | Modicon M221 | TM221C16U | 9DI+7DO Transistor PNP | 100 KB | Serial | $230-430
+Schneider Electric | Modicon M221 | TM221C24R | 14DI+10DO Relay | 100 KB | Serial | $250-450
+Schneider Electric | Modicon M221 | TM221C24T | 14DI+10DO Transistor NPN | 100 KB | Serial | $270-470
+Schneider Electric | Modicon M221 | TM221C24U | 14DI+10DO Transistor PNP | 100 KB | Serial | $280-480
+Schneider Electric | Modicon M221 | TM221C40R | 24DI+16DO Relay | 100 KB | Serial | $300-500
+Schneider Electric | Modicon M221 | TM221C40T | 24DI+16DO Transistor NPN | 100 KB | Serial | $320-520
+Schneider Electric | Modicon M221 | TM221C40U | 24DI+16DO Transistor PNP | 100 KB | Serial | $330-530
+Schneider Electric | Modicon M221 | TM221CE16R | 9DI+7DO Relay | 100 KB | Ethernet+Serial | $350-550
+Schneider Electric | Modicon M221 | TM221CE16T | 9DI+7DO Transistor NPN | 100 KB | Ethernet+Serial | $370-570
+Schneider Electric | Modicon M221 | TM221CE16U | 9DI+7DO Transistor PNP | 100 KB | Ethernet+Serial | $380-580
+Schneider Electric | Modicon M221 | TM221CE24R | 14DI+10DO Relay | 100 KB | Ethernet+Serial | $400-600
+Schneider Electric | Modicon M221 | TM221CE24T | 14DI+10DO Transistor NPN | 100 KB | Ethernet+Serial | $420-620
+Schneider Electric | Modicon M221 | TM221CE24U | 14DI+10DO Transistor PNP | 100 KB | Ethernet+Serial | $430-630
+Schneider Electric | Modicon M221 | TM221CE40R | 24DI+16DO Relay | 100 KB | Ethernet+Serial | $450-650
+Schneider Electric | Modicon M221 | TM221CE40T | 24DI+16DO Transistor NPN | 100 KB | Ethernet+Serial | $470-670
+Schneider Electric | Modicon M221 | TM221CE40U | 24DI+16DO Transistor PNP | 100 KB | Ethernet+Serial | $480-680
+Schneider Electric | Modicon M221 | TM221M16R | 9DI+7DO Relay + Expansion | 100 KB | Serial | $280-480
+Schneider Electric | Modicon M221 | TM221M16RG | 9DI+7DO Relay + Spring | 100 KB | Serial | $290-490
+Schneider Electric | Modicon M221 | TM221M16T | 9DI+7DO Transistor NPN + Expansion | 100 KB | Serial | $300-500
+Schneider Electric | Modicon M221 | TM221M16TG | 9DI+7DO Transistor NPN + Spring | 100 KB | Serial | $310-510
+Schneider Electric | Modicon M221 | TM221M32TK | 18DI+14DO Transistor + Expansion | 100 KB | Serial | $400-600
+Schneider Electric | Modicon M221 | TM221ME16R | 9DI+7DO Relay + Expansion | 100 KB | Ethernet+Serial | $430-630
+Schneider Electric | Modicon M221 | TM221ME16RG | 9DI+7DO Relay + Spring | 100 KB | Ethernet+Serial | $440-640
+Schneider Electric | Modicon M221 | TM221ME16T | 9DI+7DO Transistor NPN + Expansion | 100 KB | Ethernet+Serial | $450-650
+Schneider Electric | Modicon M221 | TM221ME16TG | 9DI+7DO Transistor NPN + Spring | 100 KB | Ethernet+Serial | $460-660
+Schneider Electric | Modicon M221 | TM221ME32TK | 18DI+14DO Transistor + Expansion | 100 KB | Ethernet+Serial | $550-750
+Schneider Electric | Modicon M241 | TM241C24R | 14DI+10DO Relay | 256 KB | 0.6 ms | CANopen | $400-600
+Schneider Electric | Modicon M241 | TM241C24T | 14DI+10DO Transistor | 256 KB | 0.6 ms | CANopen | $420-620
+Schneider Electric | Modicon M241 | TM241C24U | 14DI+10DO Transistor PNP | 256 KB | 0.6 ms | CANopen | $430-630
+Schneider Electric | Modicon M241 | TM241C40R | 24DI+16DO Relay | 256 KB | 0.6 ms | CANopen | $500-700
+Schneider Electric | Modicon M241 | TM241C40T | 24DI+16DO Transistor | 256 KB | 0.6 ms | CANopen | $520-720
+Schneider Electric | Modicon M241 | TM241C40U | 24DI+16DO Transistor PNP | 256 KB | 0.6 ms | CANopen | $530-730
+Schneider Electric | Modicon M241 | TM241CE24R | 14DI+10DO Relay | 256 KB | 0.6 ms | Ethernet+CANopen | $550-750
+Schneider Electric | Modicon M241 | TM241CE24T | 14DI+10DO Transistor | 256 KB | 0.6 ms | Ethernet+CANopen | $570-770
+Schneider Electric | Modicon M241 | TM241CE24U | 14DI+10DO Transistor PNP | 256 KB | 0.6 ms | Ethernet+CANopen | $580-780
+Schneider Electric | Modicon M241 | TM241CE40R | 24DI+16DO Relay | 256 KB | 0.6 ms | Ethernet+CANopen | $650-850
+Schneider Electric | Modicon M241 | TM241CE40T | 24DI+16DO Transistor | 256 KB | 0.6 ms | Ethernet+CANopen | $670-870
+Schneider Electric | Modicon M241 | TM241CE40U | 24DI+16DO Transistor PNP | 256 KB | 0.6 ms | Ethernet+CANopen | $680-880
+Schneider Electric | Modicon M241 | TM241CEC24T | 14DI+10DO Transistor | 256 KB | 0.6 ms | 2x Ethernet+CANopen | $620-820
+Schneider Electric | Modicon M241 | TM241CEC24U | 14DI+10DO Transistor PNP | 256 KB | 0.6 ms | 2x Ethernet+CANopen | $630-830
+Schneider Electric | Modicon M251 | TM251MESE | 14DI+10DO | 256 KB | Ethernet+Serial | $800-1000
+Schneider Electric | Modicon M251 | TM251MESC | 24DI+16DO | 256 KB | Ethernet+Serial+CANopen | $900-1100
+Schneider Electric | Modicon M251 | TM251MEC5E | 14DI+10DO | 256 KB | Ethernet+Serial+CANopen | $1200-1400
+Schneider Electric | Modicon M251 | TM251MEC10E | 14DI+10DO | 256 KB | Ethernet+Serial+CANopen | $1400-1600
+Schneider Electric | Modicon M251 | TM251MESE8T | 8DI+8DO Transistor | 256 KB | Ethernet+Serial | $750-950
+Schneider Electric | Modicon M251 | TM251MESE16T | 16DI+16DO Transistor | 256 KB | Ethernet+Serial | $850-1050
+Schneider Electric | Modicon M251 | TM251MESC16T | 16DI+16DO Transistor | 256 KB | Ethernet+Serial+CANopen | $950-1150
+Schneider Electric | Modicon M251 | TM251MESC24T | 24DI+24DO Transistor | 256 KB | Ethernet+Serial+CANopen | $1000-1200
+Schneider Electric | Modicon M258 | TM258LF42DT4L | 42 I/O | 1 MB | Ethernet+CANopen | $1400-1800
+Schneider Electric | Modicon M258 | TM258LF66DT4L | 66 I/O | 1 MB | Ethernet+CANopen | $1600-2000
+Schneider Electric | Modicon M258 | TM258LD42DT4L | 42 I/O | 1 MB | Ethernet+CANopen | $1300-1700
+Schneider Electric | Modicon M258 | TM258LD66DT4L | 66 I/O | 1 MB | Ethernet+CANopen | $1500-1900
+Schneider Electric | Modicon M258 | TM258LF42DS4LS | 42 I/O | 1 MB | Ethernet+CANopen | $1800-2200
+Schneider Electric | Modicon M258 | TM258LF66DS4LS | 66 I/O | 1 MB | Ethernet+CANopen | $2000-2400
+Schneider Electric | Modicon M258 | TM258LD42DS4LS | 42 I/O | 1 MB | Ethernet+CANopen | $1700-2100
+Schneider Electric | Modicon M258 | TM258LD66DS4LS | 66 I/O | 1 MB | Ethernet+CANopen | $1900-2300
+Schneider Electric | Modicon M258 | TM258LF10C4DT | 10 I/O Compact | 1 MB | Ethernet+CANopen | $1200-1600
+Schneider Electric | Modicon M258 | TM258LD10C4DT | 10 I/O Compact | 1 MB | Ethernet+CANopen | $1100-1500
+Schneider Electric | Modicon M262 | TM262L10MESE8T | Modular | 10 MB | Ethernet+Serial+CANopen | $2000-2500
+Schneider Electric | Modicon M262 | TM262L10MES48T | 48 I/O Modular | 10 MB | Ethernet+Serial+CANopen | $2200-2700
+Schneider Electric | Modicon M262 | TM262M15MESS8T | Modular | 15 MB | Ethernet+Serial+CANopen | $2500-3000
+Schneider Electric | Modicon M262 | TM262M15MES48T | 48 I/O Modular | 15 MB | Ethernet+Serial+CANopen | $2700-3200
+Schneider Electric | Modicon M262 | TM262H20MESS8T | Modular | 20 MB | Ethernet+Serial+CANopen | $3000-3500
+Schneider Electric | Modicon M262 | TM262H20MES48T | 48 I/O Modular | 20 MB | Ethernet+Serial+CANopen | $3200-3700
+Schneider Electric | Modicon M262 | TM262L10MESES8T | Modular | 10 MB | Ethernet+Serial+CANopen | $2500-3000
+Schneider Electric | Modicon M262 | TM262M15MESES8T | Modular | 15 MB | Ethernet+Serial+CANopen | $3000-3500
+Schneider Electric | Modicon M340 | BMXP341000 | Max 256 I/O | 64 KB RAM + 128 KB FLASH | 0.2 ms/K | RS-232/485 | $1000-1400
+Schneider Electric | Modicon M340 | BMXP3415200 | Max 512 I/O | 128 KB RAM + 256 KB FLASH | 0.2 ms/K | RS-232/485 | $1200-1600
+Schneider Electric | Modicon M340 | BMXP342000 | Max 1024 I/O | 128 KB RAM + 256 KB FLASH | 0.2 ms/K | Ethernet | $1400-1800
+Schneider Electric | Modicon M340 | BMXP342020 | Max 1024 I/O | 256 KB RAM + 512 KB FLASH | 0.2 ms/K | Ethernet | $1500-2000
+Schneider Electric | Modicon M340 | BMXP3420302 | Max 1024 I/O | 1 MB RAM + 4 MB FLASH | 0.15 ms/K | Ethernet | $2000-2500
+Schneider Electric | Modicon M340 | BMXP342020H | Max 1024 I/O | 256 KB RAM + 512 KB FLASH | 0.2 ms/K | $2500-3000
+Schneider Electric | Modicon M340 | BMXP3420302H | Max 1024 I/O | 1 MB RAM + 4 MB FLASH | 0.15 ms/K | $3000-3500
+Schneider Electric | Modicon M340 | BMXP342030 | Max 1024 I/O | 2 MB RAM + 8 MB FLASH | 0.12 ms/K | Ethernet | $2500-3000
+Schneider Electric | Modicon M340 | BMXP342030H | Max 1024 I/O | 2 MB RAM + 8 MB FLASH | 0.12 ms/K | $3500-4000
+Schneider Electric | Modicon M340 | BMXP3415020 | Max 512 I/O | 160 KB RAM + 384 KB FLASH | 0.2 ms/K | Ethernet | $1300-1700
+Schneider Electric | Modicon M580 | BMEP582010 | Max 3072 I/O | 1 MB RAM + 16 MB FLASH | 0.04 ms/K | $2500-3500
+Schneider Electric | Modicon M580 | BMEP582020 | Max 3072 I/O | 2 MB RAM + 32 MB FLASH | 0.04 ms/K | $3000-4000
+Schneider Electric | Modicon M580 | BMEP582040 | Max 7168 I/O | 4 MB RAM + 64 MB FLASH | 0.04 ms/K | $3500-4500
+Schneider Electric | Modicon M580 | BMEP582010H | Max 3072 I/O | 1 MB RAM + 16 MB FLASH | $4000-5000
+Schneider Electric | Modicon M580 | BMEP582020H | Max 3072 I/O | 2 MB RAM + 32 MB FLASH | $4500-5500
+Schneider Electric | Modicon M580 | BMEP582040H | Max 7168 I/O | 4 MB RAM + 64 MB FLASH | $5000-7000
+Schneider Electric | Modicon M580 | BMEP583020 | Max 7168 I/O | 4 MB RAM + 64 MB FLASH | 0.03 ms/K | $4000-5000
+Schneider Electric | Modicon M580 | BMEP583040 | Max 7168 I/O | 8 MB RAM + 128 MB FLASH | 0.03 ms/K | $4500-5500
+Schneider Electric | Modicon M580 | BMEP583020H | Max 7168 I/O | 4 MB RAM + 64 MB FLASH | $5500-6500
+Schneider Electric | Modicon M580 | BMEP583040H | Max 7168 I/O | 8 MB RAM + 128 MB FLASH | $6000-7000
+Schneider Electric | Modicon M580 | BMEP585040S | Max 7168 I/O | 8 MB RAM + 128 MB FLASH | $6000-8000
+Schneider Electric | Modicon M580 | BMEP585040HS | Max 7168 I/O | 8 MB RAM + 128 MB FLASH | $8000-10000
+Schneider Electric | Modicon M580 | BMEP586040 | Max 7168 I/O | 16 MB RAM + 256 MB FLASH | 0.02 ms/K | $5000-6000
+Schneider Electric | Modicon M580 | BMEP586040H | Max 7168 I/O | 16 MB RAM + 256 MB FLASH | $7000-8000
+Siemens | SIMATIC S7-1200 | CPU 1211C DC/DC/DC | 6DI/4DO/2AI | 50 KB | 0.1 μs | $300-500
+Siemens | SIMATIC S7-1200 | CPU 1211C AC/DC/Relay | 6DI/4DO/2AI | 50 KB | 0.1 μs | $320-520
+Siemens | SIMATIC S7-1200 | CPU 1211C DC/DC/Relay | 6DI/4DO/2AI | 50 KB | 0.1 μs | $310-510
+Siemens | SIMATIC S7-1200 | CPU 1212C DC/DC/DC | 8DI/6DO/2AI | 75 KB | 0.1 μs | $400-600
+Siemens | SIMATIC S7-1200 | CPU 1212C AC/DC/Relay | 8DI/6DO/2AI | 75 KB | 0.1 μs | $420-620
+Siemens | SIMATIC S7-1200 | CPU 1212C DC/DC/Relay | 8DI/6DO/2AI | 75 KB | 0.1 μs | $410-610
+Siemens | SIMATIC S7-1200 | CPU 1212FC DC/DC/DC | 8DI/6DO/2AI | 75 KB | 0.1 μs | $550-750
+Siemens | SIMATIC S7-1200 | CPU 1212FC DC/DC/Relay | 8DI/6DO/2AI | 75 KB | 0.1 μs | $540-740
+Siemens | SIMATIC S7-1200 | CPU 1214C DC/DC/DC | 14DI/10DO/2AI | 100 KB | 0.1 μs | $500-700
+Siemens | SIMATIC S7-1200 | CPU 1214C AC/DC/Relay | 14DI/10DO/2AI | 100 KB | 0.1 μs | $520-720
+Siemens | SIMATIC S7-1200 | CPU 1214C DC/DC/Relay | 14DI/10DO/2AI | 100 KB | 0.1 μs | $510-710
+Siemens | SIMATIC S7-1200 | CPU 1214FC DC/DC/DC | 14DI/10DO/2AI | 100 KB | 0.1 μs | $650-850
+Siemens | SIMATIC S7-1200 | CPU 1214FC DC/DC/Relay | 14DI/10DO/2AI | 100 KB | 0.1 μs | $640-840
+Siemens | SIMATIC S7-1200 | CPU 1215C DC/DC/DC | 14DI/10DO/2AI | 125 KB | 0.1 μs | $600-800
+Siemens | SIMATIC S7-1200 | CPU 1215C AC/DC/Relay | 14DI/10DO/2AI | 125 KB | 0.1 μs | $620-820
+Siemens | SIMATIC S7-1200 | CPU 1215C DC/DC/Relay | 14DI/10DO/2AI | 125 KB | 0.1 μs | $610-810
+Siemens | SIMATIC S7-1200 | CPU 1215FC DC/DC/DC | 14DI/10DO/2AI | 125 KB | 0.1 μs | $750-950
+Siemens | SIMATIC S7-1200 | CPU 1215FC DC/DC/Relay | 14DI/10DO/2AI | 125 KB | 0.1 μs | $740-940
+Siemens | SIMATIC S7-1200 | CPU 1217C DC/DC/DC | 14DI/10DO/2AI | 150 KB | 0.1 μs | $700-900
+Siemens | SIMATIC S7-1500 | CPU 1511-1 PN | Max 2048 I/O | 300 KB Work/1.5 MB Load | 1 ns | $1500-2000
+Siemens | SIMATIC S7-1500 | CPU 1511F-1 PN | Max 2048 I/O | 450 KB Work/1.5 MB Load | 1 ns | $2000-2500
+Siemens | SIMATIC S7-1500 | CPU 1513-1 PN | Max 4096 I/O | 600 KB Work/2.5 MB Load | 1 ns | $2000-2500
+Siemens | SIMATIC S7-1500 | CPU 1513F-1 PN | Max 4096 I/O | 900 KB Work/2.5 MB Load | 1 ns | $2500-3000
+Siemens | SIMATIC S7-1500 | CPU 1515-2 PN | Max 8192 I/O | 1 MB Work/4.5 MB Load | 1 ns | $2500-3500
+Siemens | SIMATIC S7-1500 | CPU 1515F-2 PN | Max 8192 I/O | 1.5 MB Work/4.5 MB Load | 1 ns | $3000-4000
+Siemens | SIMATIC S7-1500 | CPU 1516-3 PN/DP | Max 12672 I/O | 2 MB Work/7.5 MB Load | 1 ns | $3500-4500
+Siemens | SIMATIC S7-1500 | CPU 1516F-3 PN/DP | Max 12672 I/O | 3 MB Work/7.5 MB Load | 1 ns | $4000-5000
+Siemens | SIMATIC S7-1500 | CPU 1517-3 PN/DP | Max 12672 I/O | 4 MB Work/50 MB Load | 1 ns | $4500-6000
+Siemens | SIMATIC S7-1500 | CPU 1517F-3 PN/DP | Max 12672 I/O | 6 MB Work/50 MB Load | 1 ns | $5000-6500
+Siemens | SIMATIC S7-1500 | CPU 1518-4 PN/DP | Max 12672 I/O | 8 MB Work/60 MB Load | 1 ns | $5500-7000
+Siemens | SIMATIC S7-1500 | CPU 1518F-4 PN/DP | Max 12672 I/O | 12 MB Work/60 MB Load | 1 ns | $6000-7500
+Siemens | SIMATIC S7-1500 | CPU 1511C-1 PN | 30 DI/26 DO | 300 KB Work/1.5 MB Load | 1 ns | $1800-2300
+Siemens | SIMATIC S7-1500 | CPU 1512C-1 PN | 32 DI/32 DO | 400 KB Work/2 MB Load | 1 ns | $2000-2500
+Siemens | SIMATIC S7-300 | CPU 312 | Max 1024 I/O | 32 KB | 0.3 ms/K | $800-1200
+Siemens | SIMATIC S7-300 | CPU 314 | Max 1024 I/O | 128 KB | 0.3 ms/K | $1000-1500
+Siemens | SIMATIC S7-300 | CPU 315-2 PN/DP | Max 2048 I/O | 256 KB | 0.3 ms/K | $1500-2000
+Siemens | SIMATIC S7-300 | CPU 317-2 PN/DP | Max 4096 I/O | 1 MB | 0.3 ms/K | $2000-2500
+Siemens | SIMATIC S7-400 | CPU 412-2 | Max 12672 I/O | 512 KB | 0.1 ms/K | $3000-4000
+Siemens | SIMATIC S7-400 | CPU 414-3 | Max 12672 I/O | 1.4 MB | 0.1 ms/K | $4000-5000
+Siemens | SIMATIC S7-400 | CPU 417-4 | Max 12672 I/O | 20 MB | 0.1 ms/K | $6000-8000
+Rockwell Automation / Allen-Bradley | ControlLogix 5580 | 1756-L82E | Max 128K I/O | 10 MB | $8000-12000
+Rockwell Automation / Allen-Bradley | ControlLogix 5580 | 1756-L83E | Max 128K I/O | 20 MB | $10000-15000
+Rockwell Automation / Allen-Bradley | ControlLogix 5580 | 1756-L85E | Max 128K I/O | 40 MB | $15000-20000
+Rockwell Automation / Allen-Bradley | ControlLogix 5570 | 1756-L71 | Max 128K I/O | 2 MB | $5000-7000
+Rockwell Automation / Allen-Bradley | ControlLogix 5570 | 1756-L72 | Max 128K I/O | 4 MB | $6000-8000
+Rockwell Automation / Allen-Bradley | ControlLogix 5570 | 1756-L73 | Max 128K I/O | 8 MB | $7000-9000
+Rockwell Automation / Allen-Bradley | ControlLogix 5570 | 1756-L75 | Max 128K I/O | 16 MB | $9000-12000
+Rockwell Automation / Allen-Bradley | CompactLogix 5380 | 5069-L310ER | Max 3072 I/O | 1 MB | $2000-3000
+Rockwell Automation / Allen-Bradley | CompactLogix 5380 | 5069-L320ER | Max 3072 I/O | 3 MB | $3000-4000
+Rockwell Automation / Allen-Bradley | CompactLogix 5380 | 5069-L330ER | Max 3072 I/O | 5 MB | $4000-5000
+Rockwell Automation / Allen-Bradley | CompactLogix 5380 | 5069-L340ER | Max 3072 I/O | 10 MB | $5000-6000
+Rockwell Automation / Allen-Bradley | CompactLogix 5370 | 1769-L16ER-BB1B | Max 384 I/O | 384 KB | $1500-2000
+Rockwell Automation / Allen-Bradley | CompactLogix 5370 | 1769-L18ER-BB1B | Max 512 I/O | 750 KB | $2000-2500
+Rockwell Automation / Allen-Bradley | CompactLogix 5370 | 1769-L33ER | Max 2048 I/O | 1.5 MB | $3000-3500
+Rockwell Automation / Allen-Bradley | Micro800 | 2080-LC20-20QBB | 20 I/O | 64 KB | $200-400
+Rockwell Automation / Allen-Bradley | Micro800 | 2080-LC50-48QBB | 48 I/O | 256 KB | $400-600
+Rockwell Automation / Allen-Bradley | Micro800 | 2080-LC70-24QBB | 100 I/O | 512 KB | $600-800
+Mitsubishi Electric | MELSEC iQ-F FX5U | FX5U-32MT/ES | 32 I/O | 128 KB | 0.04 μs | $400-600
+Mitsubishi Electric | MELSEC iQ-F FX5U | FX5U-64MT/ES | 64 I/O | 256 KB | 0.04 μs | $600-800
+Mitsubishi Electric | MELSEC iQ-F FX5U | FX5U-80MT/ES | 80 I/O | 384 KB | 0.04 μs | $700-900
+Mitsubishi Electric | MELSEC-F FX3U | FX3U-16MT/ES | 16 I/O | 64 KB | $300-500
+Mitsubishi Electric | MELSEC-F FX3U | FX3U-32MT/ES | 32 I/O | 64 KB | $400-600
+Mitsubishi Electric | MELSEC-F FX3U | FX3U-64MT/ES | 64 I/O | 128 KB | $500-700
+Mitsubishi Electric | MELSEC-F FX3U | FX3U-128MT/ES | 128 I/O | 256 KB | $700-900
+Mitsubishi Electric | MELSEC iQ-R Series | R04CPU | Max 8192 I/O | 80 KB | 0.98 ns | $2000-3000
+Mitsubishi Electric | MELSEC iQ-R Series | R08CPU | Max 8192 I/O | 160 KB | 0.98 ns | $3000-4000
+Mitsubishi Electric | MELSEC iQ-R Series | R16CPU | Max 8192 I/O | 320 KB | 0.98 ns | $4000-5000
+Mitsubishi Electric | MELSEC iQ-R Series | R32CPU | Max 8192 I/O | 1.2 MB | 0.98 ns | $5000-6000
+Mitsubishi Electric | MELSEC iQ-R Series | R120CPU | Max 8192 I/O | 10 MB | 0.98 ns | $8000-10000
+Mitsubishi Electric | MELSEC-Q Series | Q03UDVCPU | Max 4096 I/O | 124 KB | $1500-2000
+Mitsubishi Electric | MELSEC-Q Series | Q04UDVCPU | Max 4096 I/O | 250 KB | $2000-2500
+Mitsubishi Electric | MELSEC-Q Series | Q06UDVCPU | Max 8192 I/O | 500 KB | $2500-3000
+Mitsubishi Electric | MELSEC-Q Series | Q13UDVCPU | Max 8192 I/O | 1.3 MB | $3000-4000
+Mitsubishi Electric | MELSEC-L Series | L02CPU | Max 2048 I/O | 40 KB | $800-1200
+Mitsubishi Electric | MELSEC-L Series | L06CPU | Max 4096 I/O | 120 KB | $1200-1600
+Mitsubishi Electric | MELSEC-L Series | L26CPU | Max 8192 I/O | 250 KB | $1600-2000
+CODESYS (500+ Brands) | WAGO PFC Controllers | 750-8100 | Modular | 256 MB RAM | $400-600
+CODESYS (500+ Brands) | WAGO PFC Controllers | 750-8202 | Modular | 512 MB RAM | $600-800
+CODESYS (500+ Brands) | Beckhoff CX Controllers | CX5020 | 1 GB | $800-1200
+CODESYS (500+ Brands) | Beckhoff CX Controllers | CX5140 | 4 GB | $1500-2000
+CODESYS (500+ Brands) | ABB AC500 PLCs | PM554-TP | Modular | 256 KB | $500-700
+CODESYS (500+ Brands) | ABB AC500 PLCs | PM564-TP | Modular | 512 KB | $700-900
+CODESYS (500+ Brands) | Eaton XC Controllers | XC-CPU101 | Max 512 I/O | 64 KB | $300-500
+CODESYS (500+ Brands) | Eaton XC Controllers | XC-CPU201 | Max 2048 I/O | 256 KB | $600-800

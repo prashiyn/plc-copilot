@@ -94,10 +94,9 @@ Automation API docs (when Compose is up): http://localhost:8000/docs
 - **Remaining (folds into Phase 3):** wire the generator UI to POST to `/api/programs` so generated code persists automatically.
 
 ### Phase 3 — Make mock routes real ✅
-- `lib/ai-recommend.ts`: flattens the PLC model DB into a catalog + a Claude JSON helper (`askClaudeJson`). Throws without `ANTHROPIC_API_KEY` so callers fall back.
-- `recommend-plc`: Claude grounded by the catalog → existing `RecommendedPLC` shape; deterministic scorer as fallback (`source: 'ai' | 'fallback'`).
-- `recommend-solution`: Claude generates the rich `Solution[]`, fed into the existing ranking/comparison; deterministic generator as fallback.
-- `rectify-error`: Claude analysis + corrected code; pattern matcher as fallback.
+- `lib/ai-recommend.ts`: PLC model catalog helper for tests/docs (`buildCatalogText`).
+- FastAPI: `POST /v1/ai/recommend-plc`, `/v1/ai/recommend-solution`, `/v1/ai/rectify-error` — Claude + deterministic fallback in `api/services/recommend_service.py`; catalog snapshot `api/data/plc_catalog.txt`.
+- BFF proxies: `recommend-plc`, `recommend-solution`, `rectify-error` call `lib/automation-client.ts` (`recommendPlc`, `recommendSolution`, `rectifyError`). All responses include `source: 'ai' | 'fallback'`.
 - Generator output auto-persists: `generate-plc` and `generate-plc-ai` save to `generated_programs` for signed-in users (never blocks generation).
 - `sap/*`: kept **simulated** for v1.5 — response carries `simulated: true` and an amber banner on the export page. Live SAP RFC/OData is post-v1.5.
 - **AI path needs automation stack running.** `docker compose up -d` starts Redis + `automation-api` + `automation-worker`. Set `ANTHROPIC_API_KEY` in `.env` (passed to worker). Next.js uses `AUTOMATION_API_URL` + `AUTOMATION_API_KEY`.
@@ -107,7 +106,7 @@ Automation API docs (when Compose is up): http://localhost:8000/docs
 - FastAPI service: `automation/api/` — health, formats, sketches, AI, job status.
 - Redis job queue + `automation-worker` container; no `spawn('python3')` in Next.js.
 - Python deps managed with **uv** (`automation/pyproject.toml`, `uv.lock`).
-- All Anthropic calls moved to Python (`/v1/ai/chat`, `/v1/ai/json`, `/v1/ai/m221/generate`).
+- All Anthropic calls moved to Python (`/v1/ai/chat`, `/v1/ai/json`, `/v1/ai/m221/generate`, `/v1/ai/recommend-plc`, `/v1/ai/recommend-solution`, `/v1/ai/rectify-error`).
 - Next.js client: `lib/automation-client.ts`; sketch routes + all `app/api/ai-*` migrated.
 - **Design:** [architecture/FASTAPI_AUTOMATION_SERVICE.md](architecture/FASTAPI_AUTOMATION_SERVICE.md)
 - **Verify:** `docker compose up -d && curl http://localhost:8000/ready`; enqueue via `/docs`; sketch analyze from UI.
