@@ -97,6 +97,7 @@ tmp/
 /debug/
 /ide/
 /history.jsonl
+convid.md
 
 # Reference PDFs and archives (large; keep locally, not in git)
 *.pdf
