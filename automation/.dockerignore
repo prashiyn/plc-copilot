@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# test artefacts
+api/tests/__pycache__/
+api/tests/fixtures/exports/
+*.smbp
+*.xml.bak
+
+# desktop scripts (not needed in container — heavy optional deps)
+auto_download_plc.py
+configure_plc_protection.py
+create_*.py
+desktop_ai_agent.py
+download_to_plc.py
+example_custom.py
+motor_startstop_ld_automation.py
+open_*.py
+program_*.py
+vision_*.py
+
+# docs
+*.md
+*.txt
+requirements.txt

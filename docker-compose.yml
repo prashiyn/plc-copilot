@@ -1,4 +1,7 @@
 services:
+  # ──────────────────────────────────────────────
+  # Infrastructure
+  # ──────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: plc-copilot-db
@@ -15,7 +18,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U plc -d plc_copilot"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -27,8 +30,11 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
 
+  # ──────────────────────────────────────────────
+  # Python FastAPI — automation service
+  # ──────────────────────────────────────────────
   automation-api:
     build:
       context: ./automation
@@ -43,6 +49,9 @@ services:
       AUTOMATION_API_KEY: ${AUTOMATION_API_KEY:-dev-automation-key}
       REDIS_URL: redis://redis:6379/0
       UPLOAD_DIR: /tmp/automation-uploads
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
+      # Allow both local browser and Next.js container to call the API
+      CORS_ORIGINS: "http://localhost:3000,http://nextjs:3000"
     volumes:
       - automation_uploads:/tmp/automation-uploads
     depends_on:
@@ -54,6 +63,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # Background worker — consumes Redis job queue
   automation-worker:
     build:
       context: ./automation
@@ -64,6 +74,7 @@ services:
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-3-5-sonnet-20241022}
+      AUTOMATION_API_KEY: ${AUTOMATION_API_KEY:-dev-automation-key}
       REDIS_URL: redis://redis:6379/0
       UPLOAD_DIR: /tmp/automation-uploads
     volumes:
@@ -74,6 +85,50 @@ services:
       automation-api:
         condition: service_healthy
 
+  # ──────────────────────────────────────────────
+  # Next.js — production image (profile: full)
+  #
+  # Usage:
+  #   docker compose --profile full up -d
+  #
+  # For local dev just run `npm run dev` on the host —
+  # the infra services above are enough.
+  # ──────────────────────────────────────────────
+  nextjs:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: Dockerfile.nextjs
+      args:
+        NEXT_BUILD_STANDALONE: "1"
+    container_name: plc-copilot-nextjs
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://plc:plc@postgres:5432/plc_copilot
+      AUTH_SECRET: ${AUTH_SECRET}
+      # Automation service — use internal Docker hostname
+      AUTOMATION_API_URL: http://automation-api:8000
+      AUTOMATION_API_KEY: ${AUTOMATION_API_KEY:-dev-automation-key}
+      AUTOMATION_REQUEST_TIMEOUT_MS: ${AUTOMATION_REQUEST_TIMEOUT_MS:-300000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      # Optional
+      NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    volumes:
+      - nextjs_uploads:/app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      automation-api:
+        condition: service_healthy
+
 volumes:
   plc_pgdata:
   automation_uploads:
+  nextjs_uploads:

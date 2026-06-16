@@ -1,12 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: process.env.NEXT_BUILD_STANDALONE === '1' ? 'standalone' : undefined,
   typescript: {
-    // Temporarily ignore build errors for deployment
     ignoreBuildErrors: true,
   },
   eslint: {
-    // Temporarily ignore linting during builds
     ignoreDuringBuilds: true,
   },
 };
