@@ -45,6 +45,8 @@ export default function GeneratorPage() {
     if (logic) setLogicDescription(logic);
     if (setpointParam) setSetpoint(setpointParam);
     if (platform) setDefaultManufacturerId(platform);
+    const projectIdParam = params.get('projectId');
+    if (projectIdParam) setProjectId(projectIdParam);
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

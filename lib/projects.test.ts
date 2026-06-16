@@ -350,6 +350,102 @@ describe('Phase C file uploads', () => {
   });
 });
 
+describe('Phase E templates, landing, seed, tests', () => {
+  it('from-template API route exists', async () => {
+    await access('app/api/projects/from-template/route.ts');
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/projects/from-template/route.ts', 'utf8');
+    assert.match(src, /createProjectFromTemplate/);
+    assert.match(src, /templateId/);
+    assert.match(src, /status: 201/);
+  });
+
+  it('queries exports createProjectFromTemplate', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('lib/db/queries.ts', 'utf8');
+    assert.match(src, /export async function createProjectFromTemplate/);
+    assert.match(src, /projectInputFromTemplate/);
+  });
+
+  it('projectInputFromTemplate maps template metadata to project fields', async () => {
+    const { getProjectTemplate, projectInputFromTemplate, buildGeneratorUrl } = await import(
+      './templates'
+    );
+    const template = getProjectTemplate('motor_startstop');
+    assert.ok(template);
+    const input = projectInputFromTemplate(template!, { name: 'Motor Start/Stop Demo' });
+    assert.equal(input.name, 'Motor Start/Stop Demo');
+    assert.equal(input.templateId, 'motor_startstop');
+    assert.equal(input.plcManufacturer, 'schneider');
+    assert.equal(input.plcModel, 'TM221CE24R');
+    assert.equal(input.industry, 'General');
+    assert.equal(input.status, 'in_progress');
+
+    const pid = getProjectTemplate('pid_loop');
+    assert.ok(pid);
+    const pidInput = projectInputFromTemplate(pid!, {
+      name: 'PID Temperature Control',
+      status: 'completed',
+    });
+    assert.equal(pidInput.status, 'completed');
+    assert.equal(pidInput.plcModel, 'S7-1200');
+
+    const url = buildGeneratorUrl(template!, 'proj-123');
+    assert.match(url, /projectId=proj-123/);
+    assert.match(url, /template=motor_startstop/);
+  });
+
+  it('projects landing page exists with active and completed sections', async () => {
+    await access('app/(features)/projects/page.tsx');
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/(features)/projects/page.tsx', 'utf8');
+    assert.match(src, /Active Projects/);
+    assert.match(src, /Completed/);
+    assert.match(src, /Browse templates/);
+    assert.match(src, /New project/);
+    assert.match(src, /href={\`\/projects\/\$\{p\.id\}\`}/);
+  });
+
+  it('templates page creates project via from-template API', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/(features)/projects/templates/page.tsx', 'utf8');
+    assert.match(src, /\/api\/projects\/from-template/);
+    assert.match(src, /newFromTemplate=1/);
+    assert.match(src, /Use Template/);
+  });
+
+  it('workspace overview shows template generator quick-action', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/(features)/projects/[id]/page.tsx', 'utf8');
+    assert.match(src, /Generate program from this template/);
+    assert.match(src, /showNewFromTemplate/);
+    assert.match(src, /href="\/projects"/);
+  });
+
+  it('seed creates sample template projects', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('lib/db/seed.ts', 'utf8');
+    assert.match(src, /Motor Start\/Stop Demo/);
+    assert.match(src, /PID Temperature Control/);
+    assert.match(src, /motor_startstop/);
+    assert.match(src, /pid_loop/);
+    assert.match(src, /projectInputFromTemplate/);
+  });
+
+  it('generator page reads projectId from URL', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/generator/page.tsx', 'utf8');
+    assert.match(src, /params\.get\('projectId'\)/);
+  });
+
+  it('file upload rejects disallowed MIME type', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/projects/[id]/files/route.ts', 'utf8');
+    assert.match(src, /isAllowedUpload/);
+    assert.match(src, /415|400|Unsupported|not allowed/i);
+  });
+});
+
 describe('Phase D chat linkage', () => {
   it('chat context helper exists', async () => {
     await access('lib/project-chat-context.ts');

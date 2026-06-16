@@ -20,6 +20,7 @@ import {
   chatSessions,
   chatMessages,
 } from '@/lib/db/schema';
+import { getProjectTemplate, projectInputFromTemplate } from '@/lib/templates';
 import {
   computeOverLimit,
   resolvePlanDisplay,
@@ -107,6 +108,16 @@ export async function createProject(user: SessionUser, input: ProjectInput) {
     .returning();
   await logUsage(user, 'project_created', { projectId: row.id, name: row.name });
   return row;
+}
+
+export async function createProjectFromTemplate(
+  user: SessionUser,
+  templateId: string,
+  name?: string,
+) {
+  const template = getProjectTemplate(templateId);
+  if (!template) return null;
+  return createProject(user, projectInputFromTemplate(template, { name }));
 }
 
 export async function listProjectPrograms(user: SessionUser, projectId: string) {

@@ -120,14 +120,31 @@ function fmtSize(bytes: number | null) {
 function OverviewTab({
   project,
   onSaved,
+  showNewFromTemplate,
 }: {
   project: Project;
   onSaved: (updated: Project) => void;
+  showNewFromTemplate?: boolean;
 }) {
   const [form, setForm] = useState<Partial<Project>>({});
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
   const [tagInput, setTagInput] = useState('');
+  const [generatorUrl, setGeneratorUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!project.templateId) return;
+    fetch('/api/templates')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const t = data?.templates?.find((x: { id: string }) => x.id === project.templateId);
+        if (t?.generatorUrl) {
+          const sep = t.generatorUrl.includes('?') ? '&' : '?';
+          setGeneratorUrl(`${t.generatorUrl}${sep}projectId=${encodeURIComponent(project.id)}`);
+        }
+      })
+      .catch(() => {});
+  }, [project.templateId, project.id]);
 
   const field = <K extends keyof Project>(k: K): Project[K] =>
     (form[k] as Project[K]) ?? project[k];
@@ -168,9 +185,26 @@ function OverviewTab({
 
   const tags = (field('tags') as string[]) ?? [];
   const hasChanges = Object.keys(form).length > 0;
+  const showTemplateAction = Boolean((showNewFromTemplate || project.templateId) && generatorUrl);
 
   return (
     <div className="space-y-6">
+      {showTemplateAction ? (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="font-medium text-blue-900">Project created from template</p>
+            <p className="text-sm text-blue-800 mt-1">
+              Generate a starter program pre-filled with this template&apos;s logic and platform.
+            </p>
+          </div>
+          <Link
+            href={generatorUrl!}
+            className="shrink-0 inline-flex justify-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Generate program from this template
+          </Link>
+        </div>
+      ) : null}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
@@ -885,6 +919,7 @@ export default function ProjectWorkspacePage() {
   const [activeTab, setActiveTab] = useState<Tab>(
     (searchParams.get('tab') as Tab | null) ?? 'overview',
   );
+  const showNewFromTemplate = searchParams.get('newFromTemplate') === '1';
 
   useEffect(() => {
     if (!params?.id) return;
@@ -921,7 +956,7 @@ export default function ProjectWorkspacePage() {
       <div className="py-8 px-4 max-w-7xl mx-auto text-center">
         <p className="text-xl font-semibold text-gray-700 mb-2">Project not found</p>
         <p className="text-gray-500 mb-4">This project does not exist or you do not have access to it.</p>
-        <Link href="/projects/active" className="text-blue-600 hover:text-blue-700 font-medium">
+        <Link href="/projects" className="text-blue-600 hover:text-blue-700 font-medium">
           ← Back to projects
         </Link>
       </div>
@@ -934,7 +969,7 @@ export default function ProjectWorkspacePage() {
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-            <Link href="/projects/active" className="hover:text-gray-700">Projects</Link>
+            <Link href="/projects" className="hover:text-gray-700">Projects</Link>
             <span>›</span>
             <span className="text-gray-900 font-medium truncate">{project.name}</span>
           </div>
@@ -998,7 +1033,11 @@ export default function ProjectWorkspacePage() {
         {/* Tab panels */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           {activeTab === 'overview' && (
-            <OverviewTab project={project} onSaved={setProject} />
+            <OverviewTab
+              project={project}
+              onSaved={setProject}
+              showNewFromTemplate={showNewFromTemplate}
+            />
           )}
           {activeTab === 'programs' && <ProgramsTab projectId={project.id} />}
           {activeTab === 'hmi' && <HmiTab projectId={project.id} />}

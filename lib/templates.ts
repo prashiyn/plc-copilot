@@ -143,7 +143,32 @@ export function getProjectTemplate(id: string): ProjectTemplate | undefined {
   return PROJECT_TEMPLATES.find((template) => template.id === id);
 }
 
-export function buildGeneratorUrl(template: ProjectTemplate): string {
+export function projectInputFromTemplate(
+  template: ProjectTemplate,
+  options?: { name?: string; status?: string },
+): {
+  name: string;
+  description: string;
+  plcManufacturer: string;
+  plcModel: string;
+  applicationType: string;
+  industry: string;
+  templateId: string;
+  status: string;
+} {
+  return {
+    name: options?.name ?? template.name,
+    description: template.description,
+    plcManufacturer: template.defaultPlatform,
+    plcModel: template.defaultController,
+    applicationType: template.industry,
+    industry: template.industry,
+    templateId: template.id,
+    status: options?.status ?? 'in_progress',
+  };
+}
+
+export function buildGeneratorUrl(template: ProjectTemplate, projectId?: string): string {
   const params = new URLSearchParams({
     template: template.id,
     platform: template.defaultPlatform,
@@ -151,5 +176,6 @@ export function buildGeneratorUrl(template: ProjectTemplate): string {
     projectName: template.name,
   });
   if (template.setpoint != null) params.set('setpoint', String(template.setpoint));
+  if (projectId) params.set('projectId', projectId);
   return `/generator?${params.toString()}`;
 }
