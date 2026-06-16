@@ -349,3 +349,63 @@ describe('Phase C file uploads', () => {
     assert.doesNotMatch(src, /Phase C/);
   });
 });
+
+describe('Phase D chat linkage', () => {
+  it('chat context helper exists', async () => {
+    await access('lib/project-chat-context.ts');
+    await access('lib/chat-session-service.ts');
+  });
+
+  it('ai-chat route accepts projectId and sessionId', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/ai-chat/route.ts', 'utf8');
+    assert.match(src, /projectId/);
+    assert.match(src, /sessionId/);
+    assert.match(src, /ensureChatSession/);
+    assert.match(src, /withProjectContextMessages/);
+    assert.match(src, /storeChatExchange/);
+  });
+
+  it('ai-engineer-chat route accepts projectId and sessionId', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/ai-engineer-chat/route.ts', 'utf8');
+    assert.match(src, /projectId/);
+    assert.match(src, /sessionId/);
+    assert.match(src, /ensureChatSession/);
+  });
+
+  it('project chat replay route exists', async () => {
+    await access('app/api/projects/[id]/chats/[sessionId]/route.ts');
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/projects/[id]/chats/[sessionId]/route.ts', 'utf8');
+    assert.match(src, /listProjectChatMessages/);
+  });
+
+  it('queries export chat session helpers', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('lib/db/queries.ts', 'utf8');
+    assert.match(src, /export async function createChatSession/);
+    assert.match(src, /export async function addChatMessage/);
+    assert.match(src, /export async function listProjectChatMessages/);
+    assert.match(src, /lastMessagePreview/);
+  });
+
+  it('chat UIs wire ProjectSelector and sessionId', async () => {
+    const { readFile } = await import('node:fs/promises');
+    for (const pagePath of ['app/(features)/ai-copilot/page.tsx', 'app/(features)/engineer-chat/page.tsx']) {
+      const src = await readFile(pagePath, 'utf8');
+      assert.match(src, /ProjectSelector/, `${pagePath} missing ProjectSelector`);
+      assert.match(src, /sessionId/, `${pagePath} missing sessionId`);
+      assert.match(src, /projectId/, `${pagePath} missing projectId`);
+    }
+  });
+
+  it('workspace Chats tab supports replay', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/(features)/projects/[id]/page.tsx', 'utf8');
+    assert.match(src, /lastMessagePreview/);
+    assert.match(src, /toggleReplay/);
+    assert.match(src, /\/api\/projects\/\$\{projectId\}\/chats\/\$\{sessionId\}/);
+    assert.doesNotMatch(src, /Phase D/);
+  });
+});

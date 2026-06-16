@@ -65,6 +65,14 @@ interface ProjectChat {
   linkedAt: string | null;
   messageCount: number;
   lastMessageAt: string | null;
+  lastMessagePreview: string | null;
+}
+
+interface ChatReplayMessage {
+  id: string;
+  sender: string | null;
+  message: string;
+  createdAt: string | null;
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -591,23 +599,47 @@ function FilesTab({ projectId }: { projectId: string }) {
 function ChatsTab({ projectId }: { projectId: string }) {
   const [chats, setChats] = useState<ProjectChat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [replay, setReplay] = useState<Record<string, ChatReplayMessage[]>>({});
+  const [replayLoading, setReplayLoading] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     setLoading(true);
     fetch(`/api/projects/${projectId}/chats`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d && setChats(d.chats))
+      .then((d) => d && setChats(d.chats ?? []))
       .finally(() => setLoading(false));
   }, [projectId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const toggleReplay = async (sessionId: string) => {
+    if (expandedId === sessionId) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(sessionId);
+    if (replay[sessionId]) return;
+
+    setReplayLoading(sessionId);
+    const res = await fetch(`/api/projects/${projectId}/chats/${sessionId}`);
+    const data = res.ok ? await res.json() : { messages: [] };
+    setReplay((prev) => ({ ...prev, [sessionId]: data.messages ?? [] }));
+    setReplayLoading(null);
+  };
 
   if (loading) return <p className="text-gray-500">Loading chats…</p>;
   if (chats.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
         <p className="mb-3">No chat sessions linked to this project yet.</p>
-        <p className="text-sm">Chat linkage is delivered in Phase D.{' '}
+        <p className="text-sm">
           <Link href="/ai-copilot" className="text-blue-600 hover:text-blue-700">
-            Start a chat →
+            Start AI Co-Pilot
+          </Link>
+          {' · '}
+          <Link href="/engineer-chat" className="text-blue-600 hover:text-blue-700">
+            Engineer chat
           </Link>
         </p>
       </div>
@@ -616,26 +648,68 @@ function ChatsTab({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-3">
-      {chats.map((c) => (
-        <div key={c.sessionId} className="border border-gray-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-gray-900">
-                {c.engineerName ?? 'AI Co-Pilot'}
-                {c.engineerSpecialty && (
-                  <span className="text-gray-500 font-normal text-sm"> · {c.engineerSpecialty}</span>
+      {chats.map((c) => {
+        const isOpen = expandedId === c.sessionId;
+        const messages = replay[c.sessionId] ?? [];
+        return (
+          <div key={c.sessionId} className="border border-gray-200 rounded-lg p-4">
+            <button
+              type="button"
+              onClick={() => toggleReplay(c.sessionId)}
+              className="w-full text-left"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-medium text-gray-900">
+                    {c.engineerName ?? 'AI Co-Pilot'}
+                    {c.engineerSpecialty && (
+                      <span className="text-gray-500 font-normal text-sm"> · {c.engineerSpecialty}</span>
+                    )}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Started {fmtDate(c.startedAt)} · {c.messageCount} message{c.messageCount !== 1 ? 's' : ''}
+                  </p>
+                  {c.lastMessagePreview ? (
+                    <p className="text-sm text-gray-600 mt-2 truncate">
+                      {c.lastMessagePreview}
+                    </p>
+                  ) : null}
+                </div>
+                <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold ${c.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                  {isOpen ? 'Hide' : 'Replay'}
+                </span>
+              </div>
+            </button>
+
+            {isOpen ? (
+              <div className="mt-4 border-t border-gray-100 pt-4 space-y-3 max-h-96 overflow-y-auto">
+                {replayLoading === c.sessionId ? (
+                  <p className="text-sm text-gray-500">Loading messages…</p>
+                ) : messages.length === 0 ? (
+                  <p className="text-sm text-gray-500">No messages stored for this session.</p>
+                ) : (
+                  messages.map((m) => (
+                    <div
+                      key={m.id}
+                      className={`rounded-lg px-3 py-2 text-sm ${
+                        m.sender === 'user'
+                          ? 'bg-blue-50 text-blue-900 ml-8'
+                          : 'bg-gray-50 text-gray-800 mr-8'
+                      }`}
+                    >
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-1 opacity-70">
+                        {m.sender === 'user' ? 'You' : m.sender === 'engineer' ? 'Engineer' : 'Assistant'}
+                      </p>
+                      <p className="whitespace-pre-wrap">{m.message}</p>
+                      <p className="text-xs opacity-60 mt-1">{fmtDate(m.createdAt)}</p>
+                    </div>
+                  ))
                 )}
-              </p>
-              <p className="text-sm text-gray-500 mt-0.5">
-                Started {fmtDate(c.startedAt)} · {c.messageCount} message{c.messageCount !== 1 ? 's' : ''}
-              </p>
-            </div>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${c.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-              {c.status}
-            </span>
+              </div>
+            ) : null}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -234,18 +234,129 @@ export async function listProjectChats(user: SessionUser, projectId: string) {
 
   const countMap = new Map(messageCounts.map((r) => [r.sessionId, r]));
 
+  const previewRows = await db
+    .select({
+      sessionId: chatMessages.sessionId,
+      message: chatMessages.message,
+      createdAt: chatMessages.createdAt,
+    })
+    .from(chatMessages)
+    .where(inArray(chatMessages.sessionId, sessionIds))
+    .orderBy(desc(chatMessages.createdAt));
+
+  const previewMap = new Map<string, string>();
+  for (const row of previewRows) {
+    if (!previewMap.has(row.sessionId)) {
+      previewMap.set(row.sessionId, row.message);
+    }
+  }
+
   return links.map((l) => ({
     ...l,
     messageCount: countMap.get(l.sessionId)?.count ?? 0,
     lastMessageAt: countMap.get(l.sessionId)?.lastMessage ?? null,
+    lastMessagePreview: previewMap.get(l.sessionId) ?? null,
   }));
 }
 
-export async function linkChatToProject(
-  _user: SessionUser,
+export async function getChatSession(user: SessionUser, sessionId: string) {
+  const [row] = await db
+    .select()
+    .from(chatSessions)
+    .where(and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, user.id)))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function createChatSession(
+  user: SessionUser,
+  input: { engineerName?: string | null; engineerSpecialty?: string | null } = {},
+) {
+  const [row] = await db
+    .insert(chatSessions)
+    .values({
+      userId: user.id,
+      engineerName: input.engineerName ?? 'AI Co-Pilot',
+      engineerSpecialty: input.engineerSpecialty ?? null,
+      status: 'active',
+    })
+    .returning();
+  return row;
+}
+
+export async function addChatMessage(
+  user: SessionUser,
+  sessionId: string,
+  sender: string,
+  message: string,
+) {
+  const session = await getChatSession(user, sessionId);
+  if (!session) throw new Error('Invalid sessionId');
+  const [row] = await db
+    .insert(chatMessages)
+    .values({ sessionId, sender, message })
+    .returning();
+  return row;
+}
+
+export async function getProjectIdForSession(sessionId: string): Promise<string | null> {
+  const [link] = await db
+    .select({ projectId: projectChats.projectId })
+    .from(projectChats)
+    .where(eq(projectChats.sessionId, sessionId))
+    .limit(1);
+  return link?.projectId ?? null;
+}
+
+export async function listProjectChatMessages(
+  user: SessionUser,
   projectId: string,
   sessionId: string,
 ) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  const [link] = await db
+    .select({ id: projectChats.id })
+    .from(projectChats)
+    .where(and(eq(projectChats.projectId, projectId), eq(projectChats.sessionId, sessionId)))
+    .limit(1);
+  if (!link) return null;
+  const session = await getChatSession(user, sessionId);
+  if (!session) return null;
+  return db
+    .select({
+      id: chatMessages.id,
+      sender: chatMessages.sender,
+      message: chatMessages.message,
+      createdAt: chatMessages.createdAt,
+    })
+    .from(chatMessages)
+    .where(eq(chatMessages.sessionId, sessionId))
+    .orderBy(chatMessages.createdAt);
+}
+
+export async function resolveProjectForChat(
+  user: SessionUser,
+  projectId?: string | null,
+  sessionId?: string | null,
+) {
+  let scopedProjectId = projectId?.trim() || null;
+  if (!scopedProjectId && sessionId) {
+    scopedProjectId = await getProjectIdForSession(sessionId);
+  }
+  if (!scopedProjectId) return null;
+  return getProject(user, scopedProjectId);
+}
+
+export async function linkChatToProject(
+  user: SessionUser,
+  projectId: string,
+  sessionId: string,
+) {
+  const project = await getProject(user, projectId);
+  if (!project) throw new Error('Invalid projectId');
+  const session = await getChatSession(user, sessionId);
+  if (!session) throw new Error('Invalid sessionId');
   const existing = await db
     .select({ id: projectChats.id })
     .from(projectChats)

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import ProjectSelector from '@/lib/components/ProjectSelector';
 
 interface Message {
   id: string;
@@ -37,6 +38,8 @@ export default function EngineerChat() {
   const [currentEngineer, setCurrentEngineer] = useState<Engineer | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const availableEngineers: Engineer[] = [
@@ -153,7 +156,9 @@ export default function EngineerChat() {
           conversationContext: {
             projectType: 'PLC Programming',
             plcPlatform: currentEngineer?.specialty.split(',')[0] || 'General'
-          }
+          },
+          projectId,
+          sessionId,
         }),
       });
 
@@ -163,6 +168,7 @@ export default function EngineerChat() {
       }
 
       const data = await response.json();
+      if (data.sessionId) setSessionId(data.sessionId);
 
       const engineerMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -218,6 +224,9 @@ export default function EngineerChat() {
             >
               Back to Home
             </Link>
+          </div>
+          <div className="mt-4 max-w-md">
+            <ProjectSelector value={projectId} onChange={setProjectId} />
           </div>
         </div>
 

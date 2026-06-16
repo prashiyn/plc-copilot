@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Code, FileText, TestTube, Upload, Sparkles, Zap, CheckCircle, Clock, Loader2, Image as ImageIcon, X, FileImage } from 'lucide-react';
+import ProjectSelector from '@/lib/components/ProjectSelector';
 
 interface ProgressStage {
   name: string;
@@ -39,6 +40,8 @@ export default function AICopilotPage() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [estimatedTime, setEstimatedTime] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   const examplePrompts = [
     "Write a PLC program to control two pumps in a water pump station. Pump 1 should go on when well is greater than 50%, pump 2 should go on when well is greater than 80%. Sound an alarm when well is greater than 90%. Pumps should go off when well is less than 20%. Well is 15 ft deep.",
@@ -222,7 +225,9 @@ export default function AICopilotPage() {
             content: m.content
           })),
           mode: activeTab,
-          uploadedImages: imagesToSend
+          uploadedImages: imagesToSend,
+          projectId,
+          sessionId,
         }),
       });
 
@@ -232,6 +237,7 @@ export default function AICopilotPage() {
 
       const data = await response.json();
       const assistantResponse = data.message;
+      if (data.sessionId) setSessionId(data.sessionId);
 
       setChatHistory(prev => [...prev, { role: 'assistant', content: assistantResponse }]);
       if (activeTab === 'generate') {
@@ -527,6 +533,12 @@ Please analyze the uploaded ${uploadedImages.length} diagram(s) and help me with
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8 max-w-md">
+          <ProjectSelector value={projectId} onChange={setProjectId} />
+          {sessionId ? (
+            <p className="mt-2 text-xs text-gray-500">Session linked · {sessionId.slice(0, 8)}…</p>
+          ) : null}
+        </div>
         {/* Feature Highlights */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
