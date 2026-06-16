@@ -16,6 +16,8 @@ const PROTECTED_PREFIXES = [
   '/plc-selector',
   '/hmi-generator',
   '/projects',
+  '/programs',
+  '/rectify-error',
   '/solutions',
   '/billing',
   '/subscription',

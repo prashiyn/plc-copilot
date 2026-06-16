@@ -2,6 +2,30 @@
 
 All notable changes to PLCAutoPilot will be documented in this file.
 
+## [1.5.0] - 2026-06-16
+
+### Added
+- **FastAPI automation service** — Redis job worker, program generate/export, sketch analyze, M221 AI, recommend/rectify routes
+- **Multi-vendor export** — Schneider Calaos, Rockwell L5X, Siemens SCL, Mitsubishi IL/ST, PLCopen XML; nine deterministic patterns + Claude IR synthesis
+- **Phase 5 gaps** — BFF tier2/plcopen routing for all patterns; generator advanced Claude IR panel; rectify-error UI; E2E recommend/library fixes
+- **E2E follow-ups** — Generated programs list (`/programs`), sketch generator page, catalog-backed solution compare, `GET /api/plc-catalog`
+
+### Changed
+- **Auth + persistence** — Auth.js v5, Drizzle/Postgres for projects, programs, dashboard stats
+- **AI routes** — Live Claude proxies via automation service (replaced mock TS generators on production paths)
+- **Docs** — `PHASE_5_IMPLEMENTATION.md`, `P5_GAPS_IMPLEMENTATION.md`, `E2E_INTEGRATION_AUDIT.md`, Runbook
+
+### Removed
+- Orphan duplicate BFF routes (`/api/ai-copilot`, `ai-application-generator`, `ai-library-manager`, `ai-code-optimizer`)
+
+### Verify
+```bash
+cd automation && uv run pytest api/tests -q   # 339+
+npm run test:plc && npm run build
+```
+
+---
+
 ## [1.4.0] - 2025-12-22
 
 ### Added
@@ -133,11 +157,9 @@ All notable changes to PLCAutoPilot will be documented in this file.
 
 ## Next Steps
 
-> v1.5 is in progress (Postgres + Auth.js + persistence + AI routes done; platform
-> integrations next). Deferred items live in
-> [docs/architecture/PHASE_5_IMPLEMENTATION.md](docs/architecture/PHASE_5_IMPLEMENTATION.md).
+> **v1.5 shipped** (2026-06-16). Deferred product work → [PHASE_5_IMPLEMENTATION.md](docs/architecture/PHASE_5_IMPLEMENTATION.md) §5 frozen tracks and E2E audit follow-ups.
 
-### Planned Features (v1.5+)
+### Planned Features (v1.6+)
 - [ ] Siemens TIA Portal integration
 - [ ] Rockwell Studio 5000 support
 - [ ] Mitsubishi GX Works integration

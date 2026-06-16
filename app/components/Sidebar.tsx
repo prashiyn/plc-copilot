@@ -78,7 +78,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </svg>
       ),
       link: '/generator',
-      items: [],
+      items: [
+        { title: 'Sketch Generator', link: '/sketch-generator' },
+      ],
       badge: 'Popular',
     },
     {
@@ -144,6 +146,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       items: [
         { title: 'Active Projects', link: '/projects/active' },
         { title: 'Completed', link: '/projects/completed' },
+        { title: 'Generated Programs', link: '/programs' },
         { title: 'Templates', link: '/projects/templates' },
       ],
     },

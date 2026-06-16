@@ -162,12 +162,14 @@ Prompt assembly stays in BFF; inference is always Python — **by design**.
 
 ## 6. Duplicate / legacy API routes
 
-These mirror active routes; **no UI references** — safe to deprecate later:
+Removed (2026-06-16): orphan routes that duplicated canonical BFF handlers — no UI referenced them.
 
-- `/api/ai-copilot` → use `/api/ai-chat`
-- `/api/ai-application-generator` → use `/api/ai-generate-application`
-- `/api/ai-library-manager` → use `/api/ai-library-search`
-- `/api/ai-code-optimizer` → use `/api/ai-optimize-code`
+| Removed | Use instead |
+|---------|-------------|
+| `/api/ai-copilot` | `/api/ai-chat` |
+| `/api/ai-application-generator` | `/api/ai-generate-application` |
+| `/api/ai-library-manager` | `/api/ai-library-search` |
+| `/api/ai-code-optimizer` | `/api/ai-optimize-code` |
 
 ---
 
@@ -179,7 +181,7 @@ These mirror active routes; **no UI references** — safe to deprecate later:
 | M221 Generator | ✅ |
 | PLC Selector (wizard) | ✅ |
 | Solution Finder → Recommend | ✅ |
-| Solution Finder → Compare | ❌ mock |
+| Solution Finder → Compare | ✅ catalog API |
 | AI Co-Pilot subtree | ✅ (chat, app gen, optimizer, library search) |
 | Error Rectification | ✅ (page + sidebar link) |
 | SAP Integration | ⚠️ simulated |
@@ -202,14 +204,16 @@ These mirror active routes; **no UI references** — safe to deprecate later:
 
 ---
 
-## 9. Recommended follow-ups (not in this audit pass)
+## 9. Recommended follow-ups
 
-1. **Programs list UI** — surface `GET /api/programs` for signed-in users.
-2. **Dedicated sketch flow** — page calling `/api/generate-from-sketch` with `include_metadata`.
-3. **Solution compare** — feed from `/api/recommend-solution` or shared catalog API.
-4. **Consolidate duplicate BFF routes** — remove orphan `ai-copilot` etc.
-5. **Move AI prompts to Python** — optional; reduces BFF prompt drift.
-6. **Dashboard usage** — wire to real metering when billing phase starts.
+| # | Item | Status |
+|---|------|--------|
+| 1 | **Programs list UI** — `GET /api/programs` | ✅ `/programs` |
+| 2 | **Dedicated sketch flow** — `/api/generate-from-sketch` | ✅ `/sketch-generator` |
+| 3 | **Solution compare** — catalog-backed | ✅ `/api/plc-catalog` + compare page |
+| 4 | **Consolidate duplicate BFF routes** | ✅ removed orphans (§6) |
+| 5 | **Move AI prompts to Python** | Deferred (optional) |
+| 6 | **Dashboard usage** | Deferred (billing phase) |
 
 ---
 

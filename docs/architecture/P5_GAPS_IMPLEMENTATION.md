@@ -38,9 +38,9 @@ npm run build                                         # Next.js compiles
 | Item | Reason |
 |------|--------|
 | P0 manual IDE sign-off | User will verify on Windows |
-| Programs list UI (`GET /api/programs`) | Product feature; not Phase 5 deliverable |
-| Solution compare static data | Marketing page; separate initiative |
-| Duplicate orphan BFF routes (`ai-copilot`, etc.) | Low risk; delete in cleanup PR |
+| Programs list UI (`GET /api/programs`) | ✅ Delivered `/programs` (2026-06-16) |
+| Solution compare static data | ✅ Catalog-backed compare (2026-06-16) |
+| Duplicate orphan BFF routes (`ai-copilot`, etc.) | ✅ Removed (2026-06-16) |
 | PID pattern | Never promised in P3 delivery (interlock/staging/timed only) |
 
 ---

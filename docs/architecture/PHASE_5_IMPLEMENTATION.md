@@ -7,7 +7,7 @@ Execution plan for **post–v1.5** work: known limits of the v1.5 ship, prioriti
 **Verify v1.5 release:**
 ```bash
 cd automation && uv run pytest api/tests -v   # 338+ tests
-npm run test:plc && npm run build             # 22 BFF tests
+npm run test:plc && npm run build             # 35+ BFF tests
 ```
 
 ---
