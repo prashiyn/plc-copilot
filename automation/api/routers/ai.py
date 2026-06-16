@@ -114,6 +114,17 @@ class CodeOptimizeRequest(BaseModel):
     max_tokens: int = Field(default=8192, alias="maxTokens")
 
 
+class HmiGenerateRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    vendor: str = "siemens-wincc"
+    screen_type: str = Field(default="process-overview", alias="screenType")
+    description: str = Field(min_length=1)
+    project_name: str = Field(min_length=1, alias="projectName")
+    tags: list[dict[str, str]] = Field(default_factory=list)
+    max_tokens: int = Field(default=8192, alias="maxTokens")
+
+
 async def _enqueue(redis: Redis, job_type: str, payload: dict) -> JSONResponse:
     store = JobStore(redis)
     job_id = await store.enqueue(job_type, payload)
@@ -262,6 +273,22 @@ async def ai_code_optimize(body: CodeOptimizeRequest, redis: Redis = Depends(get
             "platform": body.platform,
             "optimizationGoals": body.optimization_goals,
             "currentIssues": body.current_issues,
+            "maxTokens": body.max_tokens,
+        },
+    )
+
+
+@router.post("/hmi/generate")
+async def ai_hmi_generate(body: HmiGenerateRequest, redis: Redis = Depends(get_redis)):
+    return await _enqueue(
+        redis,
+        "ai.hmi.generate",
+        {
+            "vendor": body.vendor,
+            "screenType": body.screen_type,
+            "description": body.description,
+            "projectName": body.project_name,
+            "tags": body.tags,
             "maxTokens": body.max_tokens,
         },
     )

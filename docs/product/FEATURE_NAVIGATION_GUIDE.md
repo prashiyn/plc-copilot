@@ -463,28 +463,33 @@ Expandable section for assistance:
 
 ## 📝 Feature Status
 
-### ✅ Completed Features
-- [x] PLC Generator with 500+ models
-- [x] PLC Selector wizard
-- [x] Solution recommendation engine
+### ✅ Completed Features (v1.6)
+- [x] PLC Generator with 500+ models + `pid_loop` pattern
+- [x] PLC Selector wizard + solution recommend/compare (catalog-backed)
+- [x] Sketch generator page (`/sketch-generator`)
+- [x] Generated programs list (`/programs`)
+- [x] HMI generator (AI-backed via FastAPI)
 - [x] Error rectification system
 - [x] Multi-platform download
-- [x] Engineer chat (human-in-the-loop)
+- [x] Engineer chat + AI Co-Pilot subtree (chat, app gen, optimizer, library search)
 - [x] Sidebar navigation
 - [x] Login system (Auth.js + demo seed)
 - [x] Complete database schema
-- [x] Learning system
-- [x] Usage analytics (logging only; not tied to billing)
+- [x] Usage metering — event logging + `/api/usage` on dashboard and billing pages
+- [x] Settings pages (profile, preferences, notifications, security, API keys)
+- [x] Support contact + ticket system
+- [x] Resources (docs, tutorials, examples, forum)
+- [x] Project templates (`/api/templates` → generator prefill)
 - [x] Subscription plan **UI** (3 tiers — display only)
-- [x] Billing **UI** pages (no payment processing)
+- [x] Billing usage/plan meters (read-only; no payment processing)
 
-### 🔄 Pending Features
-- [ ] Actual Stripe payment processing (**deferred** — see backlog)
-- [ ] Dashboard implementation
-- [ ] Project management pages
-- [ ] Platform-specific pages
-- [ ] Settings pages
-- [ ] Resource pages
+### 🔄 Deferred (v1.7+)
+- [ ] Actual Stripe payment processing
+- [ ] SAP RFC/OData integration
+- [ ] Mobile app (React Native)
+- [ ] Session list / 2FA on security page
+- [ ] Simulator HMI preview / live PLC runtime
+- [ ] Multi-language (i18n)
 
 ---
 

@@ -202,6 +202,99 @@ class TestIrSchemaExtensions:
         validated = validate_program(program)
         assert validated.vars[1].kind == "counter"
 
+    def test_compare_node_valid_program(self):
+        program = {
+            "name": "CompareTest",
+            "target": {"vendor": "siemens", "model": "S7-1200"},
+            "vars": [
+                {"symbol": "TEMP_PV", "address": "%IW0", "kind": "input", "dataType": "REAL"},
+                {"symbol": "TEMP_SP", "address": "%MW0", "kind": "memory", "dataType": "REAL"},
+                {"symbol": "TEMP_HIGH", "address": "%M0.0", "kind": "memory", "dataType": "BOOL"},
+            ],
+            "pous": [
+                {
+                    "name": "MainProgram",
+                    "networks": [
+                        {
+                            "logic": {
+                                "type": "compare",
+                                "left": "TEMP_PV",
+                                "right": "TEMP_SP",
+                                "op": "GT",
+                                "output": "TEMP_HIGH",
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+        validated = validate_program(program)
+        assert validated.pous[0].networks[0].logic.type == "compare"
+
+    def test_fb_call_pid_valid_program(self):
+        program = {
+            "name": "PidTest",
+            "target": {"vendor": "siemens", "model": "S7-1200"},
+            "vars": [
+                {"symbol": "LOOP_EN", "address": "%I0.0", "kind": "input", "dataType": "BOOL"},
+                {"symbol": "TEMP_PV", "address": "%IW0", "kind": "input", "dataType": "REAL"},
+                {"symbol": "TEMP_SP", "address": "%MW0", "kind": "memory", "dataType": "REAL"},
+                {"symbol": "VALVE_CV", "address": "%QW0", "kind": "output", "dataType": "REAL"},
+                {"symbol": "PID1", "address": "%MW10", "kind": "memory", "dataType": "REAL"},
+            ],
+            "pous": [
+                {
+                    "name": "MainProgram",
+                    "networks": [
+                        {
+                            "logic": {
+                                "type": "fb_call",
+                                "kind": "PID",
+                                "instance": "PID1",
+                                "enable": "LOOP_EN",
+                                "params": [
+                                    {"name": "PV", "symbol": "TEMP_PV", "direction": "in"},
+                                    {"name": "SP", "symbol": "TEMP_SP", "direction": "in"},
+                                    {"name": "CV", "symbol": "VALVE_CV", "direction": "out"},
+                                ],
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+        validated = validate_program(program)
+        assert validated.pous[0].networks[0].logic.kind == "PID"
+
+    def test_rejects_compare_operand_datatype_mismatch(self):
+        program = {
+            "name": "BadCompare",
+            "target": {"vendor": "siemens", "model": "S7-1200"},
+            "vars": [
+                {"symbol": "A", "kind": "input", "dataType": "REAL"},
+                {"symbol": "B", "kind": "memory", "dataType": "INT"},
+                {"symbol": "OUT", "kind": "memory", "dataType": "BOOL"},
+            ],
+            "pous": [
+                {
+                    "name": "MainProgram",
+                    "networks": [
+                        {
+                            "logic": {
+                                "type": "compare",
+                                "left": "A",
+                                "right": "B",
+                                "op": "GE",
+                                "output": "OUT",
+                            },
+                        }
+                    ],
+                }
+            ],
+        }
+        with pytest.raises(IrValidationError, match="must share the same dataType"):
+            validate_program(program)
+
     def test_require_estop_missing_symbol(self):
         program = build_pattern(
             "motor_startstop",

@@ -179,3 +179,99 @@ Code:
 ```
 
 Return JSON with analysis_summary, issues_found, optimizations, refactored_code, summary."""
+
+
+HMI_VENDOR_CONFIG: dict[str, dict[str, str]] = {
+    "siemens-wincc": {
+        "name": "Siemens WinCC",
+        "language": "VBScript",
+        "extension": ".vbs",
+    },
+    "rockwell-factorytalk": {
+        "name": "Rockwell FactoryTalk View",
+        "language": "VBA",
+        "extension": ".vba",
+    },
+    "schneider-vijeo": {
+        "name": "Schneider Vijeo Designer",
+        "language": "JavaScript",
+        "extension": ".js",
+    },
+    "mitsubishi-gt": {
+        "name": "Mitsubishi GT Designer",
+        "language": "GT Designer script",
+        "extension": ".gs",
+    },
+    "abb-800xa": {
+        "name": "ABB 800xA",
+        "language": "C#/.NET",
+        "extension": ".cs",
+    },
+    "wonderware": {
+        "name": "Wonderware InTouch",
+        "language": "QuickScript",
+        "extension": ".qst",
+    },
+    "ignition": {
+        "name": "Ignition SCADA",
+        "language": "Jython",
+        "extension": ".py",
+    },
+    "codesys-visu": {
+        "name": "CODESYS Visualization",
+        "language": "Structured Text (visu)",
+        "extension": ".st",
+    },
+}
+
+HMI_SYSTEM = """You are an expert HMI/SCADA screen developer for industrial automation.
+Generate importable screen script artifacts — not native binary project files.
+
+Return ONE JSON object with:
+- scriptFileName: string (appropriate extension for the vendor)
+- scriptContent: string (complete importable script for the requested screen)
+- tags: array of {name, address, type, comment} for PLC tag linkage
+- importGuide: string (step-by-step import instructions for the vendor IDE)
+
+Rules:
+- Use the vendor's native scripting language listed in the user prompt
+- Include tag bindings referenced in scriptContent
+- Keep scripts self-contained and import-ready
+- Output ONLY valid JSON — no markdown fences"""
+
+
+def hmi_vendor_config(vendor: str) -> dict[str, str]:
+    return HMI_VENDOR_CONFIG.get(vendor, {
+        "name": vendor,
+        "language": "generic HMI script",
+        "extension": ".txt",
+    })
+
+
+def build_hmi_user_prompt(
+    *,
+    vendor: str,
+    screen_type: str,
+    description: str,
+    project_name: str,
+    tags: list[dict[str, str]] | None = None,
+) -> str:
+    cfg = hmi_vendor_config(vendor)
+    tag_lines = ""
+    if tags:
+        tag_lines = "Known PLC tags to bind:\n" + "\n".join(
+            f"- {t.get('name', '')} @ {t.get('address', '')} ({t.get('type', 'BOOL')})"
+            for t in tags
+        )
+    return f"""Project: {project_name}
+HMI vendor: {cfg['name']} ({vendor})
+Script language: {cfg['language']}
+Preferred file extension: {cfg['extension']}
+Screen type: {screen_type}
+
+User requirements:
+{description.strip()}
+
+{tag_lines}
+
+Return JSON with scriptFileName, scriptContent, tags, importGuide."""

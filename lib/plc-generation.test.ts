@@ -64,6 +64,14 @@ describe('detectPatternFromLogic', () => {
     assert.equal(result.runSeconds, 8);
   });
 
+  it('detects pid loop with setpoint', () => {
+    const result = detectPatternFromLogic(
+      'PID closed loop temperature control with setpoint of 75 for reactor',
+    );
+    assert.equal(result.pattern, 'pid_loop');
+    assert.equal(result.setpoint, 75);
+  });
+
   it('extracts project name', () => {
     const result = detectPatternFromLogic('Project: Tank_Control\n4 sequential lights');
     assert.equal(result.projectName, 'Tank_Control');

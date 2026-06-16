@@ -58,6 +58,8 @@ def _pattern_kwargs(pattern: str) -> dict:
         return {"num_lights": 4, "delay_seconds": 3}
     if pattern == "traffic_lights":
         return {"cycle_seconds": 5}
+    if pattern == "pid_loop":
+        return {"setpoint": 55.0}
     return {}
 
 

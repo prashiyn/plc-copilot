@@ -245,10 +245,63 @@ PATTERN_V2_EXPORT_CASES: list[dict[str, Any]] = [
     },
 ]
 
+PATTERN_PID_EXPORT_CASES: list[dict[str, Any]] = [
+    {
+        "id": "pid_loop_schneider",
+        "pattern": "pid_loop",
+        "vendor": "schneider",
+        "model": "TM221CE24R",
+        "projectName": "Golden_Pid_Schneider",
+        "setpoint": 60.0,
+    },
+    {
+        "id": "pid_loop_rockwell",
+        "pattern": "pid_loop",
+        "vendor": "rockwell",
+        "model": "1769-L33ER",
+        "projectName": "Golden_Pid_Rockwell",
+        "setpoint": 60.0,
+    },
+    {
+        "id": "pid_loop_siemens",
+        "pattern": "pid_loop",
+        "vendor": "siemens",
+        "model": "S7-1200",
+        "projectName": "Golden_Pid_Siemens",
+        "setpoint": 60.0,
+    },
+    {
+        "id": "pid_loop_mitsubishi",
+        "pattern": "pid_loop",
+        "vendor": "mitsubishi",
+        "model": "FX5U",
+        "projectName": "Golden_Pid_Mitsubishi",
+        "setpoint": 60.0,
+    },
+    {
+        "id": "plcopen_pid_codesys",
+        "pattern": "pid_loop",
+        "vendor": "codesys",
+        "model": "Generic",
+        "projectName": "Golden_Pid_Plcopen",
+        "plcopen": True,
+        "setpoint": 60.0,
+    },
+    {
+        "id": "pid_loop_siemens_ir",
+        "pattern": "pid_loop",
+        "vendor": "siemens",
+        "model": "S7-1200",
+        "projectName": "Golden_Pid_IR",
+        "setpoint": 72.5,
+    },
+]
+
 EXPORT_CASES: list[dict[str, Any]] = [
     *IR_FIXTURE_CASES,
     *PATTERN_4J_EXPORT_CASES,
     *PATTERN_V2_EXPORT_CASES,
+    *PATTERN_PID_EXPORT_CASES,
     {
         "id": "motor_startstop_siemens",
         "pattern": "motor_startstop",
@@ -325,16 +378,23 @@ def normalize_ir_program(program: dict[str, Any]) -> dict[str, Any]:
     return normalized
 
 
+def _pattern_build_kwargs(case: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "num_lights": int(case.get("numLights", 4)),
+        "delay_seconds": int(case.get("delaySeconds", 3)),
+        "cycle_seconds": int(case.get("cycleSeconds", 5)),
+        "run_seconds": int(case.get("runSeconds", 5)),
+        "setpoint": float(case.get("setpoint", 50.0)),
+    }
+
+
 def build_ir_program(case: dict[str, Any]) -> dict[str, Any]:
     program = build_pattern(
         case["pattern"],
         project_name=case["projectName"],
         vendor=case["vendor"],
         model=case["model"],
-        num_lights=int(case.get("numLights", 4)),
-        delay_seconds=int(case.get("delaySeconds", 3)),
-        cycle_seconds=int(case.get("cycleSeconds", 5)),
-        run_seconds=int(case.get("runSeconds", 5)),
+        **_pattern_build_kwargs(case),
     )
     return normalize_ir_program(program.model_dump())
 
@@ -378,15 +438,14 @@ def sha256_bytes(content: bytes) -> str:
 
 
 def serialize_export_case(service: IrService, case: dict[str, Any]) -> tuple[bytes, str]:
+    ir_kwargs = _pattern_build_kwargs(case)
     if case.get("plcopen"):
         payload = service.get_pattern_ir(
             case["pattern"],
             project_name=case["projectName"],
             vendor=case["vendor"],
             model=case["model"],
-            num_lights=int(case.get("numLights", 4)),
-            delay_seconds=int(case.get("delaySeconds", 3)),
-            cycle_seconds=int(case.get("cycleSeconds", 5)),
+            **ir_kwargs,
         )
         program = payload["program"]
         program["target"] = {"vendor": case["vendor"], "model": case["model"]}
@@ -398,9 +457,7 @@ def serialize_export_case(service: IrService, case: dict[str, Any]) -> tuple[byt
             project_name=case["projectName"],
             vendor=case["vendor"],
             model=case["model"],
-            num_lights=int(case.get("numLights", 4)),
-            delay_seconds=int(case.get("delaySeconds", 3)),
-            cycle_seconds=int(case.get("cycleSeconds", 5)),
+            **ir_kwargs,
         )
         result = service.serialize(payload["program"])
         export_format = str(result["metadata"].get("format", "unknown"))
@@ -432,7 +489,11 @@ def write_export_manifest(entries: dict[str, dict[str, str]]) -> None:
 
 def write_ir_fixtures() -> None:
     IR_FIXTURES_DIR.mkdir(parents=True, exist_ok=True)
-    for case in IR_FIXTURE_CASES:
+    fixture_cases = list(IR_FIXTURE_CASES)
+    for case in PATTERN_PID_EXPORT_CASES:
+        if case["id"].endswith("_ir"):
+            fixture_cases.append(case)
+    for case in fixture_cases:
         path = IR_FIXTURES_DIR / f"{case['id']}.json"
         path.write_text(json.dumps(build_ir_program(case), indent=2) + "\n", encoding="utf-8")
 

@@ -34,6 +34,13 @@ export async function POST(request: NextRequest) {
       useAiSynthesis: formData.get('useAiSynthesis') === 'true',
       synthesisMode:
         formData.get('synthesisMode') === 'arbitrary' ? 'arbitrary' : 'constrained',
+      downloadParams: (() => {
+        const raw = formData.get('setpoint');
+        if (raw == null || String(raw).trim() === '') return undefined;
+        const value = parseFloat(String(raw));
+        if (Number.isNaN(value)) return undefined;
+        return { setpoint: Math.min(1000, Math.max(0, value)) };
+      })(),
     });
 
     await persistGeneratedProgramIfAuthed({

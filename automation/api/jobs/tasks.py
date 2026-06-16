@@ -6,6 +6,7 @@ from redis.asyncio import Redis
 
 from ..config import get_settings
 from ..services.ai_copilot_service import AiCopilotService
+from ..services.hmi_service import HmiService
 from ..services.claude_ir_service import ClaudeIrService
 from ..services.claude_service import ClaudeService
 from ..services.ir_service import IrService
@@ -135,6 +136,17 @@ async def _dispatch(job_type: str, payload: dict[str, Any]) -> Any:
             platform=payload.get("platform", "schneider"),
             optimization_goals=payload.get("optimizationGoals"),
             current_issues=payload.get("currentIssues", ""),
+            max_tokens=payload.get("maxTokens", 8192),
+        )
+
+    if job_type == "ai.hmi.generate":
+        service = HmiService()
+        return service.generate(
+            vendor=payload["vendor"],
+            screen_type=payload.get("screenType", "process-overview"),
+            description=payload["description"],
+            project_name=payload["projectName"],
+            tags=payload.get("tags"),
             max_tokens=payload.get("maxTokens", 8192),
         )
 

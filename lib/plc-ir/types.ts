@@ -18,7 +18,11 @@ export type IrPatternName =
   | 'estop_motor'
   | 'tank_level'
   | 'conveyor_startstop'
-  | 'traffic_lights';
+  | 'traffic_lights'
+  | 'motor_interlock'
+  | 'pump_staging'
+  | 'timed_motor'
+  | 'pid_loop';
 export type TimerType = 'TON' | 'TOF' | 'TP';
 export type CounterType = 'CTU' | 'CTD' | 'CTUD';
 export type EstopSymbolName = 'ESTOP_BTN' | 'E_STOP' | 'EMERGENCY_STOP';

@@ -144,6 +144,8 @@ Implement in this order unless the user reprioritizes. Each item includes **why*
 
 **P3 delivered (2026-06-15):** `synthesisMode: arbitrary|constrained` in Claude IR; [ARBITRARY_LOGIC_SYNTHESIS.md](ARBITRARY_LOGIC_SYNTHESIS.md); patterns `motor_interlock`, `pump_staging`, `timed_motor`; M221 generate uses `IrService.serialize` (`exportPath: ir_direct`); `test_p3_logic_depth.py`, `test_patterns_v2.py`; 38 golden export cases.
 
+**P3 PID / analog (v1.6, 2026-06-16):** `pid_loop` pattern; `CompareNode` + `FbCallNode` in IR; NL detection; multi-vendor export; generator setpoint field — see [V1_6_IMPLEMENTATION.md](V1_6_IMPLEMENTATION.md) Phase A.
+
 ### P4 — Parallel polish (non-blocking)
 
 | # | Item | Why | Verify |

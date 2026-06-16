@@ -9,8 +9,10 @@ from typing import Any
 from ..schemas.ir import (
     AndNode,
     CoilNode,
+    CompareNode,
     ContactNode,
     CounterNode,
+    FbCallNode,
     LogicNode,
     Network,
     NotNode,
@@ -171,6 +173,6 @@ def flatten_serial_logic(node: LogicNode) -> list[dict[str, str]]:
         return [{"kind": kind, "symbol": node.symbol}]
     if isinstance(node, CoilNode):
         return [{"kind": "coil", "symbol": node.symbol}]
-    if isinstance(node, (TimerNode, CounterNode)):
+    if isinstance(node, (TimerNode, CounterNode, CompareNode, FbCallNode)):
         return []
     return []

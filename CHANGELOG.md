@@ -2,6 +2,34 @@
 
 All notable changes to PLCAutoPilot will be documented in this file.
 
+## [1.6.0] - 2026-06-16
+
+### Added
+- **PID / analog logic (P3)** — `CompareNode`, `FbCallNode`, `pid_loop` pattern; NL detection; multi-vendor export (Siemens SCL, Mitsubishi ST/IL, Schneider M221, PLCopen, Rockwell L5X); generator setpoint field
+- **HMI generator (real)** — `HmiService` + `POST /v1/ai/hmi/generate`; BFF `/api/hmi-generate`; vendor-aware scripts + tag CSV zip; optional tag prefill from saved PLC IR
+- **Usage metering** — `recordUsage()` on all AI/generation BFF routes; `GET /api/usage`; plan limits (`lib/billing/plan-limits.ts`); dashboard + billing usage/plan pages wired; soft over-limit warnings
+- **Settings APIs** — profile, preferences, notifications, password, API keys (`users.preferences` jsonb)
+- **Support** — contact form + ticket CRUD (`support_messages`, `support_tickets` tables)
+- **Resources** — markdown docs (`content/docs/`), tutorials registry, forum threads API; docs `[slug]` detail page
+- **Project templates** — `GET /api/templates` (10 patterns incl. `pid_loop`); generator URL prefill from templates/examples
+
+### Changed
+- **UI mock remediation** — settings, support, resources, templates, HMI, and usage meters no longer use `setTimeout`/hardcoded placeholders on shipped paths
+- **Docs** — `V1_6_IMPLEMENTATION.md`, refreshed `E2E_INTEGRATION_AUDIT.md`, `FEATURE_NAVIGATION_GUIDE.md`, P3 PID note in `PHASE_5_IMPLEMENTATION.md`
+- **package version** — `1.6.0`
+
+### Deferred (unchanged — v1.7+)
+- Mobile app (React Native), Stripe checkout, SAP RFC/OData, simulator HMI preview, session list / 2FA on security page
+
+### Verify
+```bash
+cd automation && uv run pytest api/tests -q   # 403
+npm run test:plc && npm run build             # 90 passed
+docker compose up -d && npm run db:migrate    # Phase D support/forum tables
+```
+
+---
+
 ## [1.5.0] - 2026-06-16
 
 ### Added
@@ -161,9 +189,12 @@ npm run test:plc && npm run build
 
 ## Next Steps
 
-> **v1.5 shipped** (2026-06-16). Deferred product work → [PHASE_5_IMPLEMENTATION.md](docs/architecture/PHASE_5_IMPLEMENTATION.md) §5 frozen tracks and E2E audit follow-ups.
+> **v1.6 shipped** (2026-06-16) → [V1_6_IMPLEMENTATION.md](docs/architecture/V1_6_IMPLEMENTATION.md). Deferred product work → [PHASE_5_IMPLEMENTATION.md](docs/architecture/PHASE_5_IMPLEMENTATION.md) §5 frozen tracks.
 
-### Planned Features (v1.6+)
+### Planned Features (v1.7+)
+- [ ] Mobile app (React Native)
+- [ ] Stripe payment processing & subscription checkout
+- [ ] Real SAP RFC/OData integration
 - [ ] Siemens TIA Portal integration
 - [ ] Rockwell Studio 5000 support
 - [ ] Mitsubishi GX Works integration
@@ -172,9 +203,7 @@ npm run test:plc && npm run build
 - [ ] Live demo with PLC simulator
 - [ ] Multi-language support (German, Japanese, Spanish)
 - [ ] Video tutorials section
-- [ ] Customer portal with project management
 - [ ] API documentation
-- [ ] Mobile app (React Native)
 
 ### Technical Improvements
 - [ ] Unit tests for all components

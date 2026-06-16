@@ -13,6 +13,7 @@ from ...schemas.ir import (
     CoilNode,
     ContactNode,
     CounterNode,
+    FbCallNode,
     LogicNode,
     Network,
     NotNode,
@@ -21,6 +22,7 @@ from ...schemas.ir import (
     PlcVar,
     TimerNode,
 )
+from .analog_fb import render_pid_fb_statement
 
 _SOURCE_DISCLAIMER = (
     "PLC AutoPilot export — source import only, not a GX Works project (.gxw / .gx3)."
@@ -29,9 +31,13 @@ _SOURCE_DISCLAIMER = (
 TIER2_LIMITATIONS = [
     "ZIP bundles IL + ST source and a device-comment CSV — not a native GX Works project file.",
     "Import IL or ST manually in GX Works; use the CSV for device comments where your tool version supports it.",
-    "All six vetted IR patterns export to IL/ST; complex parallel branches are approximated in IL — prefer ST import.",
+    "All vetted IR patterns export to IL/ST; complex parallel branches are approximated in IL — prefer ST import.",
     "Device addresses are mapped from Schneider-style IR via schneider_to_mitsubishi; verify I/O on the target CPU.",
 ]
+
+PID_TIER2_LIMITATION = (
+    "Mitsubishi Tier-2 PID export emits ST function-block text only — not a native PID instruction; verify on target CPU."
+)
 
 
 def build_mitsubishi_tier2_export(program: PlcProgram, controller: str) -> dict[str, Any]:
@@ -44,6 +50,9 @@ def build_mitsubishi_tier2_export(program: PlcProgram, controller: str) -> dict[
     csv_text = render_mitsubishi_csv(mapped_vars)
 
     base = _safe_name(program.name)
+    limitations = list(TIER2_LIMITATIONS)
+    if program.meta.pattern == "pid_loop":
+        limitations.append(PID_TIER2_LIMITATION)
     return {
         "ilFileName": f"{base}.il",
         "il": il_text,
@@ -51,7 +60,7 @@ def build_mitsubishi_tier2_export(program: PlcProgram, controller: str) -> dict[
         "st": st_text,
         "csvFileName": f"{base}_device_comments.csv",
         "csv": csv_text,
-        "limitations": TIER2_LIMITATIONS,
+        "limitations": limitations,
     }
 
 
@@ -77,6 +86,12 @@ def render_mitsubishi_il(
     if pou:
         for index, network in enumerate(pou.networks):
             label = network.comment or network.label or f"Rung {index + 1}"
+            if isinstance(network.logic, FbCallNode) and network.logic.kind == "PID":
+                st = render_pid_fb_statement(network.logic, "mitsubishi")
+                lines.append(f"; --- {label} ---")
+                lines.append(f"; {st}")
+                lines.append("")
+                continue
             lines.append(f"; --- {label} ---")
             il_lines = logic_to_mitsubishi_il(network.logic, var_by_symbol, mapped_vars)
             lines.extend(il_lines)
@@ -108,6 +123,12 @@ def render_mitsubishi_st(
     if pou:
         for index, network in enumerate(pou.networks):
             label = network.comment or network.label or f"Rung {index + 1}"
+            if isinstance(network.logic, FbCallNode) and network.logic.kind == "PID":
+                st = render_pid_fb_statement(network.logic, "mitsubishi")
+                lines.append(f"(* {label} *)")
+                lines.append(f"{st};")
+                lines.append("")
+                continue
             assignment = _assignment_from_logic(network.logic, device_by_symbol)
             if assignment:
                 target, expression = assignment

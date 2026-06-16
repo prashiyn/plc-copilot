@@ -117,6 +117,30 @@
       "sha256": "7968c52eccbd401cf5ea176d469c6afdd4fe4f2afee93102ab4531bf03cbaa0f",
       "format": "plcopen_xml"
     },
+    "pid_loop_schneider": {
+      "sha256": "44015bcf842cd93051bd9224815865ffbcc3990a6062e5e3b382ef72d9665f56",
+      "format": "machine_expert_basic_xml"
+    },
+    "pid_loop_rockwell": {
+      "sha256": "de19a42d9f0d465753dbf86aa56e208c31248ea54939ae1d22eb2474055356bc",
+      "format": "l5x"
+    },
+    "pid_loop_siemens": {
+      "sha256": "3ed64842180430fc72ec165294114add29de93cfa6429425ed4ad3671f39bffc",
+      "format": "scl"
+    },
+    "pid_loop_mitsubishi": {
+      "sha256": "3fc5537aefe796148ae46c16586b2dfc2eea6dd91636bce7d12b60a97c559947",
+      "format": "mitsubishi_tier2_zip"
+    },
+    "plcopen_pid_codesys": {
+      "sha256": "4b18912788d7def6f534a024752a3b565ab1792e77b204c55d1a265f8bd73183",
+      "format": "plcopen_xml"
+    },
+    "pid_loop_siemens_ir": {
+      "sha256": "465a63048ba0f03591df9e5403f2aa7478af47caa6eef23ea5651dcdfd9f65d0",
+      "format": "scl"
+    },
     "motor_startstop_siemens": {
       "sha256": "995be073b397abc2c4d5bdb063780bbedffd67155d55b7cf0725ff435e39d470",
       "format": "scl"

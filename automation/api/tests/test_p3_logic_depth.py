@@ -1,10 +1,12 @@
-"""Phase 5 P3 — arbitrary synthesis, M221 direct IR export."""
+"""Phase 5 P3 — arbitrary synthesis, M221 direct IR export, PID/analog (v1.6 Phase A)."""
 
 import base64
 
 import pytest
 
+from api.ir.pattern_match import detect_pattern_from_description
 from api.ir.patterns import build_pattern
+from api.ir.validator import validate_program
 from api.services.claude_ir_service import (
     ClaudeIrService,
     IrSynthesisError,
@@ -43,6 +45,57 @@ def _invalid_motor_ir() -> dict:
     return program
 
 
+def _valid_pid_ir() -> dict:
+    return build_pattern(
+        "pid_loop",
+        project_name="AnalogPid",
+        vendor="siemens",
+        model="S7-1200",
+        setpoint=80.0,
+    ).model_dump()
+
+
+def _analog_multi_network_ir() -> dict:
+    program = build_pattern(
+        "pid_loop",
+        project_name="AnalogCustom",
+        vendor="siemens",
+        model="S7-1200",
+        setpoint=65.0,
+    ).model_dump()
+    program["meta"]["pattern"] = None
+    program["pous"][0]["networks"].append(
+        {
+            "label": "Rung 3",
+            "comment": "High temperature alarm",
+            "logic": {
+                "type": "compare",
+                "left": "TEMP_PV",
+                "right": "TEMP_SP",
+                "op": "GT",
+                "output": "LOOP_ACTIVE",
+            },
+        }
+    )
+    return program
+
+
+class TestPidPatternMatch:
+    @pytest.mark.parametrize(
+        "description",
+        [
+            "PID closed loop for reactor temperature",
+            "Temperature control with setpoint 90",
+            "Analog control loop with process variable and setpoint of 42",
+        ],
+    )
+    def test_pid_descriptions_map_to_pid_loop(self, description):
+        pattern, _name, *_rest, setpoint = detect_pattern_from_description(description)
+        assert pattern == "pid_loop"
+        if "42" in description:
+            assert setpoint == 42.0
+
+
 class TestArbitrarySynthesis:
     def test_arbitrary_mode_raises_after_retries(self):
         fake = FakeClaude([_invalid_motor_ir()] * (MAX_RETRIES + 1))
@@ -75,6 +128,38 @@ class TestArbitrarySynthesis:
             synthesis_mode="constrained",
         )
         assert result["source"] == "pattern_fallback"
+
+    def test_constrained_mode_falls_back_to_pid_loop(self):
+        fake = FakeClaude([_invalid_motor_ir()] * (MAX_RETRIES + 1))
+        result = ClaudeIrService(claude=fake).generate_program_ir(
+            "PID temperature control with setpoint 80",
+            synthesis_mode="constrained",
+        )
+        assert result["source"] == "pattern_fallback"
+        assert result["pattern"] == "pid_loop"
+        assert result["program"]["meta"]["pattern"] == "pid_loop"
+
+    def test_arbitrary_mode_accepts_analog_multi_network_ir(self):
+        fake = FakeClaude([_analog_multi_network_ir()])
+        result = ClaudeIrService(claude=fake).generate_program_ir(
+            "Custom PID with high-temp compare alarm",
+            synthesis_mode="arbitrary",
+        )
+        assert result["source"] == "claude"
+        validated = validate_program(result["program"])
+        assert validated.meta.pattern is None
+        logic_types = [network.logic.type for network in validated.pous[0].networks]
+        assert "fb_call" in logic_types
+        assert "compare" in logic_types
+
+    def test_arbitrary_mode_valid_pid_ir_passes_validation(self):
+        fake = FakeClaude([_valid_pid_ir()])
+        result = ClaudeIrService(claude=fake).generate_program_ir(
+            "PID loop for tank temperature",
+            synthesis_mode="arbitrary",
+        )
+        assert result["source"] == "claude"
+        validate_program(result["program"])
 
 
 class TestM221DirectIrExport:

@@ -1,7 +1,38 @@
+import base64
+import io
+import zipfile
+
 import pytest
 
 from api.jobs.store import JobStore
 from api.jobs.tasks import process_job
+
+
+@pytest.fixture
+def mock_hmi(monkeypatch):
+    class _Fake:
+        def generate(self, **kwargs):
+            buffer = io.BytesIO()
+            with zipfile.ZipFile(buffer, "w") as archive:
+                archive.writestr("screen.vbs", "' test script")
+                archive.writestr("tags.csv", "name,address,type,comment\n")
+            return {
+                "vendor": kwargs.get("vendor", "siemens-wincc"),
+                "screenType": kwargs.get("screen_type", "process-overview"),
+                "projectName": kwargs.get("project_name", "Demo"),
+                "scriptFileName": "screen.vbs",
+                "scriptContent": "' test script",
+                "tagsCsv": "name,address,type,comment\n",
+                "tags": [],
+                "importGuide": "Import screen.vbs",
+                "zipFileName": "Demo_hmi.zip",
+                "contentBase64": base64.standard_b64encode(buffer.getvalue()).decode("ascii"),
+                "mimeType": "application/zip",
+            }
+
+    fake = _Fake()
+    monkeypatch.setattr("api.jobs.tasks.HmiService", lambda: fake)
+    return fake
 
 
 @pytest.fixture
@@ -98,6 +129,25 @@ async def test_code_optimize_api(client, redis, auth_headers, mock_copilot):
         json={"code": "LD %I0.0", "platform": "schneider"},
     )
     assert result["analysis"]["summary"] == "ok"
+
+
+@pytest.mark.asyncio
+async def test_hmi_generate_api(client, redis, auth_headers, mock_hmi):
+    result = await _run_job(
+        redis,
+        client,
+        "/v1/ai/hmi/generate",
+        auth_headers,
+        json={
+            "vendor": "siemens-wincc",
+            "screenType": "tank-level",
+            "description": "Tank overview with level bar",
+            "projectName": "WaterPlant",
+        },
+    )
+    assert result["scriptFileName"] == "screen.vbs"
+    assert result["zipFileName"] == "Demo_hmi.zip"
+    assert result["contentBase64"]
 
 
 async def _run_job(redis, client, path, auth_headers, json):

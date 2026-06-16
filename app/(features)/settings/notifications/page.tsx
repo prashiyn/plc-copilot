@@ -1,71 +1,108 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+type ChannelPrefs = { email: boolean; push: boolean; sms: boolean };
+type NotificationSettings = Record<string, ChannelPrefs>;
+
+const categories = [
+  {
+    id: 'programs',
+    name: 'PLC Programs',
+    description: 'Notifications about your PLC program generation',
+    items: [
+      { key: 'programGenerated', label: 'Program Generated Successfully', description: 'When a new PLC program is generated' },
+      { key: 'programFailed', label: 'Program Generation Failed', description: 'When program generation encounters an error' },
+    ],
+  },
+  {
+    id: 'team',
+    name: 'Team & Collaboration',
+    description: 'Updates about your team members and shared projects',
+    items: [
+      { key: 'teamInvite', label: 'Team Invitations', description: 'When someone invites you to their team' },
+    ],
+  },
+  {
+    id: 'billing',
+    name: 'Billing & Usage',
+    description: 'Important updates about your subscription and usage',
+    items: [
+      { key: 'billingIssue', label: 'Billing Issues', description: 'Payment failures or subscription problems' },
+      { key: 'usageAlert', label: 'Usage Alerts', description: 'When approaching plan limits' },
+      { key: 'weeklyReport', label: 'Weekly Usage Report', description: 'Weekly summary of your activity' },
+    ],
+  },
+  {
+    id: 'system',
+    name: 'System & Security',
+    description: 'Platform updates and security notifications',
+    items: [
+      { key: 'productUpdates', label: 'Product Updates', description: 'New features and improvements' },
+      { key: 'securityAlerts', label: 'Security Alerts', description: 'Important security notifications' },
+    ],
+  },
+];
 
 export default function NotificationsPage() {
-  const [settings, setSettings] = useState({
-    programGenerated: { email: true, push: true, sms: false },
-    programFailed: { email: true, push: true, sms: true },
-    teamInvite: { email: true, push: false, sms: false },
-    billingIssue: { email: true, push: true, sms: true },
-    usageAlert: { email: true, push: false, sms: false },
-    weeklyReport: { email: true, push: false, sms: false },
-    productUpdates: { email: true, push: false, sms: false },
-    securityAlerts: { email: true, push: true, sms: true }
-  });
+  const [settings, setSettings] = useState<NotificationSettings>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const categories = [
-    {
-      id: 'programs',
-      name: 'PLC Programs',
-      description: 'Notifications about your PLC program generation',
-      items: [
-        { key: 'programGenerated', label: 'Program Generated Successfully', description: 'When a new PLC program is generated' },
-        { key: 'programFailed', label: 'Program Generation Failed', description: 'When program generation encounters an error' }
-      ]
-    },
-    {
-      id: 'team',
-      name: 'Team & Collaboration',
-      description: 'Updates about your team members and shared projects',
-      items: [
-        { key: 'teamInvite', label: 'Team Invitations', description: 'When someone invites you to their team' }
-      ]
-    },
-    {
-      id: 'billing',
-      name: 'Billing & Usage',
-      description: 'Important updates about your subscription and usage',
-      items: [
-        { key: 'billingIssue', label: 'Billing Issues', description: 'Payment failures or subscription problems' },
-        { key: 'usageAlert', label: 'Usage Alerts', description: 'When approaching plan limits' },
-        { key: 'weeklyReport', label: 'Weekly Usage Report', description: 'Weekly summary of your activity' }
-      ]
-    },
-    {
-      id: 'system',
-      name: 'System & Security',
-      description: 'Platform updates and security notifications',
-      items: [
-        { key: 'productUpdates', label: 'Product Updates', description: 'New features and improvements' },
-        { key: 'securityAlerts', label: 'Security Alerts', description: 'Important security notifications' }
-      ]
-    }
-  ];
+  useEffect(() => {
+    fetch('/api/settings/notifications')
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Failed to load notification settings');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data.notifications) setSettings(data.notifications);
+      })
+      .catch((err) => {
+        setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to load settings' });
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const toggleNotification = (key: string, type: 'email' | 'push' | 'sms') => {
+    const current = settings[key] ?? { email: false, push: false, sms: false };
     setSettings({
       ...settings,
-      [key]: {
-        ...settings[key as keyof typeof settings],
-        [type]: !settings[key as keyof typeof settings][type]
-      }
+      [key]: { ...current, [type]: !current[type] },
     });
   };
 
-  const handleSave = () => {
-    alert('Notification preferences saved successfully');
+  const handleSave = async () => {
+    setIsSaving(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/settings/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notifications: settings }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to save settings');
+      if (data.notifications) setSettings(data.notifications);
+      setMessage({ type: 'success', text: 'Notification preferences saved successfully' });
+    } catch (err) {
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save settings' });
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <p className="text-gray-600">Loading notification settings...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -74,7 +111,18 @@ export default function NotificationsPage() {
         <p className="text-gray-600">Manage how you receive notifications</p>
       </div>
 
-      {/* Notification Channels Info */}
+      {message && (
+        <div
+          className={`mb-6 px-4 py-3 rounded-lg text-sm ${
+            message.type === 'success'
+              ? 'bg-green-50 border border-green-200 text-green-800'
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <div className="flex items-center gap-3 mb-3">
@@ -85,7 +133,7 @@ export default function NotificationsPage() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">Email</h3>
-              <p className="text-sm text-gray-600">john.smith@acme.com</p>
+              <p className="text-sm text-gray-600">Account email</p>
             </div>
           </div>
         </div>
@@ -113,13 +161,12 @@ export default function NotificationsPage() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">SMS</h3>
-              <p className="text-sm text-gray-600">+1 (555) 123-4567</p>
+              <p className="text-sm text-gray-600">Text message alerts</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Notification Settings */}
       <div className="space-y-6">
         {categories.map((category) => (
           <div key={category.id} className="bg-white border border-gray-200 rounded-lg shadow-sm">
@@ -139,56 +186,34 @@ export default function NotificationsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {category.items.map((item) => (
-                      <tr key={item.key}>
-                        <td className="py-4">
-                          <p className="font-medium text-gray-900">{item.label}</p>
-                          <p className="text-sm text-gray-600">{item.description}</p>
-                        </td>
-                        <td className="py-4 text-center">
-                          <button
-                            onClick={() => toggleNotification(item.key, 'email')}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              settings[item.key as keyof typeof settings].email ? 'bg-blue-600' : 'bg-gray-200'
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                settings[item.key as keyof typeof settings].email ? 'translate-x-6' : 'translate-x-1'
-                              }`}
-                            />
-                          </button>
-                        </td>
-                        <td className="py-4 text-center">
-                          <button
-                            onClick={() => toggleNotification(item.key, 'push')}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              settings[item.key as keyof typeof settings].push ? 'bg-blue-600' : 'bg-gray-200'
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                settings[item.key as keyof typeof settings].push ? 'translate-x-6' : 'translate-x-1'
-                              }`}
-                            />
-                          </button>
-                        </td>
-                        <td className="py-4 text-center">
-                          <button
-                            onClick={() => toggleNotification(item.key, 'sms')}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              settings[item.key as keyof typeof settings].sms ? 'bg-blue-600' : 'bg-gray-200'
-                            }`}
-                          >
-                            <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                settings[item.key as keyof typeof settings].sms ? 'translate-x-6' : 'translate-x-1'
-                              }`}
-                            />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {category.items.map((item) => {
+                      const prefs = settings[item.key] ?? { email: false, push: false, sms: false };
+                      return (
+                        <tr key={item.key}>
+                          <td className="py-4">
+                            <p className="font-medium text-gray-900">{item.label}</p>
+                            <p className="text-sm text-gray-600">{item.description}</p>
+                          </td>
+                          {(['email', 'push', 'sms'] as const).map((channel) => (
+                            <td key={channel} className="py-4 text-center">
+                              <button
+                                type="button"
+                                onClick={() => toggleNotification(item.key, channel)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                  prefs[channel] ? 'bg-blue-600' : 'bg-gray-200'
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    prefs[channel] ? 'translate-x-6' : 'translate-x-1'
+                                  }`}
+                                />
+                              </button>
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -197,16 +222,13 @@ export default function NotificationsPage() {
         ))}
       </div>
 
-      {/* Save Button */}
       <div className="mt-8 flex justify-end gap-3">
-        <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-          Reset to Defaults
-        </button>
         <button
           onClick={handleSave}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={isSaving}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400"
         >
-          Save Settings
+          {isSaving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
     </div>

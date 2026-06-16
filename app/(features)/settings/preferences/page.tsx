@@ -1,24 +1,80 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+interface Preferences {
+  theme: 'light' | 'dark' | 'auto';
+  language: string;
+  defaultPlatform: string;
+  dateFormat: string;
+  timeFormat: '12h' | '24h';
+  autoSave: boolean;
+  codeHighlighting: boolean;
+  lineNumbers: boolean;
+}
+
+const defaultPreferences: Preferences = {
+  theme: 'light',
+  language: 'en',
+  defaultPlatform: 'schneider',
+  dateFormat: 'MM/DD/YYYY',
+  timeFormat: '12h',
+  autoSave: true,
+  codeHighlighting: true,
+  lineNumbers: true,
+};
 
 export default function PreferencesPage() {
-  const [preferences, setPreferences] = useState({
-    theme: 'light',
-    language: 'en',
-    dateFormat: 'MM/DD/YYYY',
-    timeFormat: '12h',
-    emailNotifications: true,
-    pushNotifications: false,
-    weeklyDigest: true,
-    autoSave: true,
-    codeHighlighting: true,
-    lineNumbers: true
-  });
+  const [preferences, setPreferences] = useState<Preferences>(defaultPreferences);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handleSave = () => {
-    alert('Preferences saved successfully');
+  useEffect(() => {
+    fetch('/api/settings/preferences')
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Failed to load preferences');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data.preferences) setPreferences({ ...defaultPreferences, ...data.preferences });
+      })
+      .catch((err) => {
+        setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to load preferences' });
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/settings/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(preferences),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to save preferences');
+      if (data.preferences) setPreferences({ ...defaultPreferences, ...data.preferences });
+      setMessage({ type: 'success', text: 'Preferences saved successfully' });
+    } catch (err) {
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save preferences' });
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <p className="text-gray-600">Loading preferences...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -27,17 +83,29 @@ export default function PreferencesPage() {
         <p className="text-gray-600">Customize your PLCAutoPilot experience</p>
       </div>
 
+      {message && (
+        <div
+          className={`mb-6 px-4 py-3 rounded-lg text-sm ${
+            message.type === 'success'
+              ? 'bg-green-50 border border-green-200 text-green-800'
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
       <div className="space-y-6">
-        {/* Appearance */}
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Appearance</h3>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
               <div className="grid grid-cols-3 gap-3">
-                {['light', 'dark', 'auto'].map((theme) => (
+                {(['light', 'dark', 'auto'] as const).map((theme) => (
                   <button
                     key={theme}
+                    type="button"
                     onClick={() => setPreferences({ ...preferences, theme })}
                     className={`px-4 py-3 border-2 rounded-lg font-medium transition-all ${
                       preferences.theme === theme
@@ -53,7 +121,6 @@ export default function PreferencesPage() {
           </div>
         </div>
 
-        {/* Localization */}
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Localization</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -73,6 +140,19 @@ export default function PreferencesPage() {
               </select>
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Default Platform</label>
+              <select
+                value={preferences.defaultPlatform}
+                onChange={(e) => setPreferences({ ...preferences, defaultPlatform: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="schneider">Schneider Electric</option>
+                <option value="siemens">Siemens</option>
+                <option value="rockwell">Rockwell / Allen-Bradley</option>
+                <option value="mitsubishi">Mitsubishi</option>
+              </select>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Date Format</label>
               <select
                 value={preferences.dateFormat}
@@ -88,7 +168,7 @@ export default function PreferencesPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Time Format</label>
               <select
                 value={preferences.timeFormat}
-                onChange={(e) => setPreferences({ ...preferences, timeFormat: e.target.value })}
+                onChange={(e) => setPreferences({ ...preferences, timeFormat: e.target.value as '12h' | '24h' })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="12h">12 Hour</option>
@@ -98,138 +178,45 @@ export default function PreferencesPage() {
           </div>
         </div>
 
-        {/* Notifications */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Notifications</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Email Notifications</p>
-                <p className="text-sm text-gray-600">Receive updates via email</p>
-              </div>
-              <button
-                onClick={() => setPreferences({ ...preferences, emailNotifications: !preferences.emailNotifications })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  preferences.emailNotifications ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    preferences.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Push Notifications</p>
-                <p className="text-sm text-gray-600">Receive browser push notifications</p>
-              </div>
-              <button
-                onClick={() => setPreferences({ ...preferences, pushNotifications: !preferences.pushNotifications })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  preferences.pushNotifications ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    preferences.pushNotifications ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Weekly Digest</p>
-                <p className="text-sm text-gray-600">Receive weekly summary emails</p>
-              </div>
-              <button
-                onClick={() => setPreferences({ ...preferences, weeklyDigest: !preferences.weeklyDigest })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  preferences.weeklyDigest ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    preferences.weeklyDigest ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Editor Preferences */}
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Editor Preferences</h3>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Auto-Save</p>
-                <p className="text-sm text-gray-600">Automatically save your work</p>
-              </div>
-              <button
-                onClick={() => setPreferences({ ...preferences, autoSave: !preferences.autoSave })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  preferences.autoSave ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    preferences.autoSave ? 'translate-x-6' : 'translate-x-1'
+            {([
+              { key: 'autoSave' as const, label: 'Auto-Save', description: 'Automatically save your work' },
+              { key: 'codeHighlighting' as const, label: 'Syntax Highlighting', description: 'Highlight code syntax' },
+              { key: 'lineNumbers' as const, label: 'Line Numbers', description: 'Show line numbers in code editor' },
+            ]).map((item) => (
+              <div key={item.key} className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">{item.label}</p>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreferences({ ...preferences, [item.key]: !preferences[item.key] })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    preferences[item.key] ? 'bg-blue-600' : 'bg-gray-200'
                   }`}
-                />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Syntax Highlighting</p>
-                <p className="text-sm text-gray-600">Highlight code syntax</p>
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      preferences[item.key] ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
               </div>
-              <button
-                onClick={() => setPreferences({ ...preferences, codeHighlighting: !preferences.codeHighlighting })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  preferences.codeHighlighting ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    preferences.codeHighlighting ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Line Numbers</p>
-                <p className="text-sm text-gray-600">Show line numbers in code editor</p>
-              </div>
-              <button
-                onClick={() => setPreferences({ ...preferences, lineNumbers: !preferences.lineNumbers })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  preferences.lineNumbers ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    preferences.lineNumbers ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="mt-6 flex justify-end gap-3">
-        <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-          Reset to Defaults
-        </button>
         <button
           onClick={handleSave}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={isSaving}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400"
         >
-          Save Preferences
+          {isSaving ? 'Saving...' : 'Save Preferences'}
         </button>
       </div>
     </div>

@@ -297,6 +297,49 @@ export async function optimizeCode(params: {
   });
 }
 
+export interface HmiTagRow {
+  name: string;
+  address: string;
+  type: string;
+  comment: string;
+}
+
+export interface HmiGenerateResult {
+  vendor: string;
+  screenType: string;
+  projectName: string;
+  scriptFileName: string;
+  scriptContent: string;
+  tagsCsv: string;
+  tags: HmiTagRow[];
+  importGuide: string;
+  zipFileName: string;
+  contentBase64: string;
+  mimeType: string;
+}
+
+export async function generateHmi(params: {
+  vendor: string;
+  screenType: string;
+  description: string;
+  projectName: string;
+  tags?: HmiTagRow[];
+  maxTokens?: number;
+}): Promise<HmiGenerateResult> {
+  return enqueueAndWait<HmiGenerateResult>('/v1/ai/hmi/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vendor: params.vendor,
+      screenType: params.screenType,
+      description: params.description,
+      projectName: params.projectName,
+      tags: params.tags ?? [],
+      maxTokens: params.maxTokens ?? 8192,
+    }),
+  });
+}
+
 export async function recommendPlc(requirements: Record<string, unknown>): Promise<{
   recommendations: unknown[];
   source: 'ai' | 'fallback';
@@ -490,6 +533,7 @@ export async function exportPlcopen(params: {
   delaySeconds?: number;
   cycleSeconds?: number;
   runSeconds?: number;
+  setpoint?: number;
 }): Promise<{ content: Buffer; fileName: string; mimeType: string; metadata: Record<string, unknown> }> {
   const result = await enqueueAndWait<ProgramFileResult>('/v1/programs/plcopen', {
     method: 'POST',

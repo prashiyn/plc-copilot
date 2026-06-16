@@ -15,6 +15,7 @@ PatternName = Literal[
     "motor_interlock",
     "pump_staging",
     "timed_motor",
+    "pid_loop",
 ]
 PlatformName = Literal["schneider", "rockwell", "siemens", "mitsubishi"]
 PlcopenPlatform = Literal["schneider", "rockwell", "siemens", "mitsubishi", "codesys", "universal"]
@@ -27,6 +28,7 @@ class PatternSource(BaseModel):
     delaySeconds: int = Field(default=3, ge=1, le=60)
     cycleSeconds: int = Field(default=5, ge=1, le=60)
     runSeconds: int = Field(default=5, ge=1, le=60)
+    setpoint: float = Field(default=50.0, ge=0.0, le=1000.0)
 
 
 class SketchAnalysisSource(BaseModel):
@@ -61,6 +63,7 @@ class PlcopenGenerateRequest(BaseModel):
     delaySeconds: int = Field(default=3, ge=1, le=60)
     cycleSeconds: int = Field(default=5, ge=1, le=60)
     runSeconds: int = Field(default=5, ge=1, le=60)
+    setpoint: float = Field(default=50.0, ge=0.0, le=1000.0)
 
 
 class ProgramFileResult(BaseModel):

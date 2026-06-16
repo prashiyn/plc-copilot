@@ -15,10 +15,10 @@ def service():
 
 
 class TestPatternCatalogV2:
-    def test_catalog_lists_nine_patterns(self):
+    def test_catalog_lists_ten_patterns(self):
         patterns = list_patterns()
-        assert len(patterns) == 9
-        assert set(PATTERN_CATALOG.keys()) == set(patterns[i]["id"] for i in range(9))
+        assert len(patterns) == 10
+        assert set(PATTERN_CATALOG.keys()) == set(patterns[i]["id"] for i in range(10))
 
     @pytest.mark.parametrize("pattern", V2_PATTERNS)
     def test_v2_pattern_validates(self, pattern):

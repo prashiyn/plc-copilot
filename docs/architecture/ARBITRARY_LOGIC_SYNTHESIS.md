@@ -68,15 +68,33 @@ HTTP mapping: callers should translate `IrSynthesisError` to **422** with `{ "er
 
 ---
 
-## 6. Pattern library v2 (companion to P3)
+## 6. Pattern library v2 + PID analog (v1.6 Phase A)
 
-Three additional deterministic templates ship with P3:
+Deterministic templates include boolean patterns (v1/v2) and the analog **PID** template:
 
 | Pattern | Purpose |
 |---------|---------|
 | `motor_interlock` | Dual motors with mutual exclusion |
 | `pump_staging` | Lead/lag pump tank fill |
 | `timed_motor` | Motor seal-in + on-delay timer before output |
+| `pid_loop` | Closed-loop PID: PV/SP/CV analog vars + `FbCallNode` kind `PID` |
+
+### Analog IR nodes
+
+| Node | Role |
+|------|------|
+| `compare` | Analog compare (`left`, `right`, `op` ∈ GT/GE/LT/LE/EQ) → BOOL `output` |
+| `fb_call` | Vendor PID function block instance (`kind: "PID"`, `params` PV/SP/CV) |
+
+PID is modeled as a **standard vendor PID FB call** (Siemens `PID_Comp`, Rockwell `PID`, etc.), not a from-scratch algorithm. Export paths:
+
+| Vendor path | PID export behaviour |
+|-------------|---------------------|
+| Siemens Tier-2 SCL | Full `PID_Comp(...)` ST statement |
+| Mitsubishi Tier-2 ZIP | ST + IL comment stub; disclaimer appended |
+| Schneider native `.smbp` | ST text in ladder comment field; disclaimer in metadata |
+| Rockwell native `.L5X` | NOP rung + ST in comment; disclaimer in metadata |
+| PLCopen XML | BOOL ladder for enable indicator; ST in XML comment |
 
 These remain the preferred path when the NL description matches; arbitrary mode is for everything else.
 

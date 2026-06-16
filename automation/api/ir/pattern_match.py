@@ -9,22 +9,39 @@ _DEFAULT_PROJECT = "PLCAutoProgram"
 
 def detect_pattern_from_description(
     description: str,
-) -> tuple[PatternName, str, int, int, int, int]:
+) -> tuple[PatternName, str, int, int, int, int, float]:
     """
     Infer the closest vetted pattern from user text.
 
     Returns:
-        (pattern_name, project_name, num_lights, delay_seconds, cycle_seconds, run_seconds)
+        (pattern_name, project_name, num_lights, delay_seconds, cycle_seconds, run_seconds, setpoint)
     """
     lower = description.lower()
     light_match = re.search(r"(\d+)\s+(?:sequential\s+)?lights?", description, re.I)
     time_match = re.search(r"(\d+)\s+seconds?", description, re.I)
     cycle_match = re.search(r"(\d+)\s+second\s+cycle", description, re.I)
+    setpoint_match = re.search(
+        r"(?:setpoint|sp)\s*(?:of|=|:)?\s*(\d+(?:\.\d+)?)",
+        description,
+        re.I,
+    )
     name_match = re.search(r"(?:project|program|name):\s*([^\n.]+)", description, re.I)
 
     pattern: PatternName = "motor_startstop"
 
-    if any(kw in lower for kw in ("traffic light", "traffic lights", "red light", "red/yellow/green")):
+    if any(
+        kw in lower
+        for kw in (
+            "pid",
+            "closed loop",
+            "closed-loop",
+            "temperature control",
+            "analog control",
+            "process variable",
+        )
+    ) or ("setpoint" in lower and ("control" in lower or "loop" in lower or "temperature" in lower)):
+        pattern = "pid_loop"
+    elif any(kw in lower for kw in ("traffic light", "traffic lights", "red light", "red/yellow/green")):
         pattern = "traffic_lights"
     elif any(kw in lower for kw in ("lead", "lag", "staging")) and "pump" in lower:
         pattern = "pump_staging"
@@ -67,13 +84,19 @@ def detect_pattern_from_description(
     if time_match and pattern == "timed_motor":
         run_seconds = min(60, max(1, int(time_match.group(1))))
 
+    setpoint = 50.0
+    if setpoint_match:
+        setpoint = min(1000.0, max(0.0, float(setpoint_match.group(1))))
+    elif pattern == "pid_loop" and time_match:
+        setpoint = min(1000.0, max(0.0, float(time_match.group(1))))
+
     if name_match:
         project_name = name_match.group(1).strip()
         project_name = re.sub(r"[^a-zA-Z0-9_]", "_", project_name) or _DEFAULT_PROJECT
     else:
         project_name = _DEFAULT_PROJECT
 
-    return pattern, project_name, num_lights, delay_seconds, cycle_seconds, run_seconds
+    return pattern, project_name, num_lights, delay_seconds, cycle_seconds, run_seconds, setpoint
 
 
 def normalize_vendor(vendor: str) -> PlcVendor:

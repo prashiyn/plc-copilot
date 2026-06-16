@@ -1,13 +1,14 @@
 # End-to-End Integration Audit
 
-**Date:** 2026-06-14  
-**Scope:** Phase 4 (platform export) + Phase 5 (P0–P4) features — UI → Next.js BFF → FastAPI → Python services.  
+**Date:** 2026-06-16 (v1.6 refresh)  
+**Scope:** Phase 4 (platform export) + Phase 5 (P0–P4) + **v1.6** (HMI, usage metering, UI remediation, PID) — UI → Next.js BFF → FastAPI → Python services.  
 **Goal:** Verify each path is implemented (not dummy), request/response shapes align, and features are reachable from the UI.
 
 **Verify after fixes:**
 ```bash
-cd automation && uv run pytest api/tests -q    # 339+
-npm run test:plc
+cd automation && uv run pytest api/tests -q    # 403
+npm run test:plc                               # 90
+npm run build
 ```
 
 ---
@@ -16,14 +17,16 @@ npm run test:plc
 
 | Tier | Count | Meaning |
 |------|-------|---------|
-| **A — Fully wired** | 12 | UI → BFF → FastAPI/DB; shapes aligned |
-| **B — API only (no UI)** | 3 | Backend complete; no page or orphan route |
-| **C — UI mock / placeholder** | 8+ | Documented as simulated or marketing shell |
+| **A — Fully wired** | 28+ | UI → BFF → FastAPI/DB; shapes aligned |
+| **B — API only (no UI)** | 1 | Backend complete; no dedicated page |
+| **C — UI mock / placeholder** | 12+ | Frozen (SAP, Stripe checkout) or intentional static marketing |
 | **D — Bugs found** | 8 | Fixed — see §8 remediation log |
 
-**Phase 4/5 core PLC paths (generator, M221 AI, recommend, rectify, download) are real** — they call `lib/automation-client.ts` and the Redis job worker. No TS template generators on live paths.
+**Phase 4/5/6 core PLC paths (generator, M221 AI, recommend, rectify, download, HMI, usage) are real** — they call `lib/automation-client.ts` and the Redis job worker. No TS template generators on live paths.
 
-**Frozen / intentional mocks (do not treat as gaps):** SAP export, billing/subscription UI, HMI generator, resources forum, dashboard usage meters — see [PHASE_5 §5](PHASE_5_IMPLEMENTATION.md#5-frozen-tracks-auth-integrations-billing).
+**Frozen / intentional mocks (do not treat as gaps):** SAP export/config, billing payment/checkout/invoices, subscription checkout — see [PHASE_5 §5](PHASE_5_IMPLEMENTATION.md#5-frozen-tracks-auth-integrations-billing) and [V1_6 §9](V1_6_IMPLEMENTATION.md#9-explicitly-out-of-scope--frozen-do-not-implement-in-v16).
+
+> **v1.6 delivered:** HMI generator, dashboard/billing usage meters, settings, support, resources, project templates — see [V1_6_IMPLEMENTATION.md §2](V1_6_IMPLEMENTATION.md#2-ui-gap-assessment-mock-vs-real-backend).
 
 ---
 
@@ -109,9 +112,35 @@ Prompt assembly stays in BFF; inference is always Python — **by design**.
 | UI | BFF | Backend |
 |----|-----|---------|
 | `projects/active`, `projects/completed` | `/api/projects`, `/api/projects/[id]` | Drizzle `lib/db/queries.ts` |
-| `dashboard` | `/api/dashboard/stats`, `/api/projects` | Real counts; usage meters are placeholder UI |
+| `dashboard` | `/api/dashboard/stats`, `/api/projects`, `/api/usage` | Real counts + usage meters from `usage_events` |
+| `programs` | `GET /api/programs` | Saved generated programs list |
+| `billing/usage`, `billing/plan` | `GET /api/usage` | Plan limits + event aggregation (read-only) |
 
-### 2.8 Auth
+### 2.8 HMI generator (v1.6)
+
+| Layer | Path |
+|-------|------|
+| UI | `app/(features)/hmi-generator/page.tsx` |
+| BFF | `POST /api/hmi-generate` (`?download=true` for zip) |
+| FastAPI | `POST /v1/ai/hmi/generate` |
+| Job | `ai.hmi.generate` → `HmiService` |
+
+**Request:** `{ vendor, projectName, tags[], optional programId for IR tag prefill }`  
+**Response:** `{ script, tagsCsv, filename }` or zip attachment — **aligned**.
+
+### 2.9 Settings, support, resources (v1.6)
+
+| UI | BFF | Backend |
+|----|-----|---------|
+| `settings/*` | `/api/settings/{profile,preferences,notifications,password,api-keys}` | `users.preferences` jsonb via `lib/db/settings.ts` |
+| `support/contact` | `POST /api/support/contact` | `support_messages` table |
+| `support/ticket` | `/api/support/tickets`, `/api/support/tickets/[id]` | `support_tickets` table |
+| `resources/docs` | `/api/resources/docs`, `/api/resources/docs/[slug]` | `content/docs/*.md` |
+| `resources/tutorials` | `/api/resources/tutorials` | `lib/content/tutorials.ts` |
+| `resources/forum` | `/api/forum/threads` | `forum_threads` / `forum_posts` tables |
+| `projects/templates` | `GET /api/templates` | `lib/templates.ts` (10 patterns incl. `pid_loop`) |
+
+### 2.10 Auth
 
 | UI | BFF |
 |----|-----|
@@ -125,23 +154,23 @@ Prompt assembly stays in BFF; inference is always Python — **by design**.
 | API | FastAPI | Notes |
 |-----|---------|-------|
 | `POST /api/analyze-sketch` | `/v1/sketches/analyze` | Used **indirectly** when generator uploads sketch image |
-| `POST /api/generate-from-sketch` | `/v1/sketches/generate` | No standalone page; could power future sketch-only flow |
-| `GET/POST /api/programs` | — (DB only) | Persists on generate; no “My Programs” list UI |
+
+> **v1.5 follow-ups now have UI:** `GET/POST /api/programs` → `/programs`; `POST /api/generate-from-sketch` → `/sketch-generator`.
 
 ---
 
-## 4. Tier C — Mock / placeholder UI (expected)
+## 4. Tier C — Mock / placeholder UI (expected — frozen or static)
 
 | Feature | Page | Status |
 |---------|------|--------|
-| HMI Generator | `hmi-generator` | Client-side `setTimeout` + template strings |
-| Solution Compare | `solutions/compare` | Hardcoded `plcDatabase` |
-| SAP Export | `sap/export` | `simulated: true`; hardcoded project list |
-| SAP Config | `sap/config` | Hardcoded profiles |
-| Billing / Subscription | `billing/*`, `subscription/*` | Hardcoded plans (frozen) |
-| Dashboard usage | `dashboard` | Hardcoded API/storage meters |
-| Resources / Support forms | `resources/*`, `support/*` | Static content |
+| SAP Export | `sap/export` | `simulated: true`; hardcoded project list (**v1.7+**) |
+| SAP Config | `sap/config` | Hardcoded profiles (**v1.7+**) |
+| Billing Payment / Invoices / Upgrade | `billing/payment`, `billing/invoices`, `billing/upgrade` | Mock UI (**Stripe v1.7+**) |
+| Subscription checkout | `subscription/*` | Mock plans/checkout (**Stripe v1.7+**) |
 | PLC Selector browse mode | `plc-selector` | Local `plc-models-database.ts` (catalog, not API) |
+| Support Help | `support/help` | Static FAQ (intentional) |
+| Solutions Calculator | `solutions/calculator` | Client-side math (intentional) |
+| Marketing / blog / platform landings | various | Static content (intentional) |
 
 ---
 
@@ -179,13 +208,17 @@ Removed (2026-06-16): orphan routes that duplicated canonical BFF handlers — n
 |--------------|-------------------|
 | PLC Generator | ✅ |
 | M221 Generator | ✅ |
+| Sketch Generator | ✅ `/api/generate-from-sketch` |
+| Programs | ✅ `GET /api/programs` |
 | PLC Selector (wizard) | ✅ |
 | Solution Finder → Recommend | ✅ |
 | Solution Finder → Compare | ✅ catalog API |
 | AI Co-Pilot subtree | ✅ (chat, app gen, optimizer, library search) |
 | Error Rectification | ✅ (page + sidebar link) |
-| SAP Integration | ⚠️ simulated |
-| HMI Generator | ❌ mock |
+| HMI Generator | ✅ `/api/hmi-generate` |
+| Settings / Support / Resources | ✅ v1.6 BFF routes |
+| SAP Integration | ⚠️ simulated (v1.7+) |
+| Billing usage/plan meters | ✅ `/api/usage` (payments frozen) |
 
 ---
 
@@ -213,7 +246,7 @@ Removed (2026-06-16): orphan routes that duplicated canonical BFF handlers — n
 | 3 | **Solution compare** — catalog-backed | ✅ `/api/plc-catalog` + compare page |
 | 4 | **Consolidate duplicate BFF routes** | ✅ removed orphans (§6) |
 | 5 | **Move AI prompts to Python** | ✅ `api/services/ai_prompts.py` + dedicated `/v1/ai/*` routes |
-| 6 | **Dashboard usage** | Deferred (billing phase) |
+| 6 | **Dashboard usage** | ✅ `/api/usage` (v1.6) |
 
 ---
 
@@ -221,5 +254,6 @@ Removed (2026-06-16): orphan routes that duplicated canonical BFF handlers — n
 
 - [PHASE_4_PLATFORM_INTEGRATIONS.md](PHASE_4_PLATFORM_INTEGRATIONS.md) — export pipeline as-built
 - [PHASE_5_IMPLEMENTATION.md](PHASE_5_IMPLEMENTATION.md) — P0–P4 deliverables
+- [V1_6_IMPLEMENTATION.md](V1_6_IMPLEMENTATION.md) — v1.6 deliverables (HMI, usage, PID, UI remediation)
 - [FASTAPI_AUTOMATION_SERVICE.md](FASTAPI_AUTOMATION_SERVICE.md) — BFF route table
 - [RUNBOOK.md](../RUNBOOK.md) — verify commands

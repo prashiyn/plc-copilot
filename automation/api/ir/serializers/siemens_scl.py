@@ -7,8 +7,10 @@ from plc_file_handler.converters.platform_converter import PlatformConverter
 from ...schemas.ir import (
     AndNode,
     CoilNode,
+    CompareNode,
     ContactNode,
     CounterNode,
+    FbCallNode,
     LogicNode,
     Network,
     NotNode,
@@ -17,6 +19,7 @@ from ...schemas.ir import (
     PlcVar,
     TimerNode,
 )
+from .analog_fb import render_pid_fb_statement
 
 _SOURCE_DISCLAIMER = (
     "PLC AutoPilot export — source import only, not a TIA Portal project (.ap* / .zap*)."
@@ -105,6 +108,9 @@ def _render_networks(program: PlcProgram) -> list[str]:
 
 
 def network_to_scl_statements(network: Network) -> list[str]:
+    if isinstance(network.logic, FbCallNode) and network.logic.kind == "PID":
+        statement = render_pid_fb_statement(network.logic, "siemens")
+        return [f"{statement};"]
     assignment = _assignment_from_logic(network.logic)
     if assignment:
         target, expression = assignment
@@ -153,6 +159,14 @@ def logic_expr(node: LogicNode) -> str:
 
     if isinstance(node, CounterNode):
         return node.symbol
+
+    if isinstance(node, CompareNode):
+        op_map = {"GT": ">", "GE": ">=", "LT": "<", "LE": "<=", "EQ": "="}
+        op = op_map.get(node.op, node.op)
+        return f"({node.left} {op} {node.right})"
+
+    if isinstance(node, FbCallNode):
+        return node.enable or "TRUE"
 
     if isinstance(node, CoilNode):
         return node.symbol

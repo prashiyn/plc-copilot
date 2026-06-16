@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from plc_automation.plcopen_xml import PLCopenXMLGenerator
 
-from ...schemas.ir import PlcProgram
+from ...schemas.ir import FbCallNode, PlcProgram
 from ..serialize_helpers import network_to_plcopen_rung_kwargs
+from ..serializers.analog_fb import render_pid_fb_statement
 
 _PLCOPEN_TYPE_MAP = {
     "BOOL": "BOOL",
@@ -36,6 +37,7 @@ def render_plcopen_xml(program: PlcProgram) -> str:
         plc_type = _PLCOPEN_TYPE_MAP.get(var.dataType, "BOOL")
         pou.add_variable(var.symbol, plc_type, var.address)
 
+    st_blocks: list[str] = []
     if program.pous:
         for network in program.pous[0].networks:
             kwargs = network_to_plcopen_rung_kwargs(network)
@@ -50,9 +52,15 @@ def render_plcopen_xml(program: PlcProgram) -> str:
                     coil=kwargs.get("coil"),
                     seal_in=kwargs.get("seal_in"),
                 )
+            elif isinstance(network.logic, FbCallNode) and network.logic.kind == "PID":
+                st_blocks.append(render_pid_fb_statement(network.logic, program.target.vendor))
 
     pou.finalize()
-    return generator.to_xml_string(pretty=True)
+    xml = generator.to_xml_string(pretty=True)
+    if st_blocks:
+        comment = "\n".join(f"  <!-- ST: {line} -->" for line in st_blocks)
+        xml = xml.replace("</project>", f"{comment}\n</project>", 1)
+    return xml
 
 
 def render_plcopen_bytes(program: PlcProgram) -> bytes:

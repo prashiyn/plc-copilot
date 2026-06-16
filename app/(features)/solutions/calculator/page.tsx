@@ -7,6 +7,7 @@ export default function CostCalculatorPage() {
     <div className="py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-4">Cost Calculator</h1>
+        <p className="text-sm text-gray-500 mb-4">Client-side TCO calculator — no backend required (v1.6).</p>
         <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
           {Object.keys(costs).map(key => (
             <div key={key}>

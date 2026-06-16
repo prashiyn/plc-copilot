@@ -18,9 +18,12 @@ PatternName = Literal[
     "motor_interlock",
     "pump_staging",
     "timed_motor",
+    "pid_loop",
 ]
 TimerType = Literal["TON", "TOF", "TP"]
 CounterType = Literal["CTU", "CTD", "CTUD"]
+CompareOp = Literal["GT", "GE", "LT", "LE", "EQ"]
+FbKind = Literal["PID"]
 EstopSymbolName = Literal["ESTOP_BTN", "E_STOP", "EMERGENCY_STOP"]
 
 
@@ -88,8 +91,38 @@ class CounterNode(BaseModel):
     preset: int | None = Field(default=None, ge=0, le=999_999)
 
 
+class CompareNode(BaseModel):
+    type: Literal["compare"] = "compare"
+    left: str
+    right: str
+    op: CompareOp
+    output: str
+
+
+class FbParamRef(BaseModel):
+    name: str
+    symbol: str
+    direction: Literal["in", "out", "inout"] = "in"
+
+
+class FbCallNode(BaseModel):
+    type: Literal["fb_call"] = "fb_call"
+    kind: FbKind
+    instance: str
+    params: list[FbParamRef] = Field(default_factory=list)
+    enable: str | None = None
+
+
 LogicNode = Annotated[
-    ContactNode | CoilNode | AndNode | OrNode | NotNode | TimerNode | CounterNode,
+    ContactNode
+    | CoilNode
+    | AndNode
+    | OrNode
+    | NotNode
+    | TimerNode
+    | CounterNode
+    | CompareNode
+    | FbCallNode,
     Field(discriminator="type"),
 ]
 

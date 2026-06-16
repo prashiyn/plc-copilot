@@ -34,6 +34,7 @@ export interface PlcDownloadParams {
   delaySeconds: number;
   cycleSeconds: number;
   runSeconds: number;
+  setpoint: number;
   logic: string;
   useSketchAnalysis: boolean;
   sketchAnalysis?: Record<string, unknown>;
@@ -63,11 +64,23 @@ export function detectPatternFromLogic(logic: string): PatternParams {
   const lightMatch = logic.match(/(\d+)\s+(?:sequential\s+)?lights?/i);
   const timeMatch = logic.match(/(\d+)\s+seconds?/i);
   const cycleMatch = logic.match(/(\d+)\s+second\s+cycle/i);
+  const setpointMatch = logic.match(/(?:setpoint|sp)\s*(?:of|=|:)?\s*(\d+(?:\.\d+)?)/i);
   const nameMatch = logic.match(/(?:project|program|name):\s*([^\n.]+)/i);
 
   let pattern: PlcPattern = 'motor_startstop';
 
   if (
+    lower.includes('pid') ||
+    lower.includes('closed loop') ||
+    lower.includes('closed-loop') ||
+    lower.includes('temperature control') ||
+    lower.includes('analog control') ||
+    lower.includes('process variable') ||
+    (lower.includes('setpoint') &&
+      (lower.includes('control') || lower.includes('loop') || lower.includes('temperature')))
+  ) {
+    pattern = 'pid_loop';
+  } else if (
     lower.includes('traffic light') ||
     lower.includes('traffic lights') ||
     lower.includes('red/yellow/green')
@@ -132,8 +145,15 @@ export function detectPatternFromLogic(logic: string): PatternParams {
     runSeconds = Math.min(60, Math.max(1, parseInt(timeMatch[1], 10)));
   }
 
+  let setpoint = 50;
+  if (setpointMatch) {
+    setpoint = Math.min(1000, Math.max(0, parseFloat(setpointMatch[1])));
+  } else if (pattern === 'pid_loop' && timeMatch) {
+    setpoint = Math.min(1000, Math.max(0, parseFloat(timeMatch[1])));
+  }
+
   const delaySeconds =
-    timeMatch && pattern !== 'traffic_lights' && pattern !== 'timed_motor'
+    timeMatch && pattern !== 'traffic_lights' && pattern !== 'timed_motor' && pattern !== 'pid_loop'
       ? Math.min(60, Math.max(1, parseInt(timeMatch[1], 10)))
       : 3;
 
@@ -143,6 +163,7 @@ export function detectPatternFromLogic(logic: string): PatternParams {
     delaySeconds,
     cycleSeconds,
     runSeconds,
+    setpoint,
     projectName: nameMatch
       ? nameMatch[1].trim().replace(/[^a-zA-Z0-9_]/g, '_')
       : 'PLCAutoProgram',
@@ -273,8 +294,9 @@ function patternTimingFromParams(
   delaySeconds: number,
   cycleSeconds: number,
   runSeconds: number,
+  setpoint: number,
 ): PatternTiming {
-  return { numLights, delaySeconds, cycleSeconds, runSeconds };
+  return { numLights, delaySeconds, cycleSeconds, runSeconds, setpoint };
 }
 
 function fileFromProgramResult(
@@ -329,6 +351,7 @@ export async function generatePlcProgramFile(params: {
   const delaySeconds = params.downloadParams?.delaySeconds ?? patternParams.delaySeconds;
   const cycleSeconds = params.downloadParams?.cycleSeconds ?? patternParams.cycleSeconds;
   const runSeconds = params.downloadParams?.runSeconds ?? patternParams.runSeconds;
+  const setpoint = params.downloadParams?.setpoint ?? patternParams.setpoint;
   const native = resolveNativePlatform(params.manufacturer);
   const tier2 = resolveTier2Platform(params.manufacturer);
   const generationPath = resolveGenerationPath(params.manufacturer, pattern, { useAiSynthesis });
@@ -346,7 +369,14 @@ export async function generatePlcProgramFile(params: {
     }
   }
 
-  const timing = patternTimingFromParams(pattern, numLights, delaySeconds, cycleSeconds, runSeconds);
+  const timing = patternTimingFromParams(
+    pattern,
+    numLights,
+    delaySeconds,
+    cycleSeconds,
+    runSeconds,
+    setpoint,
+  );
   const downloadParams: PlcDownloadParams = {
     manufacturer: params.manufacturer,
     controller: params.controller,
@@ -356,6 +386,7 @@ export async function generatePlcProgramFile(params: {
     delaySeconds,
     cycleSeconds,
     runSeconds,
+    setpoint,
     logic: params.logic,
     useSketchAnalysis: !!sketchAnalysis,
     sketchAnalysis,
@@ -434,6 +465,7 @@ export async function generatePlcProgramFile(params: {
     delaySeconds,
     cycleSeconds,
     runSeconds,
+    setpoint,
   });
 
   return fileFromProgramResult(result, pattern, downloadParams, 'plcopen');

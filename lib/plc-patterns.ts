@@ -9,7 +9,8 @@ export type PlcPattern =
   | 'traffic_lights'
   | 'motor_interlock'
   | 'pump_staging'
-  | 'timed_motor';
+  | 'timed_motor'
+  | 'pid_loop';
 
 export type SynthesisMode = 'constrained' | 'arbitrary';
 
@@ -24,6 +25,7 @@ export const EXPORT_PATTERNS: readonly PlcPattern[] = [
   'motor_interlock',
   'pump_staging',
   'timed_motor',
+  'pid_loop',
 ] as const;
 
 export interface PatternTiming {
@@ -31,6 +33,7 @@ export interface PatternTiming {
   delaySeconds: number;
   cycleSeconds: number;
   runSeconds: number;
+  setpoint: number;
 }
 
 export function isExportPattern(pattern: string): pattern is PlcPattern {
@@ -44,6 +47,7 @@ export interface PatternSourcePayload {
   delaySeconds?: number;
   cycleSeconds?: number;
   runSeconds?: number;
+  setpoint?: number;
 }
 
 export function buildPatternSource(pattern: PlcPattern, timing: PatternTiming): PatternSourcePayload {
@@ -54,5 +58,6 @@ export function buildPatternSource(pattern: PlcPattern, timing: PatternTiming): 
     delaySeconds: timing.delaySeconds,
     cycleSeconds: timing.cycleSeconds,
     runSeconds: timing.runSeconds,
+    setpoint: timing.setpoint,
   };
 }

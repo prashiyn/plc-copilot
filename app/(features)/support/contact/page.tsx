@@ -9,41 +9,66 @@ export default function ContactPage() {
     subject: '',
     category: 'general',
     priority: 'normal',
-    message: ''
+    message: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      alert('Your message has been sent. We will respond within 24 hours.');
+    setMessage(null);
+
+    try {
+      const res = await fetch('/api/support/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to send message');
+
+      setMessage({ type: 'success', text: 'Your message has been sent. We will respond within 24 hours.' });
       setFormData({
         name: '',
         email: '',
         subject: '',
         category: 'general',
         priority: 'normal',
-        message: ''
+        message: '',
       });
-    }, 1000);
+    } catch (err) {
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to send message' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Support</h1>
-        <p className="text-lg text-gray-600">Get in touch with our team. We're here to help!</p>
+        <p className="text-lg text-gray-600">Get in touch with our team. We&apos;re here to help!</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Contact Form */}
         <div className="lg:col-span-2">
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h2>
+
+            {message && (
+              <div
+                className={`mb-6 px-4 py-3 rounded-lg text-sm ${
+                  message.type === 'success'
+                    ? 'bg-green-50 border border-green-200 text-green-800'
+                    : 'bg-red-50 border border-red-200 text-red-800'
+                }`}
+              >
+                {message.text}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -136,9 +161,7 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Contact Information */}
         <div className="lg:col-span-1 space-y-6">
-          {/* Response Time */}
           <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-lg shadow-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
@@ -153,7 +176,6 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Contact Methods */}
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
             <h3 className="font-bold text-gray-900 mb-4">Other Ways to Reach Us</h3>
             <div className="space-y-4">
@@ -170,67 +192,7 @@ export default function ContactPage() {
                   </a>
                 </div>
               </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Phone</p>
-                  <p className="text-sm text-gray-600">+1 (555) 123-4567</p>
-                  <p className="text-xs text-gray-500 mt-1">Mon-Fri, 9am-5pm EST</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Live Chat</p>
-                  <button className="text-sm text-blue-600 hover:text-blue-700">
-                    Start a conversation
-                  </button>
-                </div>
-              </div>
             </div>
-          </div>
-
-          {/* Business Hours */}
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-            <h3 className="font-bold text-gray-900 mb-4">Business Hours</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Monday - Friday</span>
-                <span className="font-medium text-gray-900">9:00 AM - 5:00 PM EST</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Saturday</span>
-                <span className="font-medium text-gray-900">10:00 AM - 2:00 PM EST</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Sunday</span>
-                <span className="font-medium text-gray-900">Closed</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Enterprise Support */}
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-            <h3 className="font-bold text-gray-900 mb-2">Enterprise Support</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Need dedicated support? Contact our sales team about enterprise plans with 24/7 phone support.
-            </p>
-            <a
-              href="/billing/upgrade"
-              className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-            >
-              View Enterprise Plans
-            </a>
           </div>
         </div>
       </div>

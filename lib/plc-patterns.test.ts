@@ -8,8 +8,8 @@ import {
 } from './plc-patterns';
 
 describe('plc-patterns', () => {
-  it('lists nine export patterns', () => {
-    assert.equal(EXPORT_PATTERNS.length, 9);
+  it('lists ten export patterns', () => {
+    assert.equal(EXPORT_PATTERNS.length, 10);
   });
 
   it('validates export pattern membership', () => {
@@ -23,6 +23,7 @@ describe('plc-patterns', () => {
       delaySeconds: 2,
       cycleSeconds: 5,
       runSeconds: 4,
+      setpoint: 50,
     });
     assert.equal(source.type, 'pattern');
     assert.equal(source.pattern, 'sequential_lights');
@@ -43,6 +44,7 @@ describe('plc-patterns', () => {
       'motor_interlock',
       'pump_staging',
       'timed_motor',
+      'pid_loop',
     ];
     assert.deepEqual([...EXPORT_PATTERNS].sort(), [...expected].sort());
   });

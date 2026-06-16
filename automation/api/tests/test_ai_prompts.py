@@ -3,8 +3,10 @@ import pytest
 from api.services.ai_prompts import (
     APPLICATION_GENERATE_SYSTEM,
     CODE_OPTIMIZE_SYSTEM,
+    HMI_SYSTEM,
     LIBRARY_SEARCH_SYSTEM,
     build_application_user_prompt,
+    build_hmi_user_prompt,
     build_library_user_prompt,
     build_optimize_user_prompt,
     copilot_system_prompt,
@@ -84,3 +86,17 @@ class TestJsonFeaturePrompts:
         assert "scan time" in prompt
         assert "slow cycle" in prompt
         assert CODE_OPTIMIZE_SYSTEM.endswith("JSON only.")
+
+    def test_hmi_prompt_includes_vendor_and_screen(self):
+        prompt = build_hmi_user_prompt(
+            vendor="rockwell-factorytalk",
+            screen_type="motor-control",
+            description="Motor panel with start/stop",
+            project_name="Line1",
+            tags=[{"name": "MOTOR_RUN", "address": "N7:0", "type": "BOOL", "comment": "Run"}],
+        )
+        assert "rockwell-factorytalk" in prompt
+        assert "motor-control" in prompt
+        assert "MOTOR_RUN" in prompt
+        assert "Line1" in prompt
+        assert HMI_SYSTEM.startswith("You are an expert HMI")

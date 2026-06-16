@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AutomationError, isAutomationConfigured, librarySearch } from '@/lib/automation-client';
+import { recordUsage } from '@/lib/usage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,6 +22,8 @@ export async function POST(request: NextRequest) {
       requirements,
       generateCustom,
     });
+
+    await recordUsage('ai_library', { platform, query });
 
     return NextResponse.json({ success: true, results });
   } catch (error) {

@@ -28,6 +28,7 @@ Project docs, grouped by topic. (Moved out of the repo root during the v1.4→v1
 - [FASTAPI_AUTOMATION_SERVICE.md](architecture/FASTAPI_AUTOMATION_SERVICE.md) — FastAPI sidecar design + execution plan (Phases 0–5 ✅)
 - [PHASE_4_PLATFORM_INTEGRATIONS.md](architecture/PHASE_4_PLATFORM_INTEGRATIONS.md) — per-vendor export + IR pipeline; **§7.0 complete** (v1.5)
 - [PHASE_5_IMPLEMENTATION.md](architecture/PHASE_5_IMPLEMENTATION.md) — **Phase 5 implementation plan** (scope limits + prioritized work + frozen tracks)
+- [V1_6_IMPLEMENTATION.md](architecture/V1_6_IMPLEMENTATION.md) — **v1.6 plan ✅ delivered** (HMI generator, usage metering, P3 PID/analog, UI mock remediation; mobile deferred)
 - [VENDOR_SCHEMA_MAINTENANCE.md](architecture/VENDOR_SCHEMA_MAINTENANCE.md) — vendor XSD registry, CI validation, field updates for older IDE versions
 - [ARBITRARY_LOGIC_SYNTHESIS.md](architecture/ARBITRARY_LOGIC_SYNTHESIS.md) — Claude IR arbitrary vs constrained synthesis modes
 - [E2E_INTEGRATION_AUDIT.md](architecture/E2E_INTEGRATION_AUDIT.md) — UI → BFF → FastAPI alignment audit (Phase 4/5)

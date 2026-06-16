@@ -20,7 +20,9 @@ Return ONE JSON object: a PlcProgram for ladder-oriented logic.
 
 Rules:
 - Top-level keys: name, target {vendor, model}, vars[], pous[], meta (optional)
-- Logic node types (discriminator "type"): contact, coil, and, or, not, timer, counter
+- Logic node types (discriminator "type"): contact, coil, and, or, not, timer, counter, compare, fb_call
+- Analog variables use dataType REAL/INT/DINT with kind input/output/memory
+- PID loops: use fb_call kind PID with PV/SP/CV param refs; prefer standard vendor PID FB, not custom algorithms
 - Every symbol used in logic MUST appear in vars with matching kind and dataType
 - Timers: kind timer, dataType TON/TOF/TP; timer nodes must match var dataType
 - Counters: kind counter, dataType CTU/CTD/CTUD
@@ -35,7 +37,8 @@ Arbitrary-logic mode:
 - Implement the user's described ladder logic directly — do NOT map to a canned template name
 - Set meta.pattern to null unless the program exactly matches a standard library pattern
 - Prefer explicit symbols and rung comments that match the user's terminology
-- Use timers/counters only when the description requires timed or counted behavior"""
+- Use timers/counters only when the description requires timed or counted behavior
+- For analog/PID requirements use compare and fb_call nodes with REAL variables"""
 
 
 class IrSynthesisError(ValueError):
@@ -73,7 +76,7 @@ class ClaudeIrService:
         synthesis_mode: SynthesisMode = "constrained",
     ) -> dict[str, Any]:
         vendor_norm = normalize_vendor(vendor)
-        pattern_hint, detected_name, num_lights, delay_seconds, cycle_seconds, run_seconds = (
+        pattern_hint, detected_name, num_lights, delay_seconds, cycle_seconds, run_seconds, setpoint = (
             detect_pattern_from_description(description)
         )
         resolved_name = project_name or detected_name
@@ -128,6 +131,7 @@ class ClaudeIrService:
             delay_seconds=delay_seconds,
             cycle_seconds=cycle_seconds,
             run_seconds=run_seconds,
+            setpoint=setpoint,
         )
         validated = validate_program(program)
         reason = (

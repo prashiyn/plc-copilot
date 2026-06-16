@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PLCCascadingSelector from '@/app/components/PLCCascadingSelector';
 import type { PLCManufacturer, PLCSeries, PLCModel } from '@/lib/plc-models-database';
 
@@ -22,6 +22,7 @@ export default function GeneratorPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [useAiSynthesis, setUseAiSynthesis] = useState(false);
   const [synthesisMode, setSynthesisMode] = useState<'constrained' | 'arbitrary'>('constrained');
+  const [setpoint, setSetpoint] = useState('50');
   const [generatedFile, setGeneratedFile] = useState<{
     content: string;
     filename: string;
@@ -31,6 +32,18 @@ export default function GeneratorPage() {
     tier2Disclaimer?: string;
     limitations?: string[];
   } | null>(null);
+  const [defaultManufacturerId, setDefaultManufacturerId] = useState<string | undefined>();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const logic = params.get('logic');
+    const setpointParam = params.get('setpoint');
+    const platform = params.get('platform');
+
+    if (logic) setLogicDescription(logic);
+    if (setpointParam) setSetpoint(setpointParam);
+    if (platform) setDefaultManufacturerId(platform);
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,6 +77,9 @@ export default function GeneratorPage() {
       formData.append('modelName', selectedPLC.model.name);
       formData.append('useAiSynthesis', useAiSynthesis ? 'true' : 'false');
       formData.append('synthesisMode', synthesisMode);
+      if (setpoint.trim()) {
+        formData.append('setpoint', setpoint.trim());
+      }
 
       const response = await fetch('/api/generate-plc', {
         method: 'POST',
@@ -199,7 +215,9 @@ export default function GeneratorPage() {
               <textarea
                 value={logicDescription}
                 onChange={(e) => setLogicDescription(e.target.value)}
-                placeholder="Example: 3 sequential lights with 3-second delays. START button to begin, STOP button to interrupt. Light 1 turns on immediately, Light 2 after 3 seconds, Light 3 after 6 seconds total."
+                placeholder="Example: PID temperature control with setpoint 75. LOOP_EN enables the loop, TEMP_PV is the process variable, VALVE_CV is the analog output.
+
+Or: 3 sequential lights with 3-second delays. START button to begin, STOP button to interrupt."
                 className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-700"
               />
               <p className="mt-2 text-sm text-gray-500">
@@ -215,6 +233,7 @@ export default function GeneratorPage() {
 
               <PLCCascadingSelector
                 onSelectionChange={setSelectedPLC}
+                defaultManufacturerId={defaultManufacturerId}
               />
             </div>
 
@@ -248,6 +267,24 @@ export default function GeneratorPage() {
                   </select>
                 </div>
               ) : null}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  PID setpoint (for PID / temperature control logic)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={1000}
+                  step={0.1}
+                  value={setpoint}
+                  onChange={(e) => setSetpoint(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="50"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Used when the description maps to a PID loop. Leave default if not using PID.
+                </p>
+              </div>
             </div>
 
             {/* Generate Button */}
@@ -306,6 +343,14 @@ export default function GeneratorPage() {
                     <p className="text-sm text-green-700">
                       <strong>Format:</strong> {generatedFile.extension}
                     </p>
+                    {generatedFile.downloadParams?.pattern ? (
+                      <p className="text-sm text-green-700">
+                        <strong>Pattern:</strong> {generatedFile.downloadParams.pattern}
+                        {generatedFile.downloadParams.pattern === 'pid_loop' ? (
+                          <span> (setpoint {generatedFile.downloadParams.setpoint})</span>
+                        ) : null}
+                      </p>
+                    ) : null}
                   </div>
 
                   {generatedFile.tier2Disclaimer ? (

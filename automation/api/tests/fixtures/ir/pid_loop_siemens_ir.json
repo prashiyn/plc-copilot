@@ -1,0 +1,121 @@
+{
+  "name": "Golden_Pid_IR",
+  "target": {
+    "vendor": "siemens",
+    "model": "S7-1200"
+  },
+  "vars": [
+    {
+      "symbol": "LOOP_EN",
+      "address": "%I0.0",
+      "dataType": "BOOL",
+      "kind": "input",
+      "initial": null,
+      "comment": "PID loop enable"
+    },
+    {
+      "symbol": "TEMP_PV",
+      "address": "%IW0",
+      "dataType": "REAL",
+      "kind": "input",
+      "initial": null,
+      "comment": "Process variable (PV)"
+    },
+    {
+      "symbol": "TEMP_SP",
+      "address": "%MW0",
+      "dataType": "REAL",
+      "kind": "memory",
+      "initial": "72.5",
+      "comment": "Setpoint (SP)"
+    },
+    {
+      "symbol": "VALVE_CV",
+      "address": "%QW0",
+      "dataType": "REAL",
+      "kind": "output",
+      "initial": null,
+      "comment": "Control variable (CV)"
+    },
+    {
+      "symbol": "PID1",
+      "address": "%MW10",
+      "dataType": "REAL",
+      "kind": "memory",
+      "initial": null,
+      "comment": "PID function block instance data"
+    },
+    {
+      "symbol": "LOOP_ACTIVE",
+      "address": "%M0.0",
+      "dataType": "BOOL",
+      "kind": "memory",
+      "initial": null,
+      "comment": "Loop active indicator"
+    }
+  ],
+  "pous": [
+    {
+      "name": "MainProgram",
+      "language": "LD",
+      "networks": [
+        {
+          "label": "Rung 1",
+          "comment": "PID closed-loop control",
+          "logic": {
+            "type": "fb_call",
+            "kind": "PID",
+            "instance": "PID1",
+            "params": [
+              {
+                "name": "PV",
+                "symbol": "TEMP_PV",
+                "direction": "in"
+              },
+              {
+                "name": "SP",
+                "symbol": "TEMP_SP",
+                "direction": "in"
+              },
+              {
+                "name": "CV",
+                "symbol": "VALVE_CV",
+                "direction": "out"
+              }
+            ],
+            "enable": "LOOP_EN"
+          }
+        },
+        {
+          "label": "Rung 2",
+          "comment": "Loop active indicator",
+          "logic": {
+            "type": "and",
+            "inputs": [
+              {
+                "type": "contact",
+                "symbol": "LOOP_EN",
+                "negated": false
+              },
+              {
+                "type": "coil",
+                "symbol": "LOOP_ACTIVE",
+                "coilType": "normal"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "author": "PLCAutoPilot",
+    "description": "PID closed-loop control with setpoint 72.5",
+    "createdAt": "2000-01-01T00:00:00+00:00",
+    "pattern": "pid_loop",
+    "patternParams": {
+      "setpoint": 72.5
+    },
+    "requireEstop": false
+  }
+}

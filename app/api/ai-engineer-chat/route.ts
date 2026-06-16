@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AutomationError, engineerChat, isAutomationConfigured } from '@/lib/automation-client';
+import { recordUsage } from '@/lib/usage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,6 +20,8 @@ export async function POST(request: NextRequest) {
       engineerType,
       conversationContext,
     });
+
+    await recordUsage('engineer_chat', { engineerType });
 
     return NextResponse.json({
       success: true,

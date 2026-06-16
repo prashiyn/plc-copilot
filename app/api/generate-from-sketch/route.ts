@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AutomationError, generateFromSketch } from '@/lib/automation-client';
 import { buildSketchGenerateResponse } from '@/lib/sketch-generate-response';
+import { recordUsage } from '@/lib/usage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,6 +33,8 @@ export async function POST(request: NextRequest) {
       controllerModel,
       { includeMetadata: true },
     );
+
+    await recordUsage('sketch_generate', { platform, projectName });
 
     const response = buildSketchGenerateResponse(generated, includeMetadata);
     if (response.kind === 'json') {

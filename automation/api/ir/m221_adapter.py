@@ -9,6 +9,7 @@ from ..schemas.ir import (
     CoilNode,
     ContactNode,
     CounterNode,
+    FbCallNode,
     LogicNode,
     Network,
     NotNode,
@@ -17,6 +18,7 @@ from ..schemas.ir import (
     PlcVar,
     TimerNode,
 )
+from .serializers.analog_fb import render_pid_fb_statement
 
 
 def ir_program_to_m221_data(program: PlcProgram) -> dict[str, Any]:
@@ -61,6 +63,17 @@ def ir_program_to_m221_data(program: PlcProgram) -> dict[str, Any]:
     pou = program.pous[0] if program.pous else None
     if pou:
         for index, network in enumerate(pou.networks):
+            if isinstance(network.logic, FbCallNode) and network.logic.kind == "PID":
+                st = render_pid_fb_statement(network.logic, program.target.vendor)
+                rungs.append(
+                    {
+                        "name": network.label or f"Rung {index + 1}",
+                        "comment": network.comment or "PID closed-loop control",
+                        "il": [f"// {line.strip()}" for line in st.split(",")],
+                        "ladder": st,
+                    }
+                )
+                continue
             il_lines = logic_to_il(network.logic, var_by_symbol)
             if not il_lines:
                 continue

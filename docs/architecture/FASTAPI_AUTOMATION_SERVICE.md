@@ -1,6 +1,6 @@
 # FastAPI Automation Service — Design Document
 
-> **Status:** IMPLEMENTED — Phases 0–5 + Platform Integrations §7.0 complete (2026-06-14).  
+> **Status:** IMPLEMENTED — Phases 0–5 + Platform Integrations §7.0 + **v1.6** HMI/usage (2026-06-16).  
 > **Historical note:** §3–§8 below retain the original design narrative; §2 is the as-built reference.
 > **Author:** PLCAutoPilot architecture  
 > **Date:** 2026-06-14  
@@ -14,9 +14,9 @@ PLCAutoPilot runs Python automation through a **long-running FastAPI service** (
 
 The service is the **single source of truth** for parse, generate, convert, sketch analysis, Claude→IR, and vendor export via the **IR pipeline** (`automation/api/ir/`).
 
-**Outcome (delivered):** Docker Compose sidecar + Redis job queue, structured errors, health checks, 156+ pytest, golden export CI, provider registry.
+**Outcome (delivered):** Docker Compose sidecar + Redis job queue, structured errors, health checks, 403 pytest, golden export CI, provider registry, HMI generation (`ai.hmi.generate`).
 
-**Next:** [PHASE_5_IMPLEMENTATION.md](PHASE_5_IMPLEMENTATION.md) — IDE sign-off, XSD hardening, export expansion.
+**Next:** [V1_6_IMPLEMENTATION.md](V1_6_IMPLEMENTATION.md) — delivered; v1.7+ tracks in [PHASE_5_IMPLEMENTATION.md](PHASE_5_IMPLEMENTATION.md) §5.
 
 ---
 
@@ -76,6 +76,7 @@ flowchart TB
 | `app/api/ai-generate-application/route.ts` | `generateApplication()` → `/v1/ai/application/generate` | JSON application blueprint |
 | `app/api/ai-library-search/route.ts` | `librarySearch()` → `/v1/ai/library/search` | Library search JSON |
 | `app/api/ai-optimize-code/route.ts` | `optimizeCode()` → `/v1/ai/code/optimize` | Optimization analysis JSON |
+| `app/api/hmi-generate/route.ts` | `generateHmi()` → `/v1/ai/hmi/generate` | HMI script + tags CSV + zip (`?download=true` for attachment) |
 
 Legacy generic `/v1/ai/chat` and `/v1/ai/json` remain for internal use; production BFF uses typed routes above.
 

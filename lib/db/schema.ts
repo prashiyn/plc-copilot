@@ -315,3 +315,80 @@ export const apiKeys = pgTable(
     index('idx_api_keys_org').on(t.organizationId),
   ],
 );
+
+export const supportMessages = pgTable(
+  'support_messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    name: varchar('name', { length: 255 }).notNull(),
+    email: varchar('email', { length: 255 }).notNull(),
+    subject: varchar('subject', { length: 500 }).notNull(),
+    category: varchar('category', { length: 50 }).notNull(),
+    priority: varchar('priority', { length: 20 }).notNull(),
+    message: text('message').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (t) => [index('idx_support_messages_user').on(t.userId)],
+);
+
+export const supportTickets = pgTable(
+  'support_tickets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    ticketNumber: varchar('ticket_number', { length: 32 }).unique().notNull(),
+    subject: varchar('subject', { length: 500 }).notNull(),
+    category: varchar('category', { length: 50 }).notNull(),
+    priority: varchar('priority', { length: 20 }).default('normal').notNull(),
+    status: varchar('status', { length: 20 }).default('open').notNull(),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index('idx_support_tickets_user').on(t.userId),
+    index('idx_support_tickets_status').on(t.status),
+  ],
+);
+
+export const forumThreads = pgTable(
+  'forum_threads',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    authorName: varchar('author_name', { length: 255 }).notNull(),
+    title: varchar('title', { length: 500 }).notNull(),
+    category: varchar('category', { length: 50 }).notNull(),
+    body: text('body').notNull(),
+    isPinned: boolean('is_pinned').default(false),
+    status: varchar('status', { length: 20 }).default('open'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index('idx_forum_threads_category').on(t.category),
+    index('idx_forum_threads_pinned').on(t.isPinned),
+  ],
+);
+
+export const forumPosts = pgTable(
+  'forum_posts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    threadId: uuid('thread_id')
+      .references(() => forumThreads.id, { onDelete: 'cascade' })
+      .notNull(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    authorName: varchar('author_name', { length: 255 }).notNull(),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (t) => [index('idx_forum_posts_thread').on(t.threadId)],
+);

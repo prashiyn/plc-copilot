@@ -1,30 +1,85 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+interface Profile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  company: string;
+  jobTitle: string;
+  bio: string;
+  location: string;
+  timezone: string;
+  website: string;
+}
+
+const emptyProfile: Profile = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  company: '',
+  jobTitle: '',
+  bio: '',
+  location: '',
+  timezone: 'America/New_York',
+  website: '',
+};
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState({
-    firstName: 'John',
-    lastName: 'Smith',
-    email: 'john.smith@acme.com',
-    phone: '+1 (555) 123-4567',
-    company: 'Acme Manufacturing Corp',
-    jobTitle: 'Senior PLC Engineer',
-    bio: 'Experienced automation engineer specializing in Siemens and Rockwell PLCs',
-    location: 'Detroit, Michigan',
-    timezone: 'America/Detroit',
-    website: 'https://acme-manufacturing.com'
-  });
-
+  const [profile, setProfile] = useState<Profile>(emptyProfile);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handleSave = () => {
+  useEffect(() => {
+    fetch('/api/settings/profile')
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Failed to load profile');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data.profile) setProfile(data.profile);
+      })
+      .catch((err) => {
+        setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to load profile' });
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
+    setMessage(null);
+    try {
+      const { email: _email, ...payload } = profile;
+      const res = await fetch('/api/settings/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to save profile');
+      if (data.profile) setProfile(data.profile);
+      setMessage({ type: 'success', text: 'Profile updated successfully' });
+    } catch (err) {
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save profile' });
+    } finally {
       setIsSaving(false);
-      alert('Profile updated successfully');
-    }, 1000);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <p className="text-gray-600">Loading profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -33,12 +88,23 @@ export default function ProfilePage() {
         <p className="text-gray-600">Manage your personal information and preferences</p>
       </div>
 
+      {message && (
+        <div
+          className={`mb-6 px-4 py-3 rounded-lg text-sm ${
+            message.type === 'success'
+              ? 'bg-green-50 border border-green-200 text-green-800'
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-        {/* Avatar Section */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center gap-6">
             <div className="w-24 h-24 bg-blue-600 text-white rounded-full flex items-center justify-center text-3xl font-bold">
-              {profile.firstName[0]}{profile.lastName[0]}
+              {(profile.firstName[0] || '?')}{(profile.lastName[0] || '')}
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Profile Photo</h3>
@@ -54,7 +120,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Personal Information */}
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -81,8 +146,8 @@ export default function ProfilePage() {
               <input
                 type="email"
                 value={profile.email}
-                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                readOnly
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
               />
             </div>
             <div>
@@ -97,7 +162,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Professional Information */}
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Professional Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -131,7 +195,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Location & Timezone */}
         <div className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Location & Timezone</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -174,11 +237,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Save Button */}
       <div className="mt-6 flex justify-end gap-3">
-        <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-          Cancel
-        </button>
         <button
           onClick={handleSave}
           disabled={isSaving}

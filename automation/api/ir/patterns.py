@@ -4,6 +4,8 @@ from ..schemas.ir import (
     AndNode,
     CoilNode,
     ContactNode,
+    FbCallNode,
+    FbParamRef,
     Network,
     NotNode,
     OrNode,
@@ -62,6 +64,11 @@ PATTERN_CATALOG: dict[PatternName, dict[str, str | list[str]]] = {
         "description": "Motor seal-in with on-delay timer before energizing the output.",
         "vendors": ["schneider", "rockwell", "siemens", "mitsubishi", "codesys", "generic"],
     },
+    "pid_loop": {
+        "title": "PID Closed Loop",
+        "description": "Analog PID control loop with enable, process variable, setpoint, and control variable.",
+        "vendors": ["schneider", "rockwell", "siemens", "codesys", "generic"],
+    },
 }
 
 
@@ -82,6 +89,7 @@ def build_pattern(
     delay_seconds: int = 3,
     cycle_seconds: int = 5,
     run_seconds: int = 5,
+    setpoint: float = 50.0,
 ) -> PlcProgram:
     if pattern == "motor_startstop":
         return _motor_startstop(project_name, vendor, model)
@@ -101,6 +109,8 @@ def build_pattern(
         return _pump_staging(project_name, vendor, model)
     if pattern == "timed_motor":
         return _timed_motor(project_name, vendor, model, run_seconds)
+    if pattern == "pid_loop":
+        return _pid_loop(project_name, vendor, model, setpoint)
     raise ValueError(f"Unknown pattern: {pattern}")
 
 
@@ -667,5 +677,91 @@ def _timed_motor(project_name: str, vendor: str, model: str, run_seconds: int) -
             description=f"Motor start/stop with {run_seconds}s on-delay timer before output",
             pattern="timed_motor",
             patternParams={"runSeconds": run_seconds},
+        ),
+    )
+
+
+def _pid_loop(project_name: str, vendor: str, model: str, setpoint: float) -> PlcProgram:
+    setpoint = max(0.0, min(1000.0, float(setpoint)))
+    vars_ = [
+        PlcVar(
+            symbol="LOOP_EN",
+            address="%I0.0",
+            kind="input",
+            dataType="BOOL",
+            comment="PID loop enable",
+        ),
+        PlcVar(
+            symbol="TEMP_PV",
+            address="%IW0",
+            kind="input",
+            dataType="REAL",
+            comment="Process variable (PV)",
+        ),
+        PlcVar(
+            symbol="TEMP_SP",
+            address="%MW0",
+            kind="memory",
+            dataType="REAL",
+            initial=str(setpoint),
+            comment="Setpoint (SP)",
+        ),
+        PlcVar(
+            symbol="VALVE_CV",
+            address="%QW0",
+            kind="output",
+            dataType="REAL",
+            comment="Control variable (CV)",
+        ),
+        PlcVar(
+            symbol="PID1",
+            address="%MW10",
+            kind="memory",
+            dataType="REAL",
+            comment="PID function block instance data",
+        ),
+        PlcVar(
+            symbol="LOOP_ACTIVE",
+            address="%M0.0",
+            kind="memory",
+            dataType="BOOL",
+            comment="Loop active indicator",
+        ),
+    ]
+    networks = [
+        Network(
+            label="Rung 1",
+            comment="PID closed-loop control",
+            logic=FbCallNode(
+                kind="PID",
+                instance="PID1",
+                enable="LOOP_EN",
+                params=[
+                    FbParamRef(name="PV", symbol="TEMP_PV", direction="in"),
+                    FbParamRef(name="SP", symbol="TEMP_SP", direction="in"),
+                    FbParamRef(name="CV", symbol="VALVE_CV", direction="out"),
+                ],
+            ),
+        ),
+        Network(
+            label="Rung 2",
+            comment="Loop active indicator",
+            logic=AndNode(
+                inputs=[
+                    ContactNode(symbol="LOOP_EN"),
+                    CoilNode(symbol="LOOP_ACTIVE"),
+                ]
+            ),
+        ),
+    ]
+    return PlcProgram(
+        name=project_name,
+        target=PlcTarget(vendor=vendor, model=model),  # type: ignore[arg-type]
+        vars=vars_,
+        pous=[Pou(name="MainProgram", networks=networks)],
+        meta=PlcMeta(
+            description=f"PID closed-loop control with setpoint {setpoint}",
+            pattern="pid_loop",
+            patternParams={"setpoint": setpoint},
         ),
     )

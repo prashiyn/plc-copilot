@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rectifyError } from '@/lib/automation-client';
+import { recordUsage } from '@/lib/usage';
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,6 +13,7 @@ export async function POST(req: NextRequest) {
       plcModel,
       errorScreenshot,
     });
+    await recordUsage('rectify_error', { platform });
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error processing rectification request:', error);

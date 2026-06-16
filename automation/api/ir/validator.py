@@ -5,8 +5,10 @@ from pydantic import ValidationError
 from ..schemas.ir import (
     AndNode,
     CoilNode,
+    CompareNode,
     ContactNode,
     CounterNode,
+    FbCallNode,
     LogicNode,
     NotNode,
     OrNode,
@@ -15,10 +17,12 @@ from ..schemas.ir import (
     TimerNode,
 )
 
-ADDRESS_PATTERN = re.compile(r"^%(?:I|Q|M|TM|T|C)[0-9]+(\.[0-9]+)?$")
+ADDRESS_PATTERN = re.compile(r"^%(?:I|Q|M|TM|T|C|IW|QW|MW)[0-9]+(\.[0-9]+)?$")
 
 TIMER_DATA_TYPES = frozenset({"TON", "TOF", "TP"})
 COUNTER_DATA_TYPES = frozenset({"CTU", "CTD", "CTUD"})
+ANALOG_DATA_TYPES = frozenset({"INT", "DINT", "REAL"})
+BOOL_DATA_TYPES = frozenset({"BOOL"})
 ESTOP_SYMBOLS = frozenset({"ESTOP_BTN", "E_STOP", "EMERGENCY_STOP"})
 MOTOR_LIKE_PATTERNS = frozenset({"motor_startstop", "estop_motor", "conveyor_startstop"})
 EXPORT_PATTERNS = frozenset(
@@ -32,6 +36,7 @@ EXPORT_PATTERNS = frozenset(
         "motor_interlock",
         "pump_staging",
         "timed_motor",
+        "pid_loop",
     }
 )
 
@@ -143,6 +148,25 @@ def validate_program(program: PlcProgram | dict) -> PlcProgram:
         if timer_var is None or timer_var.kind != "timer":
             errors.append("timed_motor pattern requires RUN_TIMER timer variable")
 
+    if model.meta.pattern == "pid_loop":
+        required = {"LOOP_EN", "TEMP_PV", "TEMP_SP", "VALVE_CV", "PID1"}
+        missing = required - defined
+        if missing:
+            errors.append(f"PID loop pattern missing symbols: {', '.join(sorted(missing))}")
+        pv_var = var_by_symbol.get("TEMP_PV")
+        sp_var = var_by_symbol.get("TEMP_SP")
+        cv_var = var_by_symbol.get("VALVE_CV")
+        for label, var in (("TEMP_PV", pv_var), ("TEMP_SP", sp_var), ("VALVE_CV", cv_var)):
+            if var is not None and var.dataType not in ANALOG_DATA_TYPES:
+                errors.append(f"PID loop {label} must be analog REAL/INT/DINT (got {var.dataType})")
+        has_pid_fb = any(
+            isinstance(network.logic, FbCallNode) and network.logic.kind == "PID"
+            for pou in model.pous
+            for network in pou.networks
+        )
+        if not has_pid_fb:
+            errors.append("pid_loop pattern requires a PID FbCallNode in ladder logic")
+
     if model.meta.requireEstop:
         errors.extend(_validate_estop_requirements(model))
 
@@ -165,6 +189,10 @@ def _validate_var_kind_datatype(var: PlcVar) -> list[str]:
         errors.append(f"Variable {var.symbol} with dataType {var.dataType} must have kind timer")
     if var.dataType in COUNTER_DATA_TYPES and var.kind != "counter":
         errors.append(f"Variable {var.symbol} with dataType {var.dataType} must have kind counter")
+    if var.kind in {"input", "output", "memory"} and var.dataType in TIMER_DATA_TYPES | COUNTER_DATA_TYPES:
+        errors.append(
+            f"Variable {var.symbol} with kind {var.kind} cannot use timer/counter dataType {var.dataType}"
+        )
     return errors
 
 
@@ -193,6 +221,56 @@ def _validate_logic_nodes(node: LogicNode, var_by_symbol: dict[str, PlcVar]) -> 
                 f"Counter node {node.symbol} counterType {node.counterType} "
                 f"does not match variable dataType {var.dataType}"
             )
+        return errors
+    if isinstance(node, CompareNode):
+        for label, symbol in (("left", node.left), ("right", node.right), ("output", node.output)):
+            var = var_by_symbol.get(symbol)
+            if var is None:
+                errors.append(f"Compare node {label} references undefined symbol: {symbol}")
+                continue
+            if label == "output":
+                if var.dataType not in BOOL_DATA_TYPES:
+                    errors.append(
+                        f"Compare node output {symbol} must be BOOL (got {var.dataType})"
+                    )
+            elif var.dataType not in ANALOG_DATA_TYPES:
+                errors.append(
+                    f"Compare node {label} {symbol} must be analog INT/DINT/REAL (got {var.dataType})"
+                )
+        left_var = var_by_symbol.get(node.left)
+        right_var = var_by_symbol.get(node.right)
+        if (
+            left_var is not None
+            and right_var is not None
+            and left_var.dataType != right_var.dataType
+        ):
+            errors.append(
+                f"Compare operands {node.left} ({left_var.dataType}) and "
+                f"{node.right} ({right_var.dataType}) must share the same dataType"
+            )
+        return errors
+    if isinstance(node, FbCallNode):
+        instance_var = var_by_symbol.get(node.instance)
+        if instance_var is None:
+            errors.append(f"FB call references undefined instance symbol: {node.instance}")
+        elif instance_var.kind != "memory":
+            errors.append(f"FB instance {node.instance} must be kind memory")
+        if node.enable:
+            enable_var = var_by_symbol.get(node.enable)
+            if enable_var is None:
+                errors.append(f"FB call enable references undefined symbol: {node.enable}")
+            elif enable_var.dataType not in BOOL_DATA_TYPES:
+                errors.append(f"FB call enable {node.enable} must be BOOL")
+        for param in node.params:
+            param_var = var_by_symbol.get(param.symbol)
+            if param_var is None:
+                errors.append(f"FB param {param.name} references undefined symbol: {param.symbol}")
+            elif node.kind == "PID" and param.name in {"PV", "SP", "CV"}:
+                if param_var.dataType not in ANALOG_DATA_TYPES:
+                    errors.append(
+                        f"PID param {param.name} ({param.symbol}) must be analog "
+                        f"(got {param_var.dataType})"
+                    )
         return errors
     if isinstance(node, AndNode):
         for child in node.inputs:
@@ -253,6 +331,13 @@ def collect_logic_symbols(node: LogicNode) -> set[str]:
         return {node.symbol}
     if isinstance(node, CounterNode):
         return {node.symbol}
+    if isinstance(node, CompareNode):
+        return {node.left, node.right, node.output}
+    if isinstance(node, FbCallNode):
+        symbols = {node.instance, *(p.symbol for p in node.params)}
+        if node.enable:
+            symbols.add(node.enable)
+        return symbols
     if isinstance(node, AndNode):
         result: set[str] = set()
         for child in node.inputs:

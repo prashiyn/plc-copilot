@@ -8,6 +8,7 @@ const BFF_AI_ROUTES = [
   'app/api/ai-generate-application/route.ts',
   'app/api/ai-library-search/route.ts',
   'app/api/ai-optimize-code/route.ts',
+  'app/api/hmi-generate/route.ts',
 ];
 
 describe('BFF AI routes are prompt-free', () => {
@@ -30,5 +31,6 @@ describe('automation-client AI feature endpoints', () => {
     assert.equal(typeof client.generateApplication, 'function');
     assert.equal(typeof client.librarySearch, 'function');
     assert.equal(typeof client.optimizeCode, 'function');
+    assert.equal(typeof client.generateHmi, 'function');
   });
 });

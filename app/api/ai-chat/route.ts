@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AutomationError, copilotChat, isAutomationConfigured } from '@/lib/automation-client';
+import { recordUsage } from '@/lib/usage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +16,8 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await copilotChat({ messages, mode, uploadedImages });
+
+    await recordUsage('ai_chat', { mode });
 
     return NextResponse.json({
       success: true,

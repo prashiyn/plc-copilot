@@ -40,13 +40,13 @@ def _invalid_motor_ir() -> dict:
 
 class TestPatternMatch:
     def test_detects_motor_from_description(self):
-        pattern, name, _lights, _delay, _cycle, _run = detect_pattern_from_description(
+        pattern, name, *_rest = detect_pattern_from_description(
             "Motor start stop circuit with START and STOP buttons."
         )
         assert pattern == "motor_startstop"
 
     def test_detects_sequential_lights(self):
-        pattern, _name, num_lights, delay, _cycle, _run = detect_pattern_from_description(
+        pattern, _name, num_lights, delay, *_rest = detect_pattern_from_description(
             "3 sequential lights with 3-second delays."
         )
         assert pattern == "sequential_lights"
@@ -54,29 +54,36 @@ class TestPatternMatch:
         assert delay == 3
 
     def test_detects_estop_motor(self):
-        pattern, _name, _lights, _delay, _cycle, _run = detect_pattern_from_description(
+        pattern, _name, *_rest = detect_pattern_from_description(
             "Motor with emergency stop E-stop button and seal-in."
         )
         assert pattern == "estop_motor"
 
     def test_detects_tank_level(self):
-        pattern, _name, _lights, _delay, _cycle, _run = detect_pattern_from_description(
+        pattern, _name, *_rest = detect_pattern_from_description(
             "Tank level control with fill pump and high/low sensors."
         )
         assert pattern == "tank_level"
 
     def test_detects_conveyor(self):
-        pattern, _name, _lights, _delay, _cycle, _run = detect_pattern_from_description(
+        pattern, _name, *_rest = detect_pattern_from_description(
             "Conveyor belt start stop with run signal."
         )
         assert pattern == "conveyor_startstop"
 
     def test_detects_traffic_lights(self):
-        pattern, _name, _lights, _delay, cycle, _run = detect_pattern_from_description(
+        pattern, _name, _lights, _delay, cycle, *_rest = detect_pattern_from_description(
             "Traffic light sequence with 4 second cycle."
         )
         assert pattern == "traffic_lights"
         assert cycle == 4
+
+    def test_detects_pid_loop(self):
+        pattern, _name, *_rest, setpoint = detect_pattern_from_description(
+            "PID closed loop with setpoint 88 for temperature control"
+        )
+        assert pattern == "pid_loop"
+        assert setpoint == 88.0
 
     def test_detects_motor_interlock(self):
         pattern, _name, *_rest = detect_pattern_from_description(

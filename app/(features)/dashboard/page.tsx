@@ -12,6 +12,20 @@ interface Stats {
   usageEvents: number;
 }
 
+interface UsageSummary {
+  period: { label: string };
+  plan: { name: string; nextBillingDate: string };
+  limits: { programsPerMonth: number; aiRequestsPerMonth: number; storageGb: number };
+  used: { programs: number; aiRequests: number; storageGb: number; events: number };
+  percentages: { programs: number; aiRequests: number; storageGb: number };
+  overLimit: {
+    programs: boolean;
+    aiRequests: boolean;
+    storageGb: boolean;
+    teamSeats: boolean;
+  };
+}
+
 interface RecentProject {
   id: string;
   name: string;
@@ -21,15 +35,40 @@ interface RecentProject {
   updatedAt: string | null;
 }
 
+function OverLimitBanner({ usage }: { usage: UsageSummary }) {
+  const flags = usage.overLimit;
+  const messages: string[] = [];
+  if (flags.programs) messages.push('PLC program generation');
+  if (flags.aiRequests) messages.push('AI requests');
+  if (flags.storageGb) messages.push('storage');
+  if (flags.teamSeats) messages.push('team seats');
+  if (messages.length === 0) return null;
+
+  return (
+    <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      <p className="font-semibold">Usage above plan limits</p>
+      <p className="mt-1">
+        You have exceeded your {usage.plan.name} plan limit for {messages.join(', ')}. Actions
+        continue to work; consider upgrading on the billing page.
+      </p>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { data: session } = useSession();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [usage, setUsage] = useState<UsageSummary | null>(null);
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
 
   useEffect(() => {
     fetch('/api/dashboard/stats')
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setStats(d.stats))
+      .catch(() => {});
+    fetch('/api/usage')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setUsage(d))
       .catch(() => {});
     fetch('/api/projects')
       .then((r) => (r.ok ? r.json() : null))
@@ -41,22 +80,22 @@ export default function DashboardPage() {
     {
       label: 'Total Projects',
       value: stats?.totalProjects ?? 0,
-      iconPath: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+      iconPath: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     },
     {
       label: 'Active Projects',
       value: stats?.activeProjects ?? 0,
-      iconPath: 'M13 10V3L4 14h7v7l9-11h-7z'
+      iconPath: 'M13 10V3L4 14h7v7l9-11h-7z',
     },
     {
       label: 'Completed',
       value: stats?.completedProjects ?? 0,
-      iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+      iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     {
       label: 'Programs Generated',
       value: stats?.programsGenerated ?? 0,
-      iconPath: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'
+      iconPath: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4',
     },
   ];
 
@@ -65,42 +104,46 @@ export default function DashboardPage() {
       title: 'Generate PLC Program',
       link: '/generator',
       iconPath: 'M13 10V3L4 14h7v7l9-11h-7z',
-      color: 'blue'
+      color: 'blue',
     },
     {
       title: 'Find Right PLC',
       link: '/plc-selector',
       iconPath: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
-      color: 'green'
+      color: 'green',
     },
     {
       title: 'Get Recommendation',
       link: '/solutions/recommend',
       iconPath: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z',
-      color: 'purple'
+      color: 'purple',
     },
     {
       title: 'Chat with Engineer',
       link: '/engineer-chat',
       iconPath: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
-      color: 'orange'
+      color: 'orange',
     },
   ];
+
+  const nextBilling = usage?.plan.nextBillingDate
+    ? new Date(usage.plan.nextBillingDate).toLocaleDateString()
+    : '—';
 
   return (
     <div className="py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             Welcome back, {session?.user?.name || 'User'}!
           </h1>
           <p className="text-gray-600 mt-2">
-            Here's what's happening with your automation projects today.
+            Here&apos;s what&apos;s happening with your automation projects today.
           </p>
         </div>
 
-        {/* Stats Grid */}
+        {usage && <OverLimitBanner usage={usage} />}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {statCards.map((stat, index) => (
             <div key={index} className="bg-white rounded-lg shadow-md p-6">
@@ -115,7 +158,6 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Quick Actions */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -135,7 +177,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Projects */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Recent Projects</h2>
@@ -165,11 +206,13 @@ export default function DashboardPage() {
                           {project.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : ''}
                         </p>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        project.status === 'completed'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          project.status === 'completed'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}
+                      >
                         {project.status === 'completed' ? 'Completed' : 'In Progress'}
                       </span>
                     </div>
@@ -179,7 +222,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Usage Summary */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Usage Summary</h2>
@@ -191,36 +233,55 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Programs Generated</span>
-                  <span className="text-sm font-semibold text-gray-900">{stats?.programsGenerated ?? 0} / 50</span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {usage?.used.programs ?? stats?.programsGenerated ?? 0} /{' '}
+                    {usage?.limits.programsPerMonth ?? '—'}
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-blue-600 h-2 rounded-full"
-                    style={{ width: `${Math.min(((stats?.programsGenerated ?? 0) / 50) * 100, 100)}%` }}
-                  ></div>
+                    style={{ width: `${usage?.percentages.programs ?? 0}%` }}
+                  />
                 </div>
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">API Calls</span>
-                  <span className="text-sm font-semibold text-gray-900">342 / 1000</span>
+                  <span className="text-sm font-medium text-gray-700">AI Requests</span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {usage?.used.aiRequests ?? 0} / {usage?.limits.aiRequestsPerMonth ?? '—'}
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: '34%' }}></div>
+                  <div
+                    className="bg-green-600 h-2 rounded-full"
+                    style={{ width: `${usage?.percentages.aiRequests ?? 0}%` }}
+                  />
                 </div>
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Storage Used</span>
-                  <span className="text-sm font-semibold text-gray-900">2.4 GB / 10 GB</span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {usage?.used.storageGb ?? 0} GB / {usage?.limits.storageGb ?? '—'} GB
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-purple-600 h-2 rounded-full" style={{ width: '24%' }}></div>
+                  <div
+                    className="bg-purple-600 h-2 rounded-full"
+                    style={{ width: `${usage?.percentages.storageGb ?? 0}%` }}
+                  />
                 </div>
               </div>
+              <p className="text-xs text-gray-500">
+                Billing period: {usage?.period.label ?? '—'} · {usage?.used.events ?? stats?.usageEvents ?? 0}{' '}
+                total events logged
+              </p>
               <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm font-semibold text-blue-900 mb-2">Professional Plan</p>
-                <p className="text-xs text-blue-700 mb-3">Next billing: January 20, 2026</p>
+                <p className="text-sm font-semibold text-blue-900 mb-2">
+                  {usage?.plan.name ?? 'Free'} Plan
+                </p>
+                <p className="text-xs text-blue-700 mb-3">Next billing: {nextBilling}</p>
                 <Link
                   href="/billing/upgrade"
                   className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
@@ -232,7 +293,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Learning Resources */}
         <div className="mt-8 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 border border-blue-100">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Learning Resources</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

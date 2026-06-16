@@ -2,11 +2,20 @@ import json
 
 import pytest
 
-from api.tests.golden_utils import IR_FIXTURES_DIR, IR_FIXTURE_CASES, build_ir_program
+from api.tests.golden_utils import (
+    IR_FIXTURES_DIR,
+    IR_FIXTURE_CASES,
+    PATTERN_PID_EXPORT_CASES,
+    build_ir_program,
+)
+
+ALL_IR_FIXTURE_CASES = IR_FIXTURE_CASES + [
+    case for case in PATTERN_PID_EXPORT_CASES if case["id"].endswith("_ir")
+]
 
 
 class TestGoldenIrFixtures:
-    @pytest.mark.parametrize("case", IR_FIXTURE_CASES, ids=lambda case: case["id"])
+    @pytest.mark.parametrize("case", ALL_IR_FIXTURE_CASES, ids=lambda case: case["id"])
     def test_ir_fixture_matches_build_pattern(self, case):
         fixture_path = IR_FIXTURES_DIR / f"{case['id']}.json"
         assert fixture_path.is_file(), f"Missing golden IR fixture: {fixture_path}"

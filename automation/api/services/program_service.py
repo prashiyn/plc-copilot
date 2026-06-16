@@ -32,6 +32,7 @@ class ProgramService:
                 delay_seconds=source.get("delaySeconds", 3),
                 cycle_seconds=source.get("cycleSeconds", 5),
                 run_seconds=source.get("runSeconds", 5),
+                setpoint=float(source.get("setpoint", 50.0)),
             )
             result = self._ir.serialize(ir_payload["program"])
             result["metadata"]["ir"] = ir_payload["program"]
@@ -89,6 +90,7 @@ class ProgramService:
             delay_seconds=int(request.get("delaySeconds", 3)),
             cycle_seconds=int(request.get("cycleSeconds", 5)),
             run_seconds=int(request.get("runSeconds", 5)),
+            setpoint=float(request.get("setpoint", 50.0)),
         )
         program = dict(ir_payload["program"])
         program["target"] = {"vendor": vendor, "model": controller}

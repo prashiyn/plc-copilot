@@ -27,6 +27,7 @@ class IrPatternRequest(BaseModel):
     delaySeconds: int = Field(default=3, ge=1, le=60)
     cycleSeconds: int = Field(default=5, ge=1, le=60)
     runSeconds: int = Field(default=5, ge=1, le=60)
+    setpoint: float = Field(default=50.0, ge=0.0, le=1000.0)
 
 
 class IrGenerateFromDescriptionRequest(BaseModel):
@@ -59,6 +60,7 @@ async def get_pattern_ir(pattern_name: PatternName, body: IrPatternRequest):
         delay_seconds=body.delaySeconds,
         cycle_seconds=body.cycleSeconds,
         run_seconds=body.runSeconds,
+        setpoint=body.setpoint,
     )
 
 
