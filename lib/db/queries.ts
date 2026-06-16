@@ -13,6 +13,8 @@ import {
   organizations,
   users,
   fileOperations,
+  errorRectifications,
+  plcRecommendations,
   projectNotes,
   projectChats,
   chatSessions,
@@ -340,11 +342,17 @@ export interface ProgramInput {
 }
 
 export async function createProgram(user: SessionUser, input: ProgramInput) {
+  let scopedProjectId: string | null = null;
+  if (input.projectId) {
+    const project = await getProject(user, input.projectId);
+    if (!project) throw new Error('Invalid projectId');
+    scopedProjectId = project.id;
+  }
   const [row] = await db
     .insert(generatedPrograms)
     .values({
       userId: user.id,
-      projectId: input.projectId ?? null,
+      projectId: scopedProjectId,
       programCode: input.programCode,
       programFormat: input.programFormat ?? null,
       fileName: input.fileName ?? null,
@@ -365,6 +373,126 @@ export async function persistGeneratedProgramIfAuthed(input: ProgramInput): Prom
   } catch (err) {
     console.warn('Could not persist generated program:', err);
   }
+}
+
+export interface FileOperationInput {
+  projectId?: string | null;
+  operationType: string;
+  fileName?: string | null;
+  filePath?: string | null;
+  fileSize?: number | null;
+  mimeType?: string | null;
+  storageUrl?: string | null;
+  metadata?: unknown;
+}
+
+export async function createFileOperation(user: SessionUser, input: FileOperationInput) {
+  let scopedProjectId: string | null = null;
+  if (input.projectId) {
+    const project = await getProject(user, input.projectId);
+    if (!project) throw new Error('Invalid projectId');
+    scopedProjectId = project.id;
+  }
+  const [row] = await db
+    .insert(fileOperations)
+    .values({
+      userId: user.id,
+      projectId: scopedProjectId,
+      operationType: input.operationType,
+      fileName: input.fileName ?? null,
+      filePath: input.filePath ?? null,
+      fileSize: input.fileSize ?? null,
+      mimeType: input.mimeType ?? null,
+      storageUrl: input.storageUrl ?? null,
+      metadata: input.metadata ?? null,
+    })
+    .returning();
+  return row;
+}
+
+export async function getProjectFile(user: SessionUser, projectId: string, fileId: string) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  const [row] = await db
+    .select()
+    .from(fileOperations)
+    .where(and(eq(fileOperations.id, fileId), eq(fileOperations.projectId, projectId)))
+    .limit(1);
+  return row ?? null;
+}
+
+export async function deleteProjectFile(user: SessionUser, projectId: string, fileId: string) {
+  const file = await getProjectFile(user, projectId, fileId);
+  if (!file || file.operationType !== 'user_upload') return null;
+  const [row] = await db
+    .delete(fileOperations)
+    .where(and(eq(fileOperations.id, fileId), eq(fileOperations.projectId, projectId)))
+    .returning();
+  return row ?? null;
+}
+
+export interface ErrorRectificationInput {
+  projectId?: string | null;
+  originalCode?: string | null;
+  errorMessage?: string | null;
+  errorScreenshotUrl?: string | null;
+  correctedCode?: string | null;
+  correctionApplied?: boolean;
+  confidenceScore?: number | null;
+  metadata?: unknown;
+}
+
+export async function createErrorRectification(user: SessionUser, input: ErrorRectificationInput) {
+  let scopedProjectId: string | null = null;
+  if (input.projectId) {
+    const project = await getProject(user, input.projectId);
+    if (!project) throw new Error('Invalid projectId');
+    scopedProjectId = project.id;
+  }
+  const [row] = await db
+    .insert(errorRectifications)
+    .values({
+      userId: user.id,
+      projectId: scopedProjectId,
+      originalCode: input.originalCode ?? null,
+      errorMessage: input.errorMessage ?? null,
+      errorScreenshotUrl: input.errorScreenshotUrl ?? null,
+      correctedCode: input.correctedCode ?? null,
+      correctionApplied: input.correctionApplied ?? false,
+      confidenceScore: input.confidenceScore ?? null,
+      metadata: input.metadata ?? null,
+    })
+    .returning();
+  return row;
+}
+
+export interface PlcRecommendationInput {
+  projectId?: string | null;
+  requirements: unknown;
+  recommendedPlcs: unknown;
+  selectedPlc?: unknown;
+  criteria?: string | null;
+}
+
+export async function createPlcRecommendation(user: SessionUser, input: PlcRecommendationInput) {
+  let scopedProjectId: string | null = null;
+  if (input.projectId) {
+    const project = await getProject(user, input.projectId);
+    if (!project) throw new Error('Invalid projectId');
+    scopedProjectId = project.id;
+  }
+  const [row] = await db
+    .insert(plcRecommendations)
+    .values({
+      userId: user.id,
+      projectId: scopedProjectId,
+      requirements: input.requirements,
+      recommendedPlcs: input.recommendedPlcs,
+      selectedPlc: input.selectedPlc ?? null,
+      criteria: input.criteria ?? null,
+    })
+    .returning();
+  return row;
 }
 
 export async function logUsage(

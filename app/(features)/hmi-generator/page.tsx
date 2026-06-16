@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { extractTagsFromProgramIr, type HmiTag } from '@/lib/hmi-ir-tags';
+import ProjectSelector from '@/lib/components/ProjectSelector';
 
 interface HmiGenerateResponse {
   scriptFileName: string;
@@ -55,6 +56,7 @@ export default function HMIGenerator() {
   const [programs, setPrograms] = useState<SavedProgram[]>([]);
   const [selectedProgramId, setSelectedProgramId] = useState('');
   const [prefillTags, setPrefillTags] = useState<HmiTag[]>([]);
+  const [projectId, setProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session) return;
@@ -89,6 +91,7 @@ export default function HMIGenerator() {
           description,
           projectName,
           tags: prefillTags,
+          projectId,
         }),
       });
 
@@ -163,6 +166,7 @@ export default function HMIGenerator() {
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
                 />
               </div>
+              <ProjectSelector value={projectId} onChange={setProjectId} />
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">HMI/SCADA Platform</label>

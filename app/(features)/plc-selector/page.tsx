@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import PLCCascadingSelector from '@/app/components/PLCCascadingSelector';
 import type { PLCManufacturer, PLCSeries, PLCModel } from '@/lib/plc-models-database';
+import ProjectSelector from '@/lib/components/ProjectSelector';
 
 interface ProjectRequirements {
   applicationName: string;
@@ -64,6 +65,7 @@ export default function PLCSelector() {
   const [recommendations, setRecommendations] = useState<RecommendedPLC[]>([]);
   const [recommendationSource, setRecommendationSource] = useState<'ai' | 'fallback' | null>(null);
   const [loading, setLoading] = useState(false);
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [selectedPLC, setSelectedPLC] = useState<{
     manufacturer: PLCManufacturer | null;
     series: PLCSeries | null;
@@ -125,7 +127,7 @@ export default function PLCSelector() {
       const response = await fetch('/api/recommend-plc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requirements),
+        body: JSON.stringify({ ...requirements, projectId }),
       });
 
       const data = await response.json();
@@ -167,6 +169,9 @@ export default function PLCSelector() {
 
         {/* Mode Selector */}
         <div className="mb-8 bg-white rounded-lg shadow-md p-6">
+          <div className="mb-6">
+            <ProjectSelector value={projectId} onChange={setProjectId} />
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => setMode('browse')}

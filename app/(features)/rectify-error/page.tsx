@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { AlertTriangle, CheckCircle, Wrench } from 'lucide-react';
+import ProjectSelector from '@/lib/components/ProjectSelector';
 
 interface RectifyAnalysis {
   errorType: string;
@@ -40,6 +41,7 @@ export default function RectifyErrorPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RectifyResponse | null>(null);
+  const [projectId, setProjectId] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +58,7 @@ export default function RectifyErrorPage() {
       const response = await fetch('/api/rectify-error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ programCode, platform, errorMessage, plcModel }),
+        body: JSON.stringify({ programCode, platform, errorMessage, plcModel, projectId }),
       });
 
       const data = await response.json();
@@ -87,6 +89,9 @@ export default function RectifyErrorPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <ProjectSelector value={projectId} onChange={setProjectId} />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Platform

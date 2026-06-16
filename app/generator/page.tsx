@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import PLCCascadingSelector from '@/app/components/PLCCascadingSelector';
 import type { PLCManufacturer, PLCSeries, PLCModel } from '@/lib/plc-models-database';
+import ProjectSelector from '@/lib/components/ProjectSelector';
 
 import type { PlcDownloadParams } from '@/lib/plc-generation';
 
@@ -33,6 +34,7 @@ export default function GeneratorPage() {
     limitations?: string[];
   } | null>(null);
   const [defaultManufacturerId, setDefaultManufacturerId] = useState<string | undefined>();
+  const [projectId, setProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -77,6 +79,7 @@ export default function GeneratorPage() {
       formData.append('modelName', selectedPLC.model.name);
       formData.append('useAiSynthesis', useAiSynthesis ? 'true' : 'false');
       formData.append('synthesisMode', synthesisMode);
+      if (projectId) formData.append('projectId', projectId);
       if (setpoint.trim()) {
         formData.append('setpoint', setpoint.trim());
       }
@@ -235,6 +238,9 @@ Or: 3 sequential lights with 3-second delays. START button to begin, STOP button
                 onSelectionChange={setSelectedPLC}
                 defaultManufacturerId={defaultManufacturerId}
               />
+              <div className="mt-4">
+                <ProjectSelector value={projectId} onChange={setProjectId} />
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6">

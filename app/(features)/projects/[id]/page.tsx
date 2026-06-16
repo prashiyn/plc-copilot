@@ -425,6 +425,9 @@ function HmiTab({ projectId }: { projectId: string }) {
 function FilesTab({ projectId }: { projectId: string }) {
   const [files, setFiles] = useState<ProjectFile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -436,9 +439,57 @@ function FilesTab({ projectId }: { projectId: string }) {
 
   useEffect(() => { load(); }, [load]);
 
+  const uploadFiles = async (fileList: FileList | File[]) => {
+    const items = Array.from(fileList);
+    if (items.length === 0) return;
+
+    setUploading(true);
+    setError('');
+
+    for (const file of items) {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch(`/api/projects/${projectId}/files`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || `Failed to upload ${file.name}`);
+        break;
+      }
+    }
+
+    setUploading(false);
+    load();
+  };
+
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) uploadFiles(e.target.files);
+    e.target.value = '';
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files.length > 0) uploadFiles(e.dataTransfer.files);
+  };
+
+  const deleteFile = async (fileId: string, fileName: string | null) => {
+    if (!confirm(`Delete "${fileName ?? 'this file'}"?`)) return;
+    setError('');
+    const res = await fetch(`/api/projects/${projectId}/files/${fileId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || 'Failed to delete file.');
+      return;
+    }
+    load();
+  };
+
   const fileIcon = (mimeType: string | null) => {
     if (!mimeType) return '📄';
-    if (mimeType.startsWith('image/')) return '🖼️';
+    if (mimeType.startsWith('image/')) return null;
     if (mimeType === 'application/pdf') return '📑';
     if (mimeType.includes('zip')) return '🗜️';
     if (mimeType.includes('csv') || mimeType.includes('spreadsheet')) return '📊';
@@ -449,37 +500,86 @@ function FilesTab({ projectId }: { projectId: string }) {
 
   return (
     <div>
-      <p className="text-sm text-gray-500 mb-4">
-        File uploads will be available once Phase C (storage) is complete.
-        Use the <Link href="/hmi-generator" className="text-blue-600 hover:underline">HMI generator</Link> to
-        generate and save HMI artefacts to this project.
-      </p>
-      {files.length === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl text-gray-400">
-          <p className="text-4xl mb-3">📁</p>
-          <p>No files attached to this project yet.</p>
-          <p className="text-sm mt-1">File upload coming in Phase C.</p>
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+        className={`mb-6 border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+          dragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50'
+        }`}
+      >
+        <input
+          type="file"
+          id={`project-file-upload-${projectId}`}
+          className="hidden"
+          multiple
+          accept="image/*,.pdf,.csv,.xml,.json,.zip"
+          onChange={onInputChange}
+        />
+        <p className="text-4xl mb-3">📁</p>
+        <p className="text-gray-700 font-medium mb-1">
+          {uploading ? 'Uploading…' : 'Drag and drop files here'}
+        </p>
+        <p className="text-sm text-gray-500 mb-4">
+          Images, PDF, CSV, XML, JSON, or ZIP — up to 50 MB each
+        </p>
+        <label
+          htmlFor={`project-file-upload-${projectId}`}
+          className={`inline-block px-4 py-2 rounded-lg text-sm font-medium cursor-pointer ${
+            uploading
+              ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+        >
+          Browse files
+        </label>
+      </div>
+
+      {error ? (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
         </div>
+      ) : null}
+
+      {files.length === 0 ? (
+        <p className="text-center text-gray-500 py-4">No files attached to this project yet.</p>
       ) : (
         <div className="space-y-3">
           {files.map((f) => (
             <div key={f.id} className="border border-gray-200 rounded-lg p-4 flex items-start justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <span className="text-2xl">{fileIcon(f.mimeType)}</span>
+                {f.mimeType?.startsWith('image/') && f.storageUrl ? (
+                  <img
+                    src={f.storageUrl}
+                    alt={f.fileName ?? 'Uploaded image'}
+                    className="w-14 h-14 rounded object-cover border border-gray-200 shrink-0"
+                  />
+                ) : (
+                  <span className="text-2xl shrink-0">{fileIcon(f.mimeType)}</span>
+                )}
                 <div className="min-w-0">
                   <p className="font-medium text-gray-900 truncate">{f.fileName ?? 'File'}</p>
                   <p className="text-sm text-gray-500">{fmtSize(f.fileSize)} · {fmtDate(f.createdAt)}</p>
                 </div>
               </div>
-              {f.storageUrl && (
-                <a
-                  href={f.storageUrl}
-                  download
-                  className="shrink-0 px-3 py-1.5 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+              <div className="flex gap-2 shrink-0">
+                {f.storageUrl && (
+                  <a
+                    href={f.storageUrl}
+                    download
+                    className="px-3 py-1.5 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Download
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={() => deleteFile(f.id, f.fileName)}
+                  className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
                 >
-                  Download
-                </a>
-              )}
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

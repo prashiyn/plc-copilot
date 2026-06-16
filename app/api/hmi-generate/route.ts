@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AutomationError, generateHmi, isAutomationConfigured } from '@/lib/automation-client';
+import { createFileOperation, getProject, requireUser } from '@/lib/db/queries';
 import { recordUsage } from '@/lib/usage';
 
 export async function POST(request: NextRequest) {
@@ -11,6 +12,7 @@ export async function POST(request: NextRequest) {
       description,
       projectName,
       tags = [],
+      projectId = null,
     } = body;
 
     if (!description || typeof description !== 'string') {
@@ -24,6 +26,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Automation service not configured' }, { status: 500 });
     }
 
+    const user = await requireUser();
+    const scopedProjectId =
+      typeof projectId === 'string' && projectId.trim() ? projectId.trim() : null;
+    if (user && scopedProjectId) {
+      const project = await getProject(user, scopedProjectId);
+      if (!project) {
+        return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+      }
+    }
+
     const result = await generateHmi({
       vendor,
       screenType,
@@ -33,6 +45,21 @@ export async function POST(request: NextRequest) {
     });
 
     await recordUsage('hmi_generate', { vendor, screenType });
+    if (user) {
+      await createFileOperation(user, {
+        projectId: scopedProjectId,
+        operationType: 'hmi_generate',
+        fileName: result.zipFileName,
+        fileSize: Buffer.byteLength(result.contentBase64, 'base64'),
+        mimeType: result.mimeType,
+        metadata: {
+          vendor,
+          screenType,
+          projectName,
+          scriptFileName: result.scriptFileName,
+        },
+      });
+    }
 
     const download = request.nextUrl.searchParams.get('download') === 'true';
     if (download) {

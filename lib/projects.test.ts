@@ -241,3 +241,111 @@ describe('Phase A GET /api/projects/[id]', () => {
     assert.match(src, /export async function DELETE/);
   });
 });
+
+describe('Phase B project selector wiring', () => {
+  it('ProjectSelector component exists', async () => {
+    await access('lib/components/ProjectSelector.tsx');
+  });
+
+  it('all Phase B pages import ProjectSelector', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const pages = [
+      'app/generator/page.tsx',
+      'app/(features)/hmi-generator/page.tsx',
+      'app/(features)/rectify-error/page.tsx',
+      'app/(features)/plc-selector/page.tsx',
+    ];
+    for (const pagePath of pages) {
+      const src = await readFile(pagePath, 'utf8');
+      assert.match(src, /ProjectSelector/, `${pagePath} missing ProjectSelector`);
+    }
+  });
+});
+
+describe('Phase B API + DB persistence wiring', () => {
+  it('generate-plc route reads projectId from FormData', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/generate-plc/route.ts', 'utf8');
+    assert.match(src, /formData\.get\('projectId'\)/);
+    assert.match(src, /persistGeneratedProgramIfAuthed\(\{\s*projectId/m);
+  });
+
+  it('hmi route accepts projectId and writes file operation row', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/hmi-generate/route.ts', 'utf8');
+    assert.match(src, /projectId/);
+    assert.match(src, /createFileOperation/);
+    assert.match(src, /operationType: 'hmi_generate'/);
+  });
+
+  it('rectify route accepts projectId and writes rectification row', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/rectify-error/route.ts', 'utf8');
+    assert.match(src, /projectId/);
+    assert.match(src, /createErrorRectification/);
+  });
+
+  it('recommend route accepts projectId and writes recommendation row', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/recommend-plc/route.ts', 'utf8');
+    assert.match(src, /projectId/);
+    assert.match(src, /createPlcRecommendation/);
+  });
+
+  it('queries exports createFileOperation/createErrorRectification/createPlcRecommendation', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('lib/db/queries.ts', 'utf8');
+    assert.match(src, /export async function createFileOperation/);
+    assert.match(src, /export async function createErrorRectification/);
+    assert.match(src, /export async function createPlcRecommendation/);
+  });
+});
+
+describe('Phase C file uploads', () => {
+  it('storage module exists with writeFile and deleteFile', async () => {
+    await access('lib/storage.ts');
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('lib/storage.ts', 'utf8');
+    assert.match(src, /export async function writeFile/);
+    assert.match(src, /export async function deleteFile/);
+    assert.match(src, /MAX_UPLOAD_BYTES/);
+    assert.match(src, /isAllowedUpload/);
+  });
+
+  it('files route handles GET and POST', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/projects/[id]/files/route.ts', 'utf8');
+    assert.match(src, /export async function GET/);
+    assert.match(src, /export async function POST/);
+    assert.match(src, /operationType: 'user_upload'/);
+    assert.match(src, /MAX_UPLOAD_BYTES/);
+    assert.match(src, /isAllowedUpload/);
+  });
+
+  it('files/[fileId] route handles DELETE', async () => {
+    await access('app/api/projects/[id]/files/[fileId]/route.ts');
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/projects/[id]/files/[fileId]/route.ts', 'utf8');
+    assert.match(src, /export async function DELETE/);
+    assert.match(src, /deleteProjectFile/);
+    assert.match(src, /deleteFile/);
+  });
+
+  it('queries exports getProjectFile and deleteProjectFile', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('lib/db/queries.ts', 'utf8');
+    assert.match(src, /export async function getProjectFile/);
+    assert.match(src, /export async function deleteProjectFile/);
+    assert.match(src, /operationType !== 'user_upload'/);
+  });
+
+  it('workspace Files tab has upload drop zone and delete', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/(features)/projects/[id]/page.tsx', 'utf8');
+    assert.match(src, /onDrop/);
+    assert.match(src, /method: 'POST'/);
+    assert.match(src, /method: 'DELETE'/);
+    assert.match(src, /confirm\(/);
+    assert.doesNotMatch(src, /Phase C/);
+  });
+});

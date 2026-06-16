@@ -10,6 +10,9 @@ export async function POST(request: NextRequest) {
     const image = formData.get('image') as File | null;
     const logic = formData.get('logic') as string;
     const modelId = formData.get('modelId') as string;
+    const projectIdRaw = formData.get('projectId');
+    const projectId =
+      typeof projectIdRaw === 'string' && projectIdRaw.trim().length > 0 ? projectIdRaw : null;
 
     if (!logic || !modelId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -44,6 +47,7 @@ export async function POST(request: NextRequest) {
     });
 
     await persistGeneratedProgramIfAuthed({
+      projectId,
       programCode: generated.preview,
       programFormat: generated.extension,
       fileName: generated.fileName,

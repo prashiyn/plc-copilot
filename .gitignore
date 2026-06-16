@@ -103,3 +103,6 @@ convid.md
 *.pdf
 *.zip
 /ilovepdf_split-range/
+
+# Local project file uploads (Phase C)
+/public/uploads/
