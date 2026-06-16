@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { aiJson, AutomationError, isAutomationConfigured } from '@/lib/automation-client';
-
-const SYSTEM_PROMPT = `You are an expert PLC code optimization specialist. Respond with JSON only.`;
+import { AutomationError, isAutomationConfigured, optimizeCode } from '@/lib/automation-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,19 +14,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Automation service not configured' }, { status: 500 });
     }
 
-    const prompt = `Analyze and optimize this ${platform} PLC program. Goals: ${optimizationGoals.join(', ')}.
-${currentIssues ? `Known issues: ${currentIssues}` : ''}
+    const { analysis } = await optimizeCode({
+      code,
+      platform,
+      optimizationGoals,
+      currentIssues,
+    });
 
-Code:
-\`\`\`
-${code}
-\`\`\`
-
-Return JSON with analysis_summary, issues_found, optimizations, refactored_code, summary.`;
-
-    const analysisData = await aiJson({ system: SYSTEM_PROMPT, prompt, maxTokens: 8192 });
-
-    return NextResponse.json({ success: true, analysis: analysisData });
+    return NextResponse.json({ success: true, analysis });
   } catch (error) {
     console.error('Code optimization error:', error);
     if (error instanceof AutomationError) {

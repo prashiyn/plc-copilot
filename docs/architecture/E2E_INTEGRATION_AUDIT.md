@@ -212,7 +212,7 @@ Removed (2026-06-16): orphan routes that duplicated canonical BFF handlers — n
 | 2 | **Dedicated sketch flow** — `/api/generate-from-sketch` | ✅ `/sketch-generator` |
 | 3 | **Solution compare** — catalog-backed | ✅ `/api/plc-catalog` + compare page |
 | 4 | **Consolidate duplicate BFF routes** | ✅ removed orphans (§6) |
-| 5 | **Move AI prompts to Python** | Deferred (optional) |
+| 5 | **Move AI prompts to Python** | ✅ `api/services/ai_prompts.py` + dedicated `/v1/ai/*` routes |
 | 6 | **Dashboard usage** | Deferred (billing phase) |
 
 ---

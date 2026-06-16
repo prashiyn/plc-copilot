@@ -5,6 +5,7 @@ from typing import Any
 from redis.asyncio import Redis
 
 from ..config import get_settings
+from ..services.ai_copilot_service import AiCopilotService
 from ..services.claude_ir_service import ClaudeIrService
 from ..services.claude_service import ClaudeService
 from ..services.ir_service import IrService
@@ -85,6 +86,57 @@ async def _dispatch(job_type: str, payload: dict[str, Any]) -> Any:
     if job_type == "ai.rectify.error":
         service = RecommendService()
         return service.rectify_error(payload)
+
+    if job_type == "ai.copilot.chat":
+        service = AiCopilotService()
+        return service.copilot_chat(
+            messages=payload["messages"],
+            mode=payload.get("mode", "generate"),
+            uploaded_images=payload.get("uploadedImages"),
+            max_tokens=payload.get("maxTokens", 4096),
+        )
+
+    if job_type == "ai.engineer.chat":
+        service = AiCopilotService()
+        return service.engineer_chat(
+            messages=payload["messages"],
+            engineer_type=payload.get("engineerType", "general-expert"),
+            conversation_context=payload.get("conversationContext"),
+            max_tokens=payload.get("maxTokens", 4096),
+        )
+
+    if job_type == "ai.application.generate":
+        service = AiCopilotService()
+        return service.generate_application(
+            requirements=payload["requirements"],
+            application_type=payload.get("applicationType"),
+            platform=payload.get("platform", "schneider"),
+            controller=payload.get("controller"),
+            io_count=payload.get("ioCount"),
+            safety_level=payload.get("safetyLevel", "standard"),
+            max_tokens=payload.get("maxTokens", 8192),
+        )
+
+    if job_type == "ai.library.search":
+        service = AiCopilotService()
+        return service.library_search(
+            query=payload["query"],
+            platform=payload.get("platform", "schneider"),
+            application_type=payload.get("applicationType"),
+            requirements=payload.get("requirements"),
+            generate_custom=payload.get("generateCustom", False),
+            max_tokens=payload.get("maxTokens", 6144),
+        )
+
+    if job_type == "ai.code.optimize":
+        service = AiCopilotService()
+        return service.optimize_code(
+            code=payload["code"],
+            platform=payload.get("platform", "schneider"),
+            optimization_goals=payload.get("optimizationGoals"),
+            current_issues=payload.get("currentIssues", ""),
+            max_tokens=payload.get("maxTokens", 8192),
+        )
 
     if job_type == "program.generate":
         service = ProgramService()

@@ -18,6 +18,10 @@ All notable changes to PLCAutoPilot will be documented in this file.
 ### Removed
 - Orphan duplicate BFF routes (`/api/ai-copilot`, `ai-application-generator`, `ai-library-manager`, `ai-code-optimizer`)
 
+### Changed (v1.5 final)
+- **AI prompts in Python** — `ai_prompts.py` + `AiCopilotService`; BFF routes are thin proxies to `/v1/ai/copilot|engineer|application|library|code/*`
+- **package version** — `1.5.0`
+
 ### Verify
 ```bash
 cd automation && uv run pytest api/tests -q   # 339+

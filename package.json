@@ -1,6 +1,6 @@
 {
   "name": "plcautopilot-nextjs",
-  "version": "0.1.0",
+  "version": "1.5.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -13,7 +13,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx lib/db/seed.ts",
-    "test:plc": "tsx --test lib/plc-generation.test.ts lib/plc-patterns.test.ts lib/plc-catalog.test.ts lib/sketch-generate-response.test.ts lib/ai-recommend.test.ts"
+    "test:plc": "tsx --test lib/plc-generation.test.ts lib/plc-patterns.test.ts lib/plc-catalog.test.ts lib/sketch-generate-response.test.ts lib/ai-recommend.test.ts lib/ai-copilot-client.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

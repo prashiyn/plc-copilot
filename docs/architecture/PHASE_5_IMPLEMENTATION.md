@@ -7,7 +7,7 @@ Execution plan for **post–v1.5** work: known limits of the v1.5 ship, prioriti
 **Verify v1.5 release:**
 ```bash
 cd automation && uv run pytest api/tests -v   # 338+ tests
-npm run test:plc && npm run build             # 35+ BFF tests
+npm run test:plc && npm run build             # 41 BFF tests
 ```
 
 ---
@@ -51,6 +51,7 @@ npm run test:plc && npm run build             # 35+ BFF tests
 | P3 logic depth (2026-06-15) | **P3** | Arbitrary synthesis; pattern v2; M221 direct IR export |
 | P4 recommend/rectify (2026-06-14) | **P4** | `recommend_service.py`; `/v1/ai/recommend-*`, `/v1/ai/rectify-error` |
 | P5 gaps BFF alignment (2026-06-14) | **Gaps** | `lib/plc-patterns.ts`; full tier2/plcopen routing; generator AI synthesis — [P5_GAPS_IMPLEMENTATION.md](P5_GAPS_IMPLEMENTATION.md) |
+| v1.5 final — AI prompts in Python (2026-06-16) | **Final** | `api/services/ai_prompts.py`, `AiCopilotService`; BFF thin proxies |
 
 ---
 

@@ -206,6 +206,97 @@ export async function aiJson(params: {
   return result.data;
 }
 
+export async function copilotChat(params: {
+  messages: Array<{ sender?: string; role?: string; content: string }>;
+  mode?: 'generate' | 'explain' | 'test';
+  uploadedImages?: Array<{ data: string; mediaType?: string; type?: string }>;
+  maxTokens?: number;
+}): Promise<{ text: string; usage?: { input_tokens: number; output_tokens: number } }> {
+  return enqueueAndWait('/v1/ai/copilot/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: params.messages,
+      mode: params.mode ?? 'generate',
+      uploadedImages: params.uploadedImages ?? [],
+      maxTokens: params.maxTokens ?? 4096,
+    }),
+  });
+}
+
+export async function engineerChat(params: {
+  messages: Array<{ sender?: string; role?: string; content: string }>;
+  engineerType?: string;
+  conversationContext?: Record<string, unknown>;
+  maxTokens?: number;
+}): Promise<{
+  text: string;
+  engineer: { name: string; role: string; specialty: string };
+  usage?: { input_tokens: number; output_tokens: number };
+}> {
+  return enqueueAndWait('/v1/ai/engineer/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: params.messages,
+      engineerType: params.engineerType ?? 'general-expert',
+      conversationContext: params.conversationContext ?? {},
+      maxTokens: params.maxTokens ?? 4096,
+    }),
+  });
+}
+
+export async function generateApplication(params: {
+  requirements: string;
+  applicationType?: string;
+  platform?: string;
+  controller?: string;
+  ioCount?: string;
+  safetyLevel?: string;
+  maxTokens?: number;
+}): Promise<{ application: unknown }> {
+  return enqueueAndWait('/v1/ai/application/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+}
+
+export async function librarySearch(params: {
+  query: string;
+  platform?: string;
+  applicationType?: string;
+  requirements?: string[];
+  generateCustom?: boolean;
+  maxTokens?: number;
+}): Promise<{ results: unknown }> {
+  return enqueueAndWait('/v1/ai/library/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+}
+
+export async function optimizeCode(params: {
+  code: string;
+  platform?: string;
+  optimizationGoals?: string[];
+  currentIssues?: string;
+  maxTokens?: number;
+}): Promise<{ analysis: unknown }> {
+  return enqueueAndWait('/v1/ai/code/optimize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      code: params.code,
+      platform: params.platform ?? 'schneider',
+      optimizationGoals: params.optimizationGoals ?? [],
+      currentIssues: params.currentIssues ?? '',
+      maxTokens: params.maxTokens ?? 8192,
+    }),
+  });
+}
+
 export async function recommendPlc(requirements: Record<string, unknown>): Promise<{
   recommendations: unknown[];
   source: 'ai' | 'fallback';

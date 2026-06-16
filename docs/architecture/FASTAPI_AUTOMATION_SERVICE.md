@@ -71,8 +71,13 @@ flowchart TB
 | `app/api/recommend-plc/route.ts` | `recommendPlc()` → `/v1/ai/recommend-plc` | Ranked PLCs + `source: ai\|fallback` |
 | `app/api/recommend-solution/route.ts` | `recommendSolution()` → `/v1/ai/recommend-solution` | Recommended solution + alternatives + `source` |
 | `app/api/rectify-error/route.ts` | `rectifyError()` → `/v1/ai/rectify-error` | Analysis, fixes, recommendations + `source` |
+| `app/api/ai-chat/route.ts` | `copilotChat()` → `/v1/ai/copilot/chat` | Prompts in `api/services/ai_prompts.py` |
+| `app/api/ai-engineer-chat/route.ts` | `engineerChat()` → `/v1/ai/engineer/chat` | Persona prompts in Python |
+| `app/api/ai-generate-application/route.ts` | `generateApplication()` → `/v1/ai/application/generate` | JSON application blueprint |
+| `app/api/ai-library-search/route.ts` | `librarySearch()` → `/v1/ai/library/search` | Library search JSON |
+| `app/api/ai-optimize-code/route.ts` | `optimizeCode()` → `/v1/ai/code/optimize` | Optimization analysis JSON |
 
-Legacy TS template generators under `app/api/generate-plc/generators/` are **deprecated** — not used on live paths.
+Legacy generic `/v1/ai/chat` and `/v1/ai/json` remain for internal use; production BFF uses typed routes above.
 
 ### 2.3 Python packages
 

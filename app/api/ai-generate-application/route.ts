@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { aiJson, AutomationError, isAutomationConfigured } from '@/lib/automation-client';
-
-const SYSTEM_PROMPT = `You are an expert PLC application architect. Generate complete applications. Respond with JSON only.`;
+import { AutomationError, generateApplication, isAutomationConfigured } from '@/lib/automation-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,17 +21,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Automation service not configured' }, { status: 500 });
     }
 
-    const prompt = `Generate a complete PLC application.
-Requirements: ${requirements}
-Type: ${applicationType || 'Industrial Control'}
-Platform: ${platform}
-Controller: ${controller || 'auto'}
-I/O: ${ioCount || 'as needed'}
-Safety: ${safetyLevel}
-
-Return JSON with application_name, platform, controller, program_code, io_assignments, variables, safety_features, testing_procedure.`;
-
-    const application = await aiJson({ system: SYSTEM_PROMPT, prompt, maxTokens: 8192 });
+    const { application } = await generateApplication({
+      requirements,
+      applicationType,
+      platform,
+      controller,
+      ioCount,
+      safetyLevel,
+    });
 
     return NextResponse.json({ success: true, application });
   } catch (error) {

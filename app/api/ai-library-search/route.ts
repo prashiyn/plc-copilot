@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { aiJson, AutomationError, isAutomationConfigured } from '@/lib/automation-client';
-
-const SYSTEM_PROMPT = `You are an expert PLC function block library manager. Respond with JSON only.`;
+import { AutomationError, isAutomationConfigured, librarySearch } from '@/lib/automation-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,17 +14,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Automation service not configured' }, { status: 500 });
     }
 
-    const prompt = `Search PLC libraries for: ${query}
-Platform: ${platform}
-${applicationType ? `Application: ${applicationType}` : ''}
-Requirements: ${requirements.join(', ')}
-${generateCustom ? 'Generate custom blocks if needed.' : ''}
+    const { results } = await librarySearch({
+      query,
+      platform,
+      applicationType,
+      requirements,
+      generateCustom,
+    });
 
-Return JSON with search_results, recommendations, integration_guide, custom_blocks.`;
-
-    const searchData = await aiJson({ system: SYSTEM_PROMPT, prompt, maxTokens: 6144 });
-
-    return NextResponse.json({ success: true, results: searchData });
+    return NextResponse.json({ success: true, results });
   } catch (error) {
     console.error('Library search error:', error);
     if (error instanceof AutomationError) {
