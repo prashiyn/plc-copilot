@@ -11,6 +11,7 @@ import type {
   IrValidationResult,
   PlcProgram,
 } from '@/lib/plc-ir/types';
+import type { PatternSourcePayload, PlcPattern, SynthesisMode } from '@/lib/plc-patterns';
 
 const DEFAULT_TIMEOUT_MS = 300_000;
 const POLL_INTERVAL_MS = 1_000;
@@ -348,9 +349,9 @@ export async function generateProgram(params: {
   controller?: string;
   projectName: string;
   source:
-    | { type: 'pattern'; pattern: 'motor_startstop' | 'sequential_lights'; numLights?: number; delaySeconds?: number }
+    | PatternSourcePayload
     | { type: 'sketch_analysis'; analysis: Record<string, unknown> }
-    | { type: 'claude_ir'; description: string };
+    | { type: 'claude_ir'; description: string; synthesisMode?: SynthesisMode };
 }): Promise<{ content: Buffer; fileName: string; mimeType: string; metadata: Record<string, unknown> }> {
   const result = await enqueueAndWait<ProgramFileResult>('/v1/programs/generate', {
     method: 'POST',
@@ -375,20 +376,29 @@ export async function generateProgramFromDescription(params: {
   controller?: string;
   projectName: string;
   description: string;
+  synthesisMode?: SynthesisMode;
 }): Promise<{ content: Buffer; fileName: string; mimeType: string; metadata: Record<string, unknown> }> {
   return generateProgram({
     platform: params.platform,
     controller: params.controller,
     projectName: params.projectName,
-    source: { type: 'claude_ir', description: params.description },
+    source: {
+      type: 'claude_ir',
+      description: params.description,
+      synthesisMode: params.synthesisMode,
+    },
   });
 }
 
 export async function exportPlcopen(params: {
   name: string;
   platform?: string;
-  pattern?: 'motor_startstop' | 'sequential_lights';
+  pattern?: PlcPattern;
   controller?: string;
+  numLights?: number;
+  delaySeconds?: number;
+  cycleSeconds?: number;
+  runSeconds?: number;
 }): Promise<{ content: Buffer; fileName: string; mimeType: string; metadata: Record<string, unknown> }> {
   const result = await enqueueAndWait<ProgramFileResult>('/v1/programs/plcopen', {
     method: 'POST',

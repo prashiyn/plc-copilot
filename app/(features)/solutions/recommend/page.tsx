@@ -47,6 +47,7 @@ interface RecommendationResponse {
     reasoning: string;
     tradeoffs: string[];
   };
+  source?: 'ai' | 'fallback';
 }
 
 export default function SolutionRecommend() {
@@ -78,6 +79,9 @@ export default function SolutionRecommend() {
       });
 
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate recommendation');
+      }
       setRecommendation(data);
     } catch (error) {
       console.error('Error fetching recommendation:', error);
@@ -211,6 +215,17 @@ export default function SolutionRecommend() {
                         <div className="inline-block bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full mb-2">
                           RECOMMENDED
                         </div>
+                        {recommendation.source && (
+                          <span
+                            className={`ml-2 inline-block text-xs font-medium px-2 py-1 rounded-full mb-2 ${
+                              recommendation.source === 'ai'
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {recommendation.source === 'ai' ? 'Claude' : 'Fallback'}
+                          </span>
+                        )}
                         <h2 className="text-2xl font-bold text-gray-900">{recommendation.recommended.name}</h2>
                         <p className="text-sm text-gray-600">{recommendation.recommended.platform} - {recommendation.recommended.model}</p>
                       </div>

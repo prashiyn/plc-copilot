@@ -60,6 +60,7 @@ class PlcopenGenerateRequest(BaseModel):
     numLights: int = Field(default=4, ge=2, le=8)
     delaySeconds: int = Field(default=3, ge=1, le=60)
     cycleSeconds: int = Field(default=5, ge=1, le=60)
+    runSeconds: int = Field(default=5, ge=1, le=60)
 
 
 class ProgramFileResult(BaseModel):

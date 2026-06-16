@@ -134,12 +134,14 @@ export default function AILibraryManagerPage() {
 
       const data = await response.json();
 
-      // Parse libraries data
       let results: SearchResults;
-      if (typeof data.libraries === 'string') {
-        results = JSON.parse(data.libraries);
+      const payload = data.results ?? data.libraries;
+      if (typeof payload === 'string') {
+        results = JSON.parse(payload);
+      } else if (payload && typeof payload === 'object') {
+        results = payload as SearchResults;
       } else {
-        results = data.libraries;
+        throw new Error('Unexpected library search response shape');
       }
 
       setSearchResults(results);

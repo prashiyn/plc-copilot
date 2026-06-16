@@ -20,6 +20,8 @@ export default function GeneratorPage() {
     model: null,
   });
   const [isGenerating, setIsGenerating] = useState(false);
+  const [useAiSynthesis, setUseAiSynthesis] = useState(false);
+  const [synthesisMode, setSynthesisMode] = useState<'constrained' | 'arbitrary'>('constrained');
   const [generatedFile, setGeneratedFile] = useState<{
     content: string;
     filename: string;
@@ -60,6 +62,8 @@ export default function GeneratorPage() {
       formData.append('manufacturer', selectedPLC.manufacturer?.name || '');
       formData.append('series', selectedPLC.series?.name || '');
       formData.append('modelName', selectedPLC.model.name);
+      formData.append('useAiSynthesis', useAiSynthesis ? 'true' : 'false');
+      formData.append('synthesisMode', synthesisMode);
 
       const response = await fetch('/api/generate-plc', {
         method: 'POST',
@@ -212,6 +216,38 @@ export default function GeneratorPage() {
               <PLCCascadingSelector
                 onSelectionChange={setSelectedPLC}
               />
+            </div>
+
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                4. Advanced (optional)
+              </h2>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={useAiSynthesis}
+                  onChange={(e) => setUseAiSynthesis(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                Use Claude IR synthesis instead of pattern templates
+              </label>
+              {useAiSynthesis ? (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Synthesis mode
+                  </label>
+                  <select
+                    value={synthesisMode}
+                    onChange={(e) =>
+                      setSynthesisMode(e.target.value as 'constrained' | 'arbitrary')
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="constrained">Constrained (pattern fallback)</option>
+                    <option value="arbitrary">Arbitrary (no silent fallback)</option>
+                  </select>
+                </div>
+              ) : null}
             </div>
 
             {/* Generate Button */}

@@ -10,6 +10,7 @@ import {
   resolveTier2Platform,
   tier2SourceImportDisclaimer,
 } from './plc-generation';
+import { buildPatternSource, EXPORT_PATTERNS } from './plc-patterns';
 
 describe('detectPatternFromLogic', () => {
   it('detects sequential lights with count and delay', () => {
@@ -47,6 +48,22 @@ describe('detectPatternFromLogic', () => {
     assert.equal(result.cycleSeconds, 4);
   });
 
+  it('detects motor interlock', () => {
+    const result = detectPatternFromLogic('Dual motor interlock with mutual exclusion.');
+    assert.equal(result.pattern, 'motor_interlock');
+  });
+
+  it('detects pump staging', () => {
+    const result = detectPatternFromLogic('Lead lag pump staging for tank fill.');
+    assert.equal(result.pattern, 'pump_staging');
+  });
+
+  it('detects timed motor with run seconds', () => {
+    const result = detectPatternFromLogic('Timed motor with 8 second on-delay before run.');
+    assert.equal(result.pattern, 'timed_motor');
+    assert.equal(result.runSeconds, 8);
+  });
+
   it('extracts project name', () => {
     const result = detectPatternFromLogic('Project: Tank_Control\n4 sequential lights');
     assert.equal(result.projectName, 'Tank_Control');
@@ -76,21 +93,48 @@ describe('resolveGenerationPath', () => {
   it('routes native vendors to native generation', () => {
     assert.equal(resolveGenerationPath('Schneider Electric', 'motor_startstop'), 'native');
     assert.equal(resolveGenerationPath('Rockwell Automation', 'sequential_lights'), 'native');
+    assert.equal(resolveGenerationPath('Schneider Electric', 'pump_staging'), 'native');
   });
 
-  it('routes tier-2 vendors to tier2 for motor-like patterns', () => {
-    assert.equal(resolveGenerationPath('Siemens', 'motor_startstop'), 'tier2');
-    assert.equal(resolveGenerationPath('Siemens', 'estop_motor'), 'tier2');
-    assert.equal(resolveGenerationPath('Siemens', 'conveyor_startstop'), 'tier2');
-    assert.equal(resolveGenerationPath('Mitsubishi Electric', 'motor_startstop'), 'tier2');
-    assert.equal(resolveGenerationPath('Siemens', 'sequential_lights'), 'unsupported');
-    assert.equal(resolveGenerationPath('Siemens', 'tank_level'), 'unsupported');
-    assert.equal(resolveGenerationPath('Siemens', 'traffic_lights'), 'unsupported');
+  it('routes tier-2 vendors to tier2 for all export patterns', () => {
+    for (const pattern of EXPORT_PATTERNS) {
+      assert.equal(resolveGenerationPath('Siemens', pattern), 'tier2', pattern);
+      assert.equal(resolveGenerationPath('Mitsubishi Electric', pattern), 'tier2', pattern);
+    }
   });
 
-  it('falls back to plcopen for other vendors on motor logic', () => {
-    assert.equal(resolveGenerationPath('CODESYS GmbH', 'motor_startstop'), 'plcopen');
-    assert.equal(resolveGenerationPath('CODESYS GmbH', 'sequential_lights'), 'unsupported');
+  it('routes generic vendors to plcopen for all export patterns', () => {
+    for (const pattern of EXPORT_PATTERNS) {
+      assert.equal(resolveGenerationPath('CODESYS GmbH', pattern), 'plcopen', pattern);
+    }
+  });
+
+  it('routes AI synthesis to claude_ir for supported vendors', () => {
+    assert.equal(
+      resolveGenerationPath('Siemens', 'motor_startstop', { useAiSynthesis: true }),
+      'claude_ir',
+    );
+    assert.equal(
+      resolveGenerationPath('Schneider Electric', 'tank_level', { useAiSynthesis: true }),
+      'claude_ir',
+    );
+    assert.equal(
+      resolveGenerationPath('CODESYS GmbH', 'motor_startstop', { useAiSynthesis: true }),
+      'unsupported',
+    );
+  });
+});
+
+describe('buildPatternSource', () => {
+  it('includes all timing fields for tier-2 API payloads', () => {
+    const source = buildPatternSource('traffic_lights', {
+      numLights: 4,
+      delaySeconds: 3,
+      cycleSeconds: 6,
+      runSeconds: 5,
+    });
+    assert.equal(source.pattern, 'traffic_lights');
+    assert.equal(source.cycleSeconds, 6);
   });
 });
 

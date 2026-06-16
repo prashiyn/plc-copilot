@@ -65,6 +65,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         { title: 'Application Generator', link: '/ai-application-generator' },
         { title: 'Code Optimizer', link: '/ai-code-optimizer' },
         { title: 'Library Manager', link: '/ai-library-manager' },
+        { title: 'Error Rectification', link: '/rectify-error' },
       ],
       badge: 'AI',
     },

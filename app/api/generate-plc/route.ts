@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
       controller: plcModel.model,
       logic,
       image: image && image.size > 0 ? image : null,
+      useAiSynthesis: formData.get('useAiSynthesis') === 'true',
+      synthesisMode:
+        formData.get('synthesisMode') === 'arbitrary' ? 'arbitrary' : 'constrained',
     });
 
     await persistGeneratedProgramIfAuthed({
@@ -47,6 +50,8 @@ export async function POST(request: NextRequest) {
         generationPath: generated.generationPath,
         tier2Disclaimer: generated.tier2Disclaimer,
         limitations: generated.limitations,
+        useAiSynthesis: generated.downloadParams.useAiSynthesis,
+        synthesisMode: generated.downloadParams.synthesisMode,
       },
     });
 

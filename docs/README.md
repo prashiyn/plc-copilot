@@ -30,6 +30,8 @@ Project docs, grouped by topic. (Moved out of the repo root during the v1.4→v1
 - [PHASE_5_IMPLEMENTATION.md](architecture/PHASE_5_IMPLEMENTATION.md) — **Phase 5 implementation plan** (scope limits + prioritized work + frozen tracks)
 - [VENDOR_SCHEMA_MAINTENANCE.md](architecture/VENDOR_SCHEMA_MAINTENANCE.md) — vendor XSD registry, CI validation, field updates for older IDE versions
 - [ARBITRARY_LOGIC_SYNTHESIS.md](architecture/ARBITRARY_LOGIC_SYNTHESIS.md) — Claude IR arbitrary vs constrained synthesis modes
+- [E2E_INTEGRATION_AUDIT.md](architecture/E2E_INTEGRATION_AUDIT.md) — UI → BFF → FastAPI alignment audit (Phase 4/5)
+- [P5_GAPS_IMPLEMENTATION.md](architecture/P5_GAPS_IMPLEMENTATION.md) — Phase 5 post-delivery gap fixes (BFF/UI alignment)
 - [DIGITAL_TWIN_ARCHITECTURE.md](architecture/DIGITAL_TWIN_ARCHITECTURE.md), [SIMULATION_AND_TESTING.md](architecture/SIMULATION_AND_TESTING.md) — simulation / digital twin (see `lib/simulation/`)
 - [ON_PREMISES_DEPLOYMENT.md](architecture/ON_PREMISES_DEPLOYMENT.md) — on-prem deployment
 - [COMPETITIVE_ANALYSIS.md](architecture/COMPETITIVE_ANALYSIS.md) — market positioning

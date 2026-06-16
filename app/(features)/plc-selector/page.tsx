@@ -62,6 +62,7 @@ export default function PLCSelector() {
     scanTimeRequirement: '',
   });
   const [recommendations, setRecommendations] = useState<RecommendedPLC[]>([]);
+  const [recommendationSource, setRecommendationSource] = useState<'ai' | 'fallback' | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedPLC, setSelectedPLC] = useState<{
     manufacturer: PLCManufacturer | null;
@@ -128,7 +129,11 @@ export default function PLCSelector() {
       });
 
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get recommendations');
+      }
       setRecommendations(data.recommendations);
+      setRecommendationSource(data.source ?? null);
       setStep(4);
     } catch (error) {
       console.error('Error getting recommendations:', error);
@@ -602,6 +607,17 @@ export default function PLCSelector() {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold mb-4">Recommended PLCs for Your Project</h2>
+              {recommendationSource && (
+                <span
+                  className={`inline-block text-xs font-medium px-2 py-1 rounded-full mb-4 ${
+                    recommendationSource === 'ai'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {recommendationSource === 'ai' ? 'Claude catalog match' : 'Deterministic scorer'}
+                </span>
+              )}
               <div className="bg-blue-50 p-4 rounded-lg mb-6">
                 <h3 className="font-semibold text-gray-900 mb-2">Your Requirements Summary:</h3>
                 <ul className="text-sm text-gray-700 space-y-1">

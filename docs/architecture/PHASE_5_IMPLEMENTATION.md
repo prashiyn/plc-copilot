@@ -20,7 +20,7 @@ npm run test:plc && npm run build             # 22 BFF tests
 | What are the **known limits** of v1.5? | [§1.5 scope boundaries](#15-v15-scope-boundaries-known-limits) |
 | What should we build in Phase 5? | [§2 recommended work](#2-phase-5-recommended-work-priority-order) |
 | What must **not** be pulled in accidentally? | [§5 Frozen tracks](#5-frozen-tracks-auth-integrations-billing) |
-| FastAPI / IR architecture | [PHASE_4_PLATFORM_INTEGRATIONS.md](PHASE_4_PLATFORM_INTEGRATIONS.md), [FASTAPI_AUTOMATION_SERVICE.md](FASTAPI_AUTOMATION_SERVICE.md) |
+| FastAPI / IR architecture | [PHASE_4_PLATFORM_INTEGRATIONS.md](PHASE_4_PLATFORM_INTEGRATIONS.md), [FASTAPI_AUTOMATION_SERVICE.md](FASTAPI_AUTOMATION_SERVICE.md), [E2E_INTEGRATION_AUDIT.md](E2E_INTEGRATION_AUDIT.md), [P5_GAPS_IMPLEMENTATION.md](P5_GAPS_IMPLEMENTATION.md) |
 
 **For Cursor agents:** Do **not** start Phase 5 items unless the user explicitly requests them. Do **not** implement §5 frozen tracks during PLC export work.
 
@@ -50,6 +50,7 @@ npm run test:plc && npm run build             # 22 BFF tests
 | P2 export scope (2026-06-15) | **P2** | Tier-2 all patterns; `plcopen_from_ir.py`; sketch Tier-2 |
 | P3 logic depth (2026-06-15) | **P3** | Arbitrary synthesis; pattern v2; M221 direct IR export |
 | P4 recommend/rectify (2026-06-14) | **P4** | `recommend_service.py`; `/v1/ai/recommend-*`, `/v1/ai/rectify-error` |
+| P5 gaps BFF alignment (2026-06-14) | **Gaps** | `lib/plc-patterns.ts`; full tier2/plcopen routing; generator AI synthesis — [P5_GAPS_IMPLEMENTATION.md](P5_GAPS_IMPLEMENTATION.md) |
 
 ---
 
@@ -57,36 +58,33 @@ npm run test:plc && npm run build             # 22 BFF tests
 
 These are **not bugs** — they define what v1.5 promises vs what Phase 5 must add.
 
-### Export coverage by pattern
+### Export coverage by pattern (post–P2)
 
 | Pattern | Schneider / Rockwell | Siemens / Mitsubishi Tier-2 | PLCopen (generic) |
 |---------|----------------------|-------------------------------|-------------------|
-| `motor_startstop` | ✅ | ✅ | ✅ |
-| `estop_motor`, `conveyor_startstop` | ✅ | ✅ | ❌ (motor-only PLCopen path) |
-| `sequential_lights`, `tank_level`, `traffic_lights` | ✅ | ❌ | ❌ |
-| Sketch → IR (arbitrary ladder) | ✅ | ❌ (Schneider/Rockwell only) | ❌ |
-| Claude free-form (non-pattern) | Fallback to nearest pattern | Same | Same |
+| All 9 `EXPORT_PATTERNS` (incl. v2) | ✅ native | ✅ tier-2 source import | ✅ PLCopen IR walk |
+| Sketch → IR | ✅ all 4 sketch platforms | ✅ siemens/mitsubishi | ❌ sketch not routed to PLCopen |
+| Claude `constrained` synthesis | ✅ pattern fallback | ✅ | N/A (native/tier2 only) |
+| Claude `arbitrary` synthesis | ✅ API + generator UI | ✅ | ❌ |
 
-### Logic generation
+### Logic generation (post–P3)
 
-| Capability | v1.5 | Phase 5 |
-|------------|------|---------|
-| Deterministic patterns (6) | ✅ | Extend library |
-| Claude → validated IR | ✅ with retry + pattern fallback | Broader NL coverage |
-| Arbitrary NL → any program | ❌ | Design pass required |
-| M221 path | Claude→IR→adapter→Calaos | Optional: direct IR→Calaos polish |
+| Capability | Status | Where |
+|------------|--------|-------|
+| Deterministic patterns (9) | ✅ | `ir/patterns.py`, BFF `detectPatternFromLogic` |
+| Claude → validated IR | ✅ | `claude_ir_service.py` |
+| `synthesisMode: arbitrary\|constrained` | ✅ | `/v1/programs/generate`, generator Advanced panel |
+| M221 export path | ✅ direct IR→Calaos (`exportPath: ir_direct`) | `m221_program_service.py` |
 
 ### Validation bar
 
-| Check | v1.5 | Phase 5 |
-|-------|------|---------|
-| IR schema + `validate_program()` | ✅ | — |
-| Round-trip parse in CI | ✅ all patterns + sketch | — |
-| Golden export SHA-256 (7 baseline cases) | ✅ | ✅ **19 cases** incl. 4j patterns |
-| L5X well-formed + parser | ✅ `test_l5x_schema.py` | Full **XSD** `l5x-v32.xsd` ✅ |
-| Calaos structural + parser | ✅ | **Subset XSD** `calaos-case-2.0-subset.xsd` ✅ |
-| PLCopen golden structure | ✅ | — |
-| **Real IDE import (zero errors)** | ❌ automated gates ✅ | **Manual lab gate** — primary Phase 5 milestone |
+| Check | Status |
+|-------|--------|
+| IR schema + `validate_program()` | ✅ |
+| Round-trip parse in CI | ✅ |
+| Golden export SHA-256 | ✅ **37 cases** (`EXPORT_CASES`) |
+| L5X XSD + Calaos subset XSD | ✅ P1 |
+| **Real IDE import (zero errors)** | ❌ **P0 manual lab pending** |
 
 ### Format scope (unchanged)
 

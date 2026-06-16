@@ -6,23 +6,22 @@ import {
   isAutomationConfigured,
 } from '@/lib/automation-client';
 import type { PlcProgram } from '@/lib/plc-ir/types';
+import {
+  buildPatternSource,
+  type PatternTiming,
+  type PlcPattern,
+  type SynthesisMode,
+  isExportPattern,
+} from '@/lib/plc-patterns';
 
-export type PlcPattern =
-  | 'motor_startstop'
-  | 'sequential_lights'
-  | 'estop_motor'
-  | 'tank_level'
-  | 'conveyor_startstop'
-  | 'traffic_lights';
+export type { PlcPattern, SynthesisMode } from '@/lib/plc-patterns';
 export type NativePlatform = 'schneider' | 'rockwell';
 export type Tier2Platform = 'siemens' | 'mitsubishi';
-export type GenerationPath = 'native' | 'tier2' | 'plcopen' | 'unsupported';
+export type GenerationPath = 'native' | 'tier2' | 'plcopen' | 'claude_ir';
+export type ResolvedGenerationPath = GenerationPath | 'unsupported';
 
-export interface PatternParams {
+export interface PatternParams extends PatternTiming {
   pattern: PlcPattern;
-  numLights: number;
-  delaySeconds: number;
-  cycleSeconds: number;
   projectName: string;
 }
 
@@ -34,11 +33,14 @@ export interface PlcDownloadParams {
   numLights: number;
   delaySeconds: number;
   cycleSeconds: number;
+  runSeconds: number;
   logic: string;
   useSketchAnalysis: boolean;
   sketchAnalysis?: Record<string, unknown>;
   exportTier?: number;
   tier2Platform?: Tier2Platform;
+  useAiSynthesis?: boolean;
+  synthesisMode?: SynthesisMode;
 }
 
 export interface GeneratedPlcFile {
@@ -54,12 +56,6 @@ export interface GeneratedPlcFile {
   generationPath: GenerationPath;
   tier2Disclaimer?: string;
   limitations?: string[];
-}
-
-const MOTOR_LIKE_PATTERNS: PlcPattern[] = ['motor_startstop', 'estop_motor', 'conveyor_startstop'];
-
-function isMotorLikePattern(pattern: PlcPattern): boolean {
-  return MOTOR_LIKE_PATTERNS.includes(pattern);
 }
 
 export function detectPatternFromLogic(logic: string): PatternParams {
@@ -78,10 +74,30 @@ export function detectPatternFromLogic(logic: string): PatternParams {
   ) {
     pattern = 'traffic_lights';
   } else if (
+    (lower.includes('lead') || lower.includes('lag') || lower.includes('staging')) &&
+    lower.includes('pump')
+  ) {
+    pattern = 'pump_staging';
+  } else if (
+    (lower.includes('interlock') ||
+      lower.includes('mutual exclusion') ||
+      lower.includes('mutual-exclusion')) &&
+    (lower.includes('motor') || lower.includes('dual'))
+  ) {
+    pattern = 'motor_interlock';
+  } else if (
+    (lower.includes('timed') ||
+      lower.includes('timer') ||
+      lower.includes('delay') ||
+      lower.includes('on-delay')) &&
+    lower.includes('motor')
+  ) {
+    pattern = 'timed_motor';
+  } else if (
     lower.includes('tank') ||
     lower.includes('level control') ||
     lower.includes('fill pump') ||
-    (lower.includes('level') && lower.includes('pump'))
+    (lower.includes('level') && lower.includes('pump') && !lower.includes('staging'))
   ) {
     pattern = 'tank_level';
   } else if (
@@ -111,14 +127,22 @@ export function detectPatternFromLogic(logic: string): PatternParams {
     cycleSeconds = Math.min(60, Math.max(1, parseInt(timeMatch[1], 10)));
   }
 
+  let runSeconds = 5;
+  if (timeMatch && pattern === 'timed_motor') {
+    runSeconds = Math.min(60, Math.max(1, parseInt(timeMatch[1], 10)));
+  }
+
+  const delaySeconds =
+    timeMatch && pattern !== 'traffic_lights' && pattern !== 'timed_motor'
+      ? Math.min(60, Math.max(1, parseInt(timeMatch[1], 10)))
+      : 3;
+
   return {
     pattern,
     numLights: lightMatch ? Math.min(8, Math.max(2, parseInt(lightMatch[1], 10))) : 4,
-    delaySeconds:
-      timeMatch && pattern !== 'traffic_lights'
-        ? Math.min(60, Math.max(1, parseInt(timeMatch[1], 10)))
-        : 3,
+    delaySeconds,
     cycleSeconds,
+    runSeconds,
     projectName: nameMatch
       ? nameMatch[1].trim().replace(/[^a-zA-Z0-9_]/g, '_')
       : 'PLCAutoProgram',
@@ -149,14 +173,27 @@ export function resolvePlcopenPlatform(manufacturer: string): string {
   return 'universal';
 }
 
-export function resolveGenerationPath(manufacturer: string, pattern: PlcPattern): GenerationPath {
+export function resolveGenerationPath(
+  manufacturer: string,
+  pattern: PlcPattern,
+  options?: { useAiSynthesis?: boolean },
+): ResolvedGenerationPath {
+  if (options?.useAiSynthesis) {
+    if (resolveNativePlatform(manufacturer) || resolveTier2Platform(manufacturer)) {
+      return 'claude_ir';
+    }
+    return 'unsupported';
+  }
+  if (!isExportPattern(pattern)) {
+    return 'unsupported';
+  }
   if (resolveNativePlatform(manufacturer)) {
     return 'native';
   }
   if (resolveTier2Platform(manufacturer)) {
-    return isMotorLikePattern(pattern) ? 'tier2' : 'unsupported';
+    return 'tier2';
   }
-  return isMotorLikePattern(pattern) ? 'plcopen' : 'unsupported';
+  return 'plcopen';
 }
 
 export function tier2SourceImportDisclaimer(platform: Tier2Platform): string {
@@ -215,20 +252,53 @@ function tier2Limitations(metadata: Record<string, unknown>): string[] | undefin
   return metadata.limitations.filter((item): item is string => typeof item === 'string');
 }
 
-function unsupportedPatternError(manufacturer: string, pattern: PlcPattern): AutomationError {
-  const tier2 = resolveTier2Platform(manufacturer);
-  if (tier2) {
+function unsupportedPathError(manufacturer: string, useAiSynthesis: boolean): AutomationError {
+  if (useAiSynthesis) {
     return new AutomationError(
-      'Tank level, traffic lights, and sequential patterns are available for Schneider and Rockwell PLCs. For Siemens or Mitsubishi, describe a motor, E-stop motor, or conveyor start/stop circuit to receive a Tier-2 source import (.scl or IL/ST/CSV ZIP).',
-      'UNSUPPORTED_PLATFORM_PATTERN',
+      'Claude IR synthesis requires Schneider, Rockwell, Siemens, or Mitsubishi as the PLC manufacturer.',
+      'UNSUPPORTED_PLATFORM',
       422,
     );
   }
   return new AutomationError(
-    'Tank level, traffic lights, and sequential patterns are available for Schneider and Rockwell PLCs. Select one of those manufacturers, or describe a motor, E-stop motor, or conveyor start/stop circuit for PLCopen export.',
-    'UNSUPPORTED_PLATFORM_PATTERN',
+    `Could not resolve an export path for manufacturer "${manufacturer}".`,
+    'UNSUPPORTED_PLATFORM',
     422,
   );
+}
+
+function patternTimingFromParams(
+  pattern: PlcPattern,
+  numLights: number,
+  delaySeconds: number,
+  cycleSeconds: number,
+  runSeconds: number,
+): PatternTiming {
+  return { numLights, delaySeconds, cycleSeconds, runSeconds };
+}
+
+function fileFromProgramResult(
+  result: { content: Buffer; fileName: string; mimeType: string; metadata: Record<string, unknown> },
+  pattern: PlcPattern,
+  downloadParams: PlcDownloadParams,
+  generationPath: GenerationPath,
+  tier2Disclaimer?: string,
+  limitations?: string[],
+): GeneratedPlcFile {
+  return {
+    content: result.content,
+    fileName: result.fileName,
+    mimeType: result.mimeType,
+    preview: buildProgramPreview(result.content, result.mimeType, result.metadata),
+    extension: extensionFromFileName(result.fileName),
+    pattern,
+    metadata: result.metadata,
+    ir: result.metadata.ir as PlcProgram | undefined,
+    downloadParams,
+    generationPath,
+    tier2Disclaimer,
+    limitations,
+  };
 }
 
 export async function generatePlcProgramFile(params: {
@@ -237,7 +307,8 @@ export async function generatePlcProgramFile(params: {
   logic: string;
   projectName?: string;
   image?: File | null;
-  /** When re-downloading, reuse prior analysis instead of re-analyzing the image. */
+  useAiSynthesis?: boolean;
+  synthesisMode?: SynthesisMode;
   downloadParams?: Partial<PlcDownloadParams>;
 }): Promise<GeneratedPlcFile> {
   if (!isAutomationConfigured()) {
@@ -249,27 +320,33 @@ export async function generatePlcProgramFile(params: {
   }
 
   const patternParams = detectPatternFromLogic(params.logic);
-  const projectName = params.downloadParams?.projectName || params.projectName || patternParams.projectName;
+  const useAiSynthesis = params.downloadParams?.useAiSynthesis ?? params.useAiSynthesis ?? false;
+  const synthesisMode = params.downloadParams?.synthesisMode ?? params.synthesisMode ?? 'constrained';
+  const projectName =
+    params.downloadParams?.projectName || params.projectName || patternParams.projectName;
   const pattern = params.downloadParams?.pattern || patternParams.pattern;
   const numLights = params.downloadParams?.numLights ?? patternParams.numLights;
   const delaySeconds = params.downloadParams?.delaySeconds ?? patternParams.delaySeconds;
   const cycleSeconds = params.downloadParams?.cycleSeconds ?? patternParams.cycleSeconds;
+  const runSeconds = params.downloadParams?.runSeconds ?? patternParams.runSeconds;
   const native = resolveNativePlatform(params.manufacturer);
   const tier2 = resolveTier2Platform(params.manufacturer);
-  const generationPath = resolveGenerationPath(params.manufacturer, pattern);
+  const generationPath = resolveGenerationPath(params.manufacturer, pattern, { useAiSynthesis });
 
   if (generationPath === 'unsupported') {
-    throw unsupportedPatternError(params.manufacturer, pattern);
+    throw unsupportedPathError(params.manufacturer, useAiSynthesis);
   }
 
+  const sketchPlatform = native ?? tier2;
   let sketchAnalysis = params.downloadParams?.sketchAnalysis;
-  if (!sketchAnalysis && params.image && native) {
-    const analysisResult = await analyzeSketch(params.image, native);
+  if (!sketchAnalysis && params.image && sketchPlatform) {
+    const analysisResult = await analyzeSketch(params.image, sketchPlatform);
     if (analysisResult.analysis && typeof analysisResult.analysis === 'object') {
       sketchAnalysis = analysisResult.analysis as Record<string, unknown>;
     }
   }
 
+  const timing = patternTimingFromParams(pattern, numLights, delaySeconds, cycleSeconds, runSeconds);
   const downloadParams: PlcDownloadParams = {
     manufacturer: params.manufacturer,
     controller: params.controller,
@@ -278,23 +355,42 @@ export async function generatePlcProgramFile(params: {
     numLights,
     delaySeconds,
     cycleSeconds,
+    runSeconds,
     logic: params.logic,
     useSketchAnalysis: !!sketchAnalysis,
     sketchAnalysis,
     exportTier: generationPath === 'tier2' ? 2 : undefined,
     tier2Platform: tier2 ?? undefined,
+    useAiSynthesis,
+    synthesisMode: useAiSynthesis ? synthesisMode : undefined,
   };
+
+  if (generationPath === 'claude_ir') {
+    const platform = native ?? tier2;
+    if (!platform) {
+      throw unsupportedPathError(params.manufacturer, true);
+    }
+    const result = await generateProgram({
+      platform,
+      controller: params.controller || (tier2 ? defaultTier2Controller(tier2) : undefined),
+      projectName,
+      source: {
+        type: 'claude_ir',
+        description: params.logic,
+        synthesisMode,
+      },
+    });
+    const irPattern =
+      typeof result.metadata.irPattern === 'string' && isExportPattern(result.metadata.irPattern)
+        ? result.metadata.irPattern
+        : pattern;
+    return fileFromProgramResult(result, irPattern, downloadParams, 'claude_ir');
+  }
 
   if (generationPath === 'native' && native) {
     const source = sketchAnalysis
       ? { type: 'sketch_analysis' as const, analysis: sketchAnalysis }
-      : {
-          type: 'pattern' as const,
-          pattern,
-          numLights,
-          delaySeconds,
-          cycleSeconds,
-        };
+      : buildPatternSource(pattern, timing);
 
     const result = await generateProgram({
       platform: native,
@@ -303,69 +399,44 @@ export async function generatePlcProgramFile(params: {
       source,
     });
 
-    return {
-      content: result.content,
-      fileName: result.fileName,
-      mimeType: result.mimeType,
-      preview: buildProgramPreview(result.content, result.mimeType, result.metadata),
-      extension: extensionFromFileName(result.fileName),
-      pattern,
-      metadata: result.metadata,
-      ir: result.metadata.ir as PlcProgram | undefined,
-      downloadParams,
-      generationPath: 'native',
-    };
+    return fileFromProgramResult(result, pattern, downloadParams, 'native');
   }
 
   if (generationPath === 'tier2' && tier2) {
-    const tier2Pattern = isMotorLikePattern(pattern) ? pattern : 'motor_startstop';
+    const source = sketchAnalysis
+      ? { type: 'sketch_analysis' as const, analysis: sketchAnalysis }
+      : buildPatternSource(pattern, timing);
+
     const result = await generateProgram({
       platform: tier2,
       controller: params.controller || defaultTier2Controller(tier2),
       projectName,
-      source: {
-        type: 'pattern',
-        pattern: tier2Pattern,
-      },
+      source,
     });
 
     const limitations = tier2Limitations(result.metadata);
-
-    return {
-      content: result.content,
-      fileName: result.fileName,
-      mimeType: result.mimeType,
-      preview: buildProgramPreview(result.content, result.mimeType, result.metadata),
-      extension: extensionFromFileName(result.fileName),
-      pattern: tier2Pattern,
-      metadata: result.metadata,
-      ir: result.metadata.ir as PlcProgram | undefined,
+    return fileFromProgramResult(
+      result,
+      pattern,
       downloadParams,
-      generationPath: 'tier2',
-      tier2Disclaimer: tier2SourceImportDisclaimer(tier2),
+      'tier2',
+      tier2SourceImportDisclaimer(tier2),
       limitations,
-    };
+    );
   }
 
   const result = await exportPlcopen({
     name: projectName,
     platform: resolvePlcopenPlatform(params.manufacturer),
-    pattern: 'motor_startstop',
+    pattern,
     controller: params.controller,
+    numLights,
+    delaySeconds,
+    cycleSeconds,
+    runSeconds,
   });
 
-  return {
-    content: result.content,
-    fileName: result.fileName,
-    mimeType: result.mimeType,
-    preview: buildProgramPreview(result.content, result.mimeType, result.metadata),
-    extension: extensionFromFileName(result.fileName),
-    pattern: 'motor_startstop',
-    metadata: result.metadata,
-    ir: result.metadata.ir as PlcProgram | undefined,
-    downloadParams,
-    generationPath: 'plcopen',
-  };
+  return fileFromProgramResult(result, pattern, downloadParams, 'plcopen');
 }
 
 export async function regeneratePlcDownload(params: PlcDownloadParams): Promise<{
@@ -378,6 +449,8 @@ export async function regeneratePlcDownload(params: PlcDownloadParams): Promise<
     controller: params.controller,
     logic: params.logic,
     projectName: params.projectName,
+    useAiSynthesis: params.useAiSynthesis,
+    synthesisMode: params.synthesisMode,
     downloadParams: params,
   });
   return {
