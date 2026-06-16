@@ -10,6 +10,9 @@ Operational guide for developing and running the app. Updated as each v1.5 phase
 - An `ANTHROPIC_API_KEY` (for the automation worker — all Claude calls run in Python)
 
 ## First-time setup
+
+See **[deployment/QUICK_START.md](deployment/QUICK_START.md)** (one page) or **[deployment/ADMIN_GUIDE.md](deployment/ADMIN_GUIDE.md)** (full reference) for sysadmin setup.
+
 ```bash
 npm install
 cp .env.example .env          # fill in ANTHROPIC_API_KEY, AUTOMATION_API_KEY

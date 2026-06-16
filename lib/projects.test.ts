@@ -141,10 +141,19 @@ describe('Phase A navigation wiring', () => {
 // ─── workspace page content ───────────────────────────────────────────────────
 
 describe('Phase A workspace page content', () => {
-  it('workspace page defines all 6 tabs', async () => {
+  it('workspace page defines all 8 tabs', async () => {
     const { readFile } = await import('node:fs/promises');
     const src = await readFile('app/(features)/projects/[id]/page.tsx', 'utf8');
-    const tabs: string[] = ['overview', 'programs', 'hmi', 'files', 'chats', 'notes'];
+    const tabs: string[] = [
+      'overview',
+      'programs',
+      'hmi',
+      'files',
+      'chats',
+      'notes',
+      'rectifications',
+      'recommendations',
+    ];
     for (const tab of tabs) {
       assert.match(src, new RegExp(tab), `Tab "${tab}" not found in workspace page`);
     }
@@ -318,8 +327,7 @@ describe('Phase C file uploads', () => {
     assert.match(src, /export async function GET/);
     assert.match(src, /export async function POST/);
     assert.match(src, /operationType: 'user_upload'/);
-    assert.match(src, /MAX_UPLOAD_BYTES/);
-    assert.match(src, /isAllowedUpload/);
+    assert.match(src, /validateProjectUpload/);
   });
 
   it('files/[fileId] route handles DELETE', async () => {
@@ -441,8 +449,44 @@ describe('Phase E templates, landing, seed, tests', () => {
   it('file upload rejects disallowed MIME type', async () => {
     const { readFile } = await import('node:fs/promises');
     const src = await readFile('app/api/projects/[id]/files/route.ts', 'utf8');
-    assert.match(src, /isAllowedUpload/);
-    assert.match(src, /415|400|Unsupported|not allowed/i);
+    assert.match(src, /validateProjectUpload/);
+    assert.match(src, /validation\.status/);
+  });
+
+  it('activity API route exists', async () => {
+    await access('app/api/projects/[id]/activity/route.ts');
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/api/projects/[id]/activity/route.ts', 'utf8');
+    assert.match(src, /listProjectActivity/);
+  });
+
+  it('rectifications and recommendations API routes exist', async () => {
+    await access('app/api/projects/[id]/rectifications/route.ts');
+    await access('app/api/projects/[id]/recommendations/route.ts');
+  });
+
+  it('overview includes cover image and activity log UI', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/(features)/projects/[id]/page.tsx', 'utf8');
+    assert.match(src, /Cover image/);
+    assert.match(src, /Recent activity/);
+    assert.match(src, /\/api\/projects\/\$\{project\.id\}\/activity/);
+  });
+
+  it('notes render markdown content', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('app/(features)/projects/[id]/page.tsx', 'utf8');
+    assert.match(src, /MarkdownContent/);
+    await access('lib/components/MarkdownContent.tsx');
+    await access('lib/markdown.ts');
+  });
+
+  it('queries export activity and artefact list helpers', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const src = await readFile('lib/db/queries.ts', 'utf8');
+    assert.match(src, /export async function listProjectActivity/);
+    assert.match(src, /export async function listProjectRectifications/);
+    assert.match(src, /export async function listProjectRecommendations/);
   });
 });
 

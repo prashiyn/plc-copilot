@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import MarkdownContent from '@/lib/components/MarkdownContent';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -75,9 +76,42 @@ interface ChatReplayMessage {
   createdAt: string | null;
 }
 
+interface ProjectActivity {
+  id: string;
+  eventType: string;
+  label: string;
+  detail: string | null;
+  createdAt: string | null;
+}
+
+interface ProjectRectification {
+  id: string;
+  errorMessage: string | null;
+  correctedCode: string | null;
+  correctionApplied: boolean | null;
+  confidenceScore: number | null;
+  createdAt: string | null;
+}
+
+interface ProjectRecommendation {
+  id: string;
+  requirements: Record<string, unknown> | null;
+  recommendedPlcs: unknown;
+  criteria: string | null;
+  createdAt: string | null;
+}
+
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-type Tab = 'overview' | 'programs' | 'hmi' | 'files' | 'chats' | 'notes';
+type Tab =
+  | 'overview'
+  | 'programs'
+  | 'hmi'
+  | 'files'
+  | 'chats'
+  | 'notes'
+  | 'rectifications'
+  | 'recommendations';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
@@ -86,6 +120,8 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'files', label: 'Files' },
   { id: 'chats', label: 'Chats' },
   { id: 'notes', label: 'Notes' },
+  { id: 'rectifications', label: 'Rectifications' },
+  { id: 'recommendations', label: 'Recommendations' },
 ];
 
 const STATUS_OPTIONS = [
@@ -131,6 +167,18 @@ function OverviewTab({
   const [saveMsg, setSaveMsg] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [generatorUrl, setGeneratorUrl] = useState<string | null>(null);
+  const [activity, setActivity] = useState<ProjectActivity[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverError, setCoverError] = useState('');
+
+  useEffect(() => {
+    setActivityLoading(true);
+    fetch(`/api/projects/${project.id}/activity`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setActivity(d?.activity ?? []))
+      .finally(() => setActivityLoading(false));
+  }, [project.id]);
 
   useEffect(() => {
     if (!project.templateId) return;
@@ -186,6 +234,55 @@ function OverviewTab({
   const tags = (field('tags') as string[]) ?? [];
   const hasChanges = Object.keys(form).length > 0;
   const showTemplateAction = Boolean((showNewFromTemplate || project.templateId) && generatorUrl);
+  const coverUrl = (field('coverImage') as string | null) ?? project.coverImage;
+
+  const uploadCover = async (file: File) => {
+    setCoverError('');
+    if (!file.type.startsWith('image/') && !/\.(png|jpe?g|gif|webp)$/i.test(file.name)) {
+      setCoverError('Cover image must be a PNG, JPEG, GIF, or WebP file.');
+      return;
+    }
+    setCoverUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    const uploadRes = await fetch(`/api/projects/${project.id}/files`, { method: 'POST', body: formData });
+    if (!uploadRes.ok) {
+      const data = await uploadRes.json().catch(() => ({}));
+      setCoverError(data.error ?? 'Could not upload cover image.');
+      setCoverUploading(false);
+      return;
+    }
+    const uploadData = await uploadRes.json();
+    const patchRes = await fetch(`/api/projects/${project.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coverImage: uploadData.file?.storageUrl ?? null }),
+    });
+    setCoverUploading(false);
+    if (patchRes.ok) {
+      const data = await patchRes.json();
+      onSaved(data.project);
+      setForm({});
+    } else {
+      setCoverError('Cover uploaded but could not be linked to the project.');
+    }
+  };
+
+  const removeCover = async () => {
+    setCoverError('');
+    const res = await fetch(`/api/projects/${project.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coverImage: null }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      onSaved(data.project);
+      setForm({});
+    } else {
+      setCoverError('Could not remove cover image.');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -205,6 +302,50 @@ function OverviewTab({
           </Link>
         </div>
       ) : null}
+
+      <div className="border border-gray-200 rounded-lg p-4">
+        <p className="text-sm font-semibold text-gray-700 mb-3">Cover image</p>
+        <div className="flex flex-col sm:flex-row gap-4 items-start">
+          {coverUrl ? (
+            <img
+              src={coverUrl}
+              alt="Project cover"
+              className="w-40 h-28 object-cover rounded-lg border border-gray-200 bg-gray-50"
+            />
+          ) : (
+            <div className="w-40 h-28 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center text-xs text-gray-400 text-center px-2">
+              No cover image
+            </div>
+          )}
+          <div className="flex flex-col gap-2">
+            <label className="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
+              {coverUploading ? 'Uploading…' : 'Upload cover'}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/gif,image/webp"
+                className="hidden"
+                disabled={coverUploading}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadCover(file);
+                  e.target.value = '';
+                }}
+              />
+            </label>
+            {coverUrl ? (
+              <button
+                type="button"
+                onClick={removeCover}
+                className="px-4 py-2 text-sm text-red-600 hover:text-red-700 font-medium"
+              >
+                Remove cover
+              </button>
+            ) : null}
+            {coverError ? <p className="text-sm text-red-600">{coverError}</p> : null}
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
@@ -321,6 +462,24 @@ function OverviewTab({
           <span className={`text-sm font-medium ${saveMsg === 'Saved.' ? 'text-green-700' : 'text-red-600'}`}>
             {saveMsg}
           </span>
+        )}
+      </div>
+
+      <div className="border-t border-gray-100 pt-4">
+        <p className="text-sm font-semibold text-gray-700 mb-3">Recent activity</p>
+        {activityLoading ? (
+          <p className="text-sm text-gray-500">Loading activity…</p>
+        ) : activity.length === 0 ? (
+          <p className="text-sm text-gray-500">No activity recorded yet.</p>
+        ) : (
+          <ul className="divide-y divide-gray-100 border border-gray-100 rounded-lg">
+            {activity.map((item) => (
+              <li key={item.id} className="px-4 py-3 flex items-start justify-between gap-3">
+                <p className="text-sm text-gray-800">{item.label}</p>
+                <span className="text-xs text-gray-400 shrink-0">{fmtDate(item.createdAt)}</span>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 
@@ -896,12 +1055,168 @@ function NotesTab({ projectId }: { projectId: string }) {
                   </button>
                 </div>
               </div>
-              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">{note.body || <em className="text-gray-400">Empty note</em>}</pre>
+              <MarkdownContent source={note.body} />
               <p className="text-xs text-gray-400 mt-2">{fmtDate(note.updatedAt)}</p>
             </div>
           ),
         )
       )}
+    </div>
+  );
+}
+
+function RectificationsTab({ projectId }: { projectId: string }) {
+  const [items, setItems] = useState<ProjectRectification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/projects/${projectId}/rectifications`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setItems(d.rectifications))
+      .finally(() => setLoading(false));
+  }, [projectId]);
+
+  if (loading) return <p className="text-gray-500">Loading rectifications…</p>;
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <p className="mb-2">No error rectifications linked to this project yet.</p>
+        <Link href="/rectify-error" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+          Open error rectifier →
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {items.map((item) => (
+        <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-medium text-gray-900">
+                {item.errorMessage?.trim() || 'Error rectification'}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">{fmtDate(item.createdAt)}</p>
+              {item.confidenceScore != null ? (
+                <p className="text-xs text-gray-500 mt-1">
+                  Confidence: {Math.round(item.confidenceScore * 100)}%
+                </p>
+              ) : null}
+            </div>
+            <span
+              className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                item.correctionApplied ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+              }`}
+            >
+              {item.correctionApplied ? 'Applied' : 'Pending'}
+            </span>
+          </div>
+          {item.correctedCode ? (
+            <button
+              type="button"
+              onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
+              className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              {expandedId === item.id ? 'Hide corrected code' : 'Show corrected code'}
+            </button>
+          ) : null}
+          {expandedId === item.id && item.correctedCode ? (
+            <pre className="mt-2 text-xs bg-gray-50 border border-gray-200 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap font-mono">
+              {item.correctedCode}
+            </pre>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RecommendationsTab({ projectId }: { projectId: string }) {
+  const [items, setItems] = useState<ProjectRecommendation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/projects/${projectId}/recommendations`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setItems(d.recommendations))
+      .finally(() => setLoading(false));
+  }, [projectId]);
+
+  if (loading) return <p className="text-gray-500">Loading recommendations…</p>;
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <p className="mb-2">No PLC recommendations linked to this project yet.</p>
+        <Link href="/plc-selector" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+          Open PLC selector →
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {items.map((item) => {
+        const recs = Array.isArray(item.recommendedPlcs) ? item.recommendedPlcs : [];
+        const reqSummary =
+          item.requirements && typeof item.requirements === 'object'
+            ? String(
+                (item.requirements as { applicationType?: string; industry?: string }).applicationType ||
+                  (item.requirements as { description?: string }).description ||
+                  'PLC recommendation',
+              )
+            : 'PLC recommendation';
+        return (
+          <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div>
+                <p className="font-medium text-gray-900">{reqSummary}</p>
+                <p className="text-xs text-gray-400 mt-1">{fmtDate(item.createdAt)}</p>
+              </div>
+              {item.criteria ? (
+                <span className="shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                  {item.criteria}
+                </span>
+              ) : null}
+            </div>
+            {recs.length > 0 ? (
+              <ul className="text-sm text-gray-700 space-y-1 mt-2">
+                {recs.slice(0, 5).map((rec, idx) => {
+                  const label =
+                    rec && typeof rec === 'object'
+                      ? String(
+                          (rec as { model?: string; name?: string; manufacturer?: string }).model ||
+                            (rec as { name?: string }).name ||
+                            `Recommendation ${idx + 1}`,
+                        )
+                      : `Recommendation ${idx + 1}`;
+                  const mfr =
+                    rec && typeof rec === 'object'
+                      ? (rec as { manufacturer?: string }).manufacturer
+                      : null;
+                  return (
+                    <li key={idx} className="flex gap-2">
+                      <span className="text-gray-400">{idx + 1}.</span>
+                      <span>
+                        {mfr ? `${mfr} ` : ''}
+                        {label}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">No ranked PLCs stored for this recommendation.</p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1044,6 +1359,8 @@ export default function ProjectWorkspacePage() {
           {activeTab === 'files' && <FilesTab projectId={project.id} />}
           {activeTab === 'chats' && <ChatsTab projectId={project.id} />}
           {activeTab === 'notes' && <NotesTab projectId={project.id} />}
+          {activeTab === 'rectifications' && <RectificationsTab projectId={project.id} />}
+          {activeTab === 'recommendations' && <RecommendationsTab projectId={project.id} />}
         </div>
       </div>
     </div>

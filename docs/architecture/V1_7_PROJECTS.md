@@ -1,7 +1,7 @@
 # v1.7 — Project Workspace
 
-> **Status: PLANNED**
-> **Baseline:** v1.6.0 — project CRUD API exists, list pages are wired, dashboard stats are real. What's missing is the **workspace**: a single home for every artefact a project produces or consumes.
+> **Status: IMPLEMENTED** (2026-06-16)
+> **Baseline:** v1.6.0 — project CRUD API exists, list pages are wired, dashboard stats are real. v1.7 delivers the **workspace**: a single home for every artefact a project produces or consumes.
 
 > **For humans:** read §1 (concept) then §2 (what we're building), skim the data model (§4) and UI map (§5).
 > **For Cursor agents:** work phases in order **A → B → C → D → E**. Each gap row has explicit files, acceptance criteria, and a verify command. Do not implement frozen items in §9.
@@ -154,12 +154,14 @@ CREATE INDEX idx_project_notes_project ON project_notes(project_id);
 
 | Tab | Content | API |
 |-----|---------|-----|
-| **Overview** | Metadata form (name, desc, PLC target, industry, tags, status), cover image, activity log last 10 | `GET /api/projects/[id]` |
+| **Overview** | Metadata form (name, desc, PLC target, industry, tags, status), cover image upload, activity log last 10, template quick-action | `GET /api/projects/[id]`, `GET /api/projects/[id]/activity` |
 | **Programs** | List of `generated_programs` for this project; re-download button | `GET /api/projects/[id]/programs` |
-| **HMI** | List of file_operations where `operationType='hmi_generate'` for this project | `GET /api/projects/[id]/files?type=hmi` |
+| **HMI** | List of file_operations where `operationType='hmi_generate'` for this project | `GET /api/projects/[id]/files?type=hmi_generate` |
 | **Files** | All uploaded attachments; upload drop zone | `GET/POST /api/projects/[id]/files` |
 | **Chats** | Linked AI Co-Pilot / Engineer sessions | `GET /api/projects/[id]/chats` |
-| **Notes** | Markdown notes list + inline editor | `GET/POST /api/projects/[id]/notes` |
+| **Notes** | Markdown notes list + inline editor (rendered via `lib/markdown.ts`) | `GET/POST /api/projects/[id]/notes` |
+| **Rectifications** | Error fixes scoped to this project | `GET /api/projects/[id]/rectifications` |
+| **Recommendations** | PLC recommendations scoped to this project | `GET /api/projects/[id]/recommendations` |
 
 ### API gaps to fill
 
@@ -170,6 +172,9 @@ CREATE INDEX idx_project_notes_project ON project_notes(project_id);
 | **A3** | `GET /api/projects/[id]/files` | `listProjectFiles(user, id, type?)` | Filter `file_operations` by `project_id` + optional `operationType` |
 | **A4** | `GET/POST/DELETE /api/projects/[id]/notes` | `listProjectNotes`, `createProjectNote`, `deleteProjectNote` | New `project_notes` table |
 | **A5** | `GET /api/projects/[id]/chats` | `listProjectChats(user, id)` | Join through `project_chats` |
+| **A6** | `GET /api/projects/[id]/activity` | `listProjectActivity(user, id)` | Aggregates artefacts + scoped usage events (last 10) |
+| **A7** | `GET /api/projects/[id]/rectifications` | `listProjectRectifications(user, id)` | Scoped `error_rectifications` |
+| **A8** | `GET /api/projects/[id]/recommendations` | `listProjectRecommendations(user, id)` | Scoped `plc_recommendations` |
 
 ### Acceptance (Phase A)
 
@@ -419,12 +424,14 @@ Sidebar  →  My Projects
               └── Templates              /projects/templates (exists)
 
 /projects/[id]       A NEW
-  ├── Overview tab   metadata edit, cover image, quick actions
+  ├── Overview tab   metadata edit, cover image, activity log, quick actions
   ├── Programs tab   list of generated_programs scoped to project
   ├── HMI tab        list of HMI file_operations scoped to project
   ├── Files tab      user uploads (drop zone + list)
   ├── Chats tab      linked AI / engineer sessions
-  └── Notes tab      markdown notes
+  ├── Notes tab      markdown notes (rendered)
+  ├── Rectifications tab  error fixes scoped to project
+  └── Recommendations tab PLC recommendations scoped to project
 
 /projects/from-template   E1 NEW  (POST only — no UI page; redirects to /projects/[id])
 ```
@@ -461,6 +468,13 @@ Sidebar  →  My Projects
 | `app/(features)/projects/templates/page.tsx` | "Create project from template" button |
 | `lib/db/seed.ts` | Add 2 sample projects |
 | `lib/projects.test.ts` | New — API + smoke tests |
+| `lib/markdown.ts` | Safe markdown renderer for project notes |
+| `lib/project-activity.ts` | Activity feed labels + merge helper |
+| `lib/project-upload.ts` | Shared upload validation for file routes |
+| `lib/components/MarkdownContent.tsx` | Client markdown display component |
+| `app/api/projects/[id]/activity/route.ts` | New (`GET`) |
+| `app/api/projects/[id]/rectifications/route.ts` | New (`GET`) |
+| `app/api/projects/[id]/recommendations/route.ts` | New (`GET`) |
 | `CHANGELOG.md` | v1.7 section |
 
 ---
@@ -510,6 +524,7 @@ npm run build       # clean
 | Date | Notes |
 |------|-------|
 | 2026-06-16 | v1.7 project workspace plan created — full artefact container, file uploads, chat linkage, templates v2, seed data |
+| 2026-06-16 | v1.7 implemented — workspace tabs, cover image, activity feed, markdown notes, rectifications/recommendations tabs, gap-close tests |
 
 ---
 

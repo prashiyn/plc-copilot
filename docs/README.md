@@ -4,6 +4,8 @@ Project docs, grouped by topic. (Moved out of the repo root during the v1.4→v1
 
 **Start here:** [RUNBOOK.md](RUNBOOK.md) — how to set up, run, and verify the app; updated as each v1.5 phase lands.
 
+**Sysadmins / deployment:** [deployment/QUICK_START.md](deployment/QUICK_START.md) (one page) · [deployment/ADMIN_GUIDE.md](deployment/ADMIN_GUIDE.md) (full reference)
+
 ## ai/ — AI features & Claude integration
 - [AI_FEATURES_README.md](ai/AI_FEATURES_README.md) — AI feature overview
 - [AI_FEATURES_SUMMARY.md](ai/AI_FEATURES_SUMMARY.md) — summary of AI capabilities
@@ -40,6 +42,8 @@ Project docs, grouped by topic. (Moved out of the repo root during the v1.4→v1
 - [IMPLEMENTATION_SUMMARY.md](architecture/IMPLEMENTATION_SUMMARY.md) — architecture implementation summary
 
 ## deployment/
+- [QUICK_START.md](deployment/QUICK_START.md) — **one-page operator bootstrap** (migrate, seed, login, verify)
+- [ADMIN_GUIDE.md](deployment/ADMIN_GUIDE.md) — **sysadmin setup**: Docker stack, DB migrate/seed, demo & admin users, production checklist
 - [INSTALLATION_NOTES.md](deployment/INSTALLATION_NOTES.md) — required external downloads (EcoStruxure, etc.)
 - [DEPLOYMENT_STATUS.md](deployment/DEPLOYMENT_STATUS.md), [DEPLOYMENT_SUCCESS.md](deployment/DEPLOYMENT_SUCCESS.md) — Vercel deployment
 - [SUPABASE_SETUP_COMPLETE.md](deployment/SUPABASE_SETUP_COMPLETE.md) — Supabase setup (configured, not yet wired in code)

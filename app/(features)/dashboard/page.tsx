@@ -180,7 +180,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900">Recent Projects</h2>
-              <Link href="/projects/active" className="text-sm text-blue-600 hover:text-blue-700 font-semibold">
+              <Link href="/projects" className="text-sm text-blue-600 hover:text-blue-700 font-semibold">
                 View All →
               </Link>
             </div>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
               {recentProjects.length === 0 ? (
                 <p className="text-sm text-gray-500">
                   No projects yet.{' '}
-                  <Link href="/projects/active" className="text-blue-600 hover:text-blue-700">
+                  <Link href="/projects" className="text-blue-600 hover:text-blue-700">
                     Create one
                   </Link>
                   .

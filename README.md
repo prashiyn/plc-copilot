@@ -130,7 +130,7 @@ All documentation is organized under [`docs/`](docs/) (see [`docs/README.md`](do
 | [`docs/ai/`](docs/ai/) | AI feature docs, Claude API migration, vision agent (legacy) |
 | [`docs/automation/`](docs/automation/) | Python automation, workflows, wiring & testing guides |
 | [`docs/architecture/`](docs/architecture/) | Digital-twin, simulation, on-prem, competitive analysis |
-| [`docs/deployment/`](docs/deployment/) | Install notes, deployment & Supabase setup |
+| [`docs/deployment/`](docs/deployment/) | **[Admin guide](docs/deployment/ADMIN_GUIDE.md)**, install notes, deployment |
 | [`docs/marketing/`](docs/marketing/) | SEO and LinkedIn strategy |
 | [`docs/product/`](docs/product/) | Feature navigation guide, quick reference |
 | `automation/plc_automation/README.md` | Fast automation API reference |

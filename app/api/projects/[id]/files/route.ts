@@ -6,11 +6,10 @@ import {
 } from '@/lib/db/queries';
 import {
   deleteFile,
-  isAllowedUpload,
-  MAX_UPLOAD_BYTES,
   resolveUploadMimeType,
   writeFile,
 } from '@/lib/storage';
+import { validateProjectUpload } from '@/lib/project-upload';
 
 export async function GET(
   request: NextRequest,
@@ -45,18 +44,13 @@ export async function POST(
     return NextResponse.json({ error: 'A file is required.' }, { status: 400 });
   }
 
-  if (upload.size > MAX_UPLOAD_BYTES) {
-    return NextResponse.json(
-      { error: 'File exceeds the 50 MB upload limit.' },
-      { status: 413 },
-    );
-  }
-
-  if (!isAllowedUpload(upload.name, upload.type || null)) {
-    return NextResponse.json(
-      { error: 'File type not allowed. Use images, PDF, CSV, XML, JSON, or ZIP.' },
-      { status: 415 },
-    );
+  const validation = validateProjectUpload({
+    name: upload.name,
+    size: upload.size,
+    type: upload.type || null,
+  });
+  if (!validation.ok) {
+    return NextResponse.json({ error: validation.error }, { status: validation.status });
   }
 
   const buffer = Buffer.from(await upload.arrayBuffer());

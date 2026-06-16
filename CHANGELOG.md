@@ -2,6 +2,32 @@
 
 All notable changes to PLCAutoPilot will be documented in this file.
 
+## [1.7.0] - 2026-06-16
+
+### Added
+- **Project workspace** — tabbed `/projects/[id]` page with Overview, Programs, HMI, Files, Chats, Notes, Rectifications, and Recommendations
+- **Project linkage** — optional `ProjectSelector` on generator, HMI, rectify, PLC selector, and chat tools; artefacts persist with `projectId`
+- **File uploads** — per-project attachments via `POST /api/projects/[id]/files` with `lib/storage.ts` (50 MB, MIME allowlist)
+- **Chat linkage** — AI Co-Pilot and Engineer Chat sessions linked to projects with read-only replay
+- **Templates v2** — `POST /api/projects/from-template` creates a real project; templates page redirects to workspace with generator quick-action
+- **`/projects` landing** — active/completed hub with new-project modal (fixes sidebar 404)
+- **Seed data** — Motor Start/Stop Demo and PID Temperature Control sample projects after `db:seed`
+- **Overview enhancements** — cover image upload, recent activity feed (`GET /api/projects/[id]/activity`), markdown note rendering
+- **Tests** — `lib/projects.test.ts`, `lib/projects-api.test.ts`, storage/markdown/activity/upload unit tests
+
+### Changed
+- Dashboard project links point to `/projects` landing
+- `package.json` version → `1.7.0`
+
+### Deferred (unchanged — v1.8+)
+- Custom project templates DB (E2 stretch), `project_activity` dedicated audit table, SAP/collaboration/versioning/zip export, Stripe `maxProjects` gating
+
+### Verify
+```bash
+npm run test:plc && npm run build
+npm run db:migrate && npm run db:seed
+```
+
 ## [1.6.0] - 2026-06-16
 
 ### Added

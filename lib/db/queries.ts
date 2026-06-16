@@ -22,6 +22,16 @@ import {
 } from '@/lib/db/schema';
 import { getProjectTemplate, projectInputFromTemplate } from '@/lib/templates';
 import {
+  activityLabelForFileOperation,
+  activityLabelForNote,
+  activityLabelForProgram,
+  activityLabelForRectification,
+  activityLabelForRecommendation,
+  activityLabelForUsageEvent,
+  mergeProjectActivity,
+  type ProjectActivityItem,
+} from '@/lib/project-activity';
+import {
   computeOverLimit,
   resolvePlanDisplay,
   resolvePlanLimits,
@@ -146,6 +156,190 @@ export async function listProjectFiles(
     .orderBy(desc(fileOperations.createdAt));
 }
 
+export async function listProjectRectifications(user: SessionUser, projectId: string) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  return db
+    .select()
+    .from(errorRectifications)
+    .where(eq(errorRectifications.projectId, projectId))
+    .orderBy(desc(errorRectifications.createdAt));
+}
+
+export async function listProjectRecommendations(user: SessionUser, projectId: string) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  return db
+    .select()
+    .from(plcRecommendations)
+    .where(eq(plcRecommendations.projectId, projectId))
+    .orderBy(desc(plcRecommendations.createdAt));
+}
+
+export async function listProjectActivity(
+  user: SessionUser,
+  projectId: string,
+  limit = 10,
+): Promise<ProjectActivityItem[] | null> {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+
+  const [programs, files, notes, rectifications, recommendations, usageRows] = await Promise.all([
+    db
+      .select({
+        id: generatedPrograms.id,
+        fileName: generatedPrograms.fileName,
+        programFormat: generatedPrograms.programFormat,
+        createdAt: generatedPrograms.createdAt,
+      })
+      .from(generatedPrograms)
+      .where(eq(generatedPrograms.projectId, projectId))
+      .orderBy(desc(generatedPrograms.createdAt))
+      .limit(20),
+    db
+      .select({
+        id: fileOperations.id,
+        operationType: fileOperations.operationType,
+        fileName: fileOperations.fileName,
+        createdAt: fileOperations.createdAt,
+      })
+      .from(fileOperations)
+      .where(eq(fileOperations.projectId, projectId))
+      .orderBy(desc(fileOperations.createdAt))
+      .limit(20),
+    db
+      .select({
+        id: projectNotes.id,
+        title: projectNotes.title,
+        createdAt: projectNotes.createdAt,
+      })
+      .from(projectNotes)
+      .where(eq(projectNotes.projectId, projectId))
+      .orderBy(desc(projectNotes.createdAt))
+      .limit(20),
+    db
+      .select({
+        id: errorRectifications.id,
+        errorMessage: errorRectifications.errorMessage,
+        createdAt: errorRectifications.createdAt,
+      })
+      .from(errorRectifications)
+      .where(eq(errorRectifications.projectId, projectId))
+      .orderBy(desc(errorRectifications.createdAt))
+      .limit(20),
+    db
+      .select({
+        id: plcRecommendations.id,
+        criteria: plcRecommendations.criteria,
+        createdAt: plcRecommendations.createdAt,
+      })
+      .from(plcRecommendations)
+      .where(eq(plcRecommendations.projectId, projectId))
+      .orderBy(desc(plcRecommendations.createdAt))
+      .limit(20),
+    db
+      .select({
+        id: usageAnalytics.id,
+        eventType: usageAnalytics.eventType,
+        eventData: usageAnalytics.eventData,
+        createdAt: usageAnalytics.createdAt,
+      })
+      .from(usageAnalytics)
+      .where(
+        and(
+          analyticsScope(user),
+          sql`${usageAnalytics.eventData}->>'projectId' = ${projectId}`,
+        ),
+      )
+      .orderBy(desc(usageAnalytics.createdAt))
+      .limit(20),
+  ]);
+
+  const items: ProjectActivityItem[] = [];
+
+  if (project.createdAt) {
+    items.push({
+      id: `project-created-${project.id}`,
+      eventType: 'project_created',
+      label: `Project created: ${project.name}`,
+      detail: null,
+      createdAt: project.createdAt.toISOString(),
+    });
+  }
+
+  for (const row of programs) {
+    items.push({
+      id: `program-${row.id}`,
+      eventType: 'program_generated',
+      label: activityLabelForProgram(row.fileName, row.programFormat),
+      detail: null,
+      createdAt: row.createdAt ? row.createdAt.toISOString() : null,
+    });
+  }
+
+  for (const row of files) {
+    items.push({
+      id: `file-${row.id}`,
+      eventType: row.operationType,
+      label: activityLabelForFileOperation(row.operationType, row.fileName),
+      detail: null,
+      createdAt: row.createdAt ? row.createdAt.toISOString() : null,
+    });
+  }
+
+  for (const row of notes) {
+    items.push({
+      id: `note-${row.id}`,
+      eventType: 'note_added',
+      label: activityLabelForNote(row.title),
+      detail: null,
+      createdAt: row.createdAt ? row.createdAt.toISOString() : null,
+    });
+  }
+
+  for (const row of rectifications) {
+    items.push({
+      id: `rect-${row.id}`,
+      eventType: 'error_rectified',
+      label: activityLabelForRectification(row.errorMessage),
+      detail: null,
+      createdAt: row.createdAt ? row.createdAt.toISOString() : null,
+    });
+  }
+
+  for (const row of recommendations) {
+    items.push({
+      id: `rec-${row.id}`,
+      eventType: 'plc_recommended',
+      label: activityLabelForRecommendation(row.criteria),
+      detail: null,
+      createdAt: row.createdAt ? row.createdAt.toISOString() : null,
+    });
+  }
+
+  for (const row of usageRows) {
+    if (
+      row.eventType === 'program_generated' ||
+      row.eventType === 'rectify_error' ||
+      row.eventType === 'recommend_plc' ||
+      row.eventType === 'project_created' ||
+      row.eventType === 'file_uploaded' ||
+      row.eventType === 'note_added'
+    ) {
+      continue;
+    }
+    items.push({
+      id: `usage-${row.id}`,
+      eventType: row.eventType,
+      label: activityLabelForUsageEvent(row.eventType, row.eventData),
+      detail: null,
+      createdAt: row.createdAt ? row.createdAt.toISOString() : null,
+    });
+  }
+
+  return mergeProjectActivity(items, limit);
+}
+
 export interface NoteInput {
   title?: string;
   body?: string;
@@ -177,6 +371,7 @@ export async function createProjectNote(
       body: input.body ?? '',
     })
     .returning();
+  await logUsage(user, 'note_added', { projectId, noteId: row.id, title: row.title });
   return row;
 }
 
@@ -402,6 +597,9 @@ export async function updateProject(
     })
     .where(and(eq(projects.id, id), projectScope(user)))
     .returning();
+  if (row) {
+    await logUsage(user, 'project_updated', { projectId: id, status: row.status });
+  }
   return row ?? null;
 }
 
@@ -482,7 +680,11 @@ export async function createProgram(user: SessionUser, input: ProgramInput) {
       generationParameters: input.generationParameters ?? null,
     })
     .returning();
-  await logUsage(user, 'program_generated', { programId: row.id, format: row.programFormat });
+  await logUsage(user, 'program_generated', {
+    programId: row.id,
+    format: row.programFormat,
+    projectId: scopedProjectId,
+  });
   return row;
 }
 
@@ -529,6 +731,14 @@ export async function createFileOperation(user: SessionUser, input: FileOperatio
       metadata: input.metadata ?? null,
     })
     .returning();
+  if (scopedProjectId) {
+    await logUsage(user, 'file_uploaded', {
+      projectId: scopedProjectId,
+      fileId: row.id,
+      fileName: row.fileName,
+      operationType: input.operationType,
+    });
+  }
   return row;
 }
 
@@ -585,6 +795,9 @@ export async function createErrorRectification(user: SessionUser, input: ErrorRe
       metadata: input.metadata ?? null,
     })
     .returning();
+  if (scopedProjectId) {
+    await logUsage(user, 'rectify_error', { projectId: scopedProjectId, rectificationId: row.id });
+  }
   return row;
 }
 
@@ -614,6 +827,9 @@ export async function createPlcRecommendation(user: SessionUser, input: PlcRecom
       criteria: input.criteria ?? null,
     })
     .returning();
+  if (scopedProjectId) {
+    await logUsage(user, 'recommend_plc', { projectId: scopedProjectId, recommendationId: row.id });
+  }
   return row;
 }
 
