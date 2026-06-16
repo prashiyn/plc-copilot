@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 interface Project {
   id: string;
@@ -122,13 +123,21 @@ export default function ActiveProjectsPage() {
               <div key={p.id} className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-bold text-lg">{p.name}</h3>
+                    <Link href={`/projects/${p.id}`} className="font-bold text-lg hover:text-green-700 transition-colors">
+                      {p.name}
+                    </Link>
                     <p className="text-sm text-gray-600 mt-1">
                       {STATUS_LABELS[p.status] ?? p.status}
                       {p.plcModel ? ` · ${p.plcModel}` : ''}
                     </p>
                   </div>
                   <div className="flex gap-2">
+                    <Link
+                      href={`/projects/${p.id}`}
+                      className="px-3 py-1.5 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+                    >
+                      Open
+                    </Link>
                     <button
                       onClick={() => completeProject(p.id)}
                       className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors"

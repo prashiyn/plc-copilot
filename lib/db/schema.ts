@@ -88,6 +88,10 @@ export const projects = pgTable(
     programmingLanguage: varchar('programming_language', { length: 50 }),
     applicationType: varchar('application_type', { length: 100 }),
     status: varchar('status', { length: 50 }).default('draft'),
+    templateId: varchar('template_id', { length: 100 }),
+    industry: varchar('industry', { length: 100 }),
+    tags: jsonb('tags').default([]),
+    coverImage: text('cover_image'),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
@@ -98,6 +102,36 @@ export const projects = pgTable(
     index('idx_projects_user').on(t.userId),
     index('idx_projects_org').on(t.organizationId),
     index('idx_projects_status').on(t.status),
+  ],
+);
+
+export const projectNotes = pgTable(
+  'project_notes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    title: varchar('title', { length: 255 }).notNull().default('Note'),
+    body: text('body').notNull().default(''),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index('idx_project_notes_project').on(t.projectId)],
+);
+
+export const projectChats = pgTable(
+  'project_chats',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+    sessionId: uuid('session_id').notNull().references(() => chatSessions.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (t) => [
+    index('idx_project_chats_project').on(t.projectId),
+    index('idx_project_chats_session').on(t.sessionId),
   ],
 );
 

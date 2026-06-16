@@ -13,6 +13,10 @@ import {
   organizations,
   users,
   fileOperations,
+  projectNotes,
+  projectChats,
+  chatSessions,
+  chatMessages,
 } from '@/lib/db/schema';
 import {
   computeOverLimit,
@@ -55,6 +59,10 @@ export interface ProjectInput {
   programmingLanguage?: string | null;
   applicationType?: string | null;
   status?: string;
+  templateId?: string | null;
+  industry?: string | null;
+  tags?: string[] | null;
+  coverImage?: string | null;
 }
 
 export async function listProjects(user: SessionUser, status?: string) {
@@ -65,6 +73,15 @@ export async function listProjects(user: SessionUser, status?: string) {
     .from(projects)
     .where(and(...conds))
     .orderBy(desc(projects.updatedAt));
+}
+
+export async function getProject(user: SessionUser, id: string) {
+  const [row] = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, id), projectScope(user)))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function createProject(user: SessionUser, input: ProjectInput) {
@@ -80,9 +97,163 @@ export async function createProject(user: SessionUser, input: ProjectInput) {
       programmingLanguage: input.programmingLanguage ?? null,
       applicationType: input.applicationType ?? null,
       status: input.status ?? 'in_progress',
+      templateId: input.templateId ?? null,
+      industry: input.industry ?? null,
+      tags: input.tags ?? [],
+      coverImage: input.coverImage ?? null,
     })
     .returning();
   await logUsage(user, 'project_created', { projectId: row.id, name: row.name });
+  return row;
+}
+
+export async function listProjectPrograms(user: SessionUser, projectId: string) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  return db
+    .select()
+    .from(generatedPrograms)
+    .where(eq(generatedPrograms.projectId, projectId))
+    .orderBy(desc(generatedPrograms.createdAt));
+}
+
+export async function listProjectFiles(
+  user: SessionUser,
+  projectId: string,
+  operationType?: string,
+) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  const conds: SQL[] = [eq(fileOperations.projectId, projectId)];
+  if (operationType) conds.push(eq(fileOperations.operationType, operationType));
+  return db
+    .select()
+    .from(fileOperations)
+    .where(and(...conds))
+    .orderBy(desc(fileOperations.createdAt));
+}
+
+export interface NoteInput {
+  title?: string;
+  body?: string;
+}
+
+export async function listProjectNotes(user: SessionUser, projectId: string) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  return db
+    .select()
+    .from(projectNotes)
+    .where(eq(projectNotes.projectId, projectId))
+    .orderBy(desc(projectNotes.createdAt));
+}
+
+export async function createProjectNote(
+  user: SessionUser,
+  projectId: string,
+  input: NoteInput,
+) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  const [row] = await db
+    .insert(projectNotes)
+    .values({
+      projectId,
+      userId: user.id,
+      title: input.title ?? 'Note',
+      body: input.body ?? '',
+    })
+    .returning();
+  return row;
+}
+
+export async function updateProjectNote(
+  user: SessionUser,
+  projectId: string,
+  noteId: string,
+  patch: NoteInput,
+) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  const [row] = await db
+    .update(projectNotes)
+    .set({
+      ...(patch.title !== undefined && { title: patch.title }),
+      ...(patch.body !== undefined && { body: patch.body }),
+    })
+    .where(and(eq(projectNotes.id, noteId), eq(projectNotes.projectId, projectId)))
+    .returning();
+  return row ?? null;
+}
+
+export async function deleteProjectNote(
+  user: SessionUser,
+  projectId: string,
+  noteId: string,
+) {
+  const project = await getProject(user, projectId);
+  if (!project) return false;
+  const [row] = await db
+    .delete(projectNotes)
+    .where(and(eq(projectNotes.id, noteId), eq(projectNotes.projectId, projectId)))
+    .returning({ id: projectNotes.id });
+  return !!row;
+}
+
+export async function listProjectChats(user: SessionUser, projectId: string) {
+  const project = await getProject(user, projectId);
+  if (!project) return null;
+  const links = await db
+    .select({
+      sessionId: projectChats.sessionId,
+      linkedAt: projectChats.createdAt,
+      engineerName: chatSessions.engineerName,
+      engineerSpecialty: chatSessions.engineerSpecialty,
+      status: chatSessions.status,
+      startedAt: chatSessions.startedAt,
+    })
+    .from(projectChats)
+    .innerJoin(chatSessions, eq(chatSessions.id, projectChats.sessionId))
+    .where(eq(projectChats.projectId, projectId))
+    .orderBy(desc(chatSessions.startedAt));
+
+  const sessionIds = links.map((l) => l.sessionId);
+  if (sessionIds.length === 0) return [];
+
+  const messageCounts = await db
+    .select({
+      sessionId: chatMessages.sessionId,
+      count: sql<number>`count(*)::int`,
+      lastMessage: sql<string>`max(${chatMessages.createdAt}::text)`,
+    })
+    .from(chatMessages)
+    .where(inArray(chatMessages.sessionId, sessionIds))
+    .groupBy(chatMessages.sessionId);
+
+  const countMap = new Map(messageCounts.map((r) => [r.sessionId, r]));
+
+  return links.map((l) => ({
+    ...l,
+    messageCount: countMap.get(l.sessionId)?.count ?? 0,
+    lastMessageAt: countMap.get(l.sessionId)?.lastMessage ?? null,
+  }));
+}
+
+export async function linkChatToProject(
+  _user: SessionUser,
+  projectId: string,
+  sessionId: string,
+) {
+  const existing = await db
+    .select({ id: projectChats.id })
+    .from(projectChats)
+    .where(and(eq(projectChats.projectId, projectId), eq(projectChats.sessionId, sessionId)))
+    .limit(1);
+  if (existing.length > 0) return existing[0];
+  const [row] = await db
+    .insert(projectChats)
+    .values({ projectId, sessionId })
+    .returning();
   return row;
 }
 
@@ -101,6 +272,9 @@ export async function updateProject(
       ...(patch.programmingLanguage !== undefined && { programmingLanguage: patch.programmingLanguage }),
       ...(patch.applicationType !== undefined && { applicationType: patch.applicationType }),
       ...(patch.status !== undefined && { status: patch.status }),
+      ...(patch.industry !== undefined && { industry: patch.industry }),
+      ...(patch.tags !== undefined && { tags: patch.tags }),
+      ...(patch.coverImage !== undefined && { coverImage: patch.coverImage }),
     })
     .where(and(eq(projects.id, id), projectScope(user)))
     .returning();

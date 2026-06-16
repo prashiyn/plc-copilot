@@ -198,7 +198,9 @@ export default function DashboardPage() {
                   <div key={project.id} className="border-b border-gray-100 pb-4 last:border-0">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold text-gray-900">{project.name}</h3>
+                        <Link href={`/projects/${project.id}`} className="font-semibold text-gray-900 hover:text-green-700 transition-colors">
+                          {project.name}
+                        </Link>
                         <p className="text-sm text-gray-600 mt-1">
                           {[project.plcManufacturer, project.plcModel].filter(Boolean).join(' ') || '—'}
                         </p>

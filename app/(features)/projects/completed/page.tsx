@@ -67,12 +67,14 @@ export default function CompletedProjectsPage() {
         ) : projects.length === 0 ? (
           <p className="text-gray-500">No completed projects yet.</p>
         ) : (
-          <div className="grid gap-4">
+              <div className="grid gap-4">
             {projects.map((p) => (
               <div key={p.id} className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg text-gray-900">{p.name}</h3>
+                    <Link href={`/projects/${p.id}`} className="font-bold text-lg text-gray-900 hover:text-green-700 transition-colors">
+                      {p.name}
+                    </Link>
                     {p.applicationType && (
                       <p className="text-sm text-gray-600 mt-1">Type: {p.applicationType}</p>
                     )}
@@ -82,6 +84,12 @@ export default function CompletedProjectsPage() {
                     <p className="text-xs text-gray-500 mt-1">Completed: {fmtDate(p.updatedAt)}</p>
                   </div>
                   <div className="flex flex-col gap-2">
+                    <Link
+                      href={`/projects/${p.id}`}
+                      className="px-4 py-2 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors text-center"
+                    >
+                      Open
+                    </Link>
                     <button
                       onClick={() => reopen(p.id)}
                       className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
